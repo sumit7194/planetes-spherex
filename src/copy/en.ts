@@ -1129,7 +1129,6 @@ export const copy = {
   /** The appearance switch: the page only; the sky and the photos stay night in both. */
   scheme: {
     group: 'Appearance',
-    system: 'Match this device',
     light: 'Light',
     dark: 'Dark',
   },

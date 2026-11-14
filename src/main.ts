@@ -138,7 +138,7 @@ import { h, prefersReducedMotion } from './ui/dom';
 import { parseTab, tabbedPanel, type PanelTab, type TabSpec } from './ui/tabs';
 import { fitLabels, fitText } from './ui/fit';
 import { lensGlass } from './ui/glass';
-import { schemeSwitch, watchScheme } from './ui/scheme';
+import { schemeChoice, watchScheme } from './ui/scheme';
 import { markSvg } from './ui/mark';
 import { BLANK_FRAMES, CUBE_UM, FIRST_FRAME, openContextMap, type ContextMap } from './ui/context';
 import {
@@ -356,7 +356,6 @@ const header = h(
   h('h1', { class: 'wordmark' }, embedded ? openFullLink() : homeLink),
   dial,
   searchAnchor,
-  schemeSwitch(copy.scheme, copy.scheme.group),
   h('a', { class: 'credits-link', href: 'credits.html' }, copy.nav.credits),
 );
 
@@ -1683,6 +1682,7 @@ function openKeys(): void {
       {},
       ...k.list.flatMap(([key, what]) => [h('dt', {}, h('kbd', {}, key)), h('dd', {}, what)]),
     ),
+    schemeChoice(copy.scheme),
     h('div', { class: 'actions' }, close),
   );
   if (!keysDialog.isConnected) document.body.append(keysDialog);
@@ -4796,6 +4796,8 @@ function legend(withKey = false): HTMLElement {
     // On the homepage the marks' key lives here, not in the band (Viewer, 14 Nov).
     withKey ? markKey('sky') : null,
     withKey ? h('p', { class: 'hint' }, h('a', { href: 'tests.html' }, copy.tests.link)) : null,
+    // Light or dark lives here, not in the header (Sumit, 15 Nov): every device reaches it.
+    schemeChoice(copy.scheme),
   );
   // The words re-render on every state change; the legend stays as the viewer left it.
   d.addEventListener('toggle', () => (legendOpen = d.open));

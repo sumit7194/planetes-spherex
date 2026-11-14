@@ -91,30 +91,6 @@
   color: var(--glass-on-ink);
   font-weight: 600;
 }
-/* Appearance: three small icons in a glass capsule, like the dial. */
-.scheme-switch {
-  display: inline-flex;
-  padding: 3px;
-  gap: 2px;
-  border-radius: 999px;
-}
-.scheme-switch button {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 26px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--glass-ink-quiet);
-}
-.scheme-switch button:hover {
-  color: var(--glass-ink);
-}
-.scheme-switch button[aria-pressed='true'] {
-  background: var(--glass-on);
-  color: var(--glass-on-ink);
-}
 .search.glass {
   width: 260px;
   padding: 7px 14px 7px 32px;
@@ -1352,9 +1328,9 @@ canvas.sky.backdrop {
     flex: 1 1 100%;
     width: auto;
   }
-  /* Row one: the wordmark, then appearance and credits on the right; the room dial gets a
-     centred row of its own, and search the full-width row under it. */
-  .top .scheme-switch {
+  /* Row one: the wordmark, then credits on the right; the room dial gets a centred row of its
+     own, and search the full-width row under it. */
+  .top .credits-link {
     margin-left: auto;
   }
   .top .dial {
@@ -3557,4 +3533,16 @@ span[data-fit='1'] {
   margin: 4px 0 0;
   font-size: 12px;
   line-height: 1.35;
+}
+
+/* "Appearance: Dark · Light" (in "What am I seeing?" and the keys dialog). */
+.scheme-choice {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--quiet);
+}
+.scheme-choice button[aria-pressed='true'] {
+  color: var(--starlight);
+  font-weight: 600;
+  text-decoration: none;
 }

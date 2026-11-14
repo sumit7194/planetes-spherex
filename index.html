@@ -9,17 +9,14 @@
     />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <script>
-      /* Light or dark before first paint: the visitor's pick, else the system's (src/ui/scheme.ts). */
+      /* Dark unless the visitor chose Light (Sumit, 15 Nov; src/ui/scheme.ts), before first paint. */
       (function () {
-        var pick = 'system';
+        var pick = 'dark';
         try {
-          pick = localStorage.getItem('planetes-scheme') || 'system';
+          if (localStorage.getItem('planetes-scheme') === 'light') pick = 'light';
         } catch (e) {}
-        var light =
-          pick === 'light' ||
-          (pick === 'system' && matchMedia('(prefers-color-scheme: light)').matches);
         document.documentElement.dataset.scheme = pick;
-        document.documentElement.dataset.ui = light ? 'light' : 'dark';
+        document.documentElement.dataset.ui = pick;
       })();
     </script>
     <title>Planetes</title>
