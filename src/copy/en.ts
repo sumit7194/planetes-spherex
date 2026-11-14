@@ -913,6 +913,14 @@ export const copy = {
     sn: (date: string, sn: string) => `${date}: S/N ${sn}`,
     snNone: (date: string) => `${date}: off the photo`,
     nothing: 'Nothing clear at this pixel (below S/N 5 in both looks).',
+    target: (name: string, sep: string) =>
+      `This is ${name} (its predicted position is ${sep}″ from the spot).`,
+    away: (name: string, sep: string) => `${name}, ${sep}″ away`,
+    blend: (name: string, sep: string) =>
+      `Another source lies within 12″ (${name}, ${sep}″ away); at SPHEREx's 6″ pixels these blend.`,
+    flagCounts: (list: string) => `Flags in the photos that show it (information): ${list}.`,
+    flagCount: (name: string, k: number, n: number) => `${name} in ${k} of ${n}`,
+    asking: (what: string) => `${what}: checking…`,
     asteroid: (names: string) => `A known asteroid: ${names}.`,
     star: (names: string) => `A known star: ${names}.`,
     starFlagged: (flags: string) =>
@@ -931,7 +939,7 @@ export const copy = {
     checkStars: (cat: string, names: string[]) =>
       `${cat}, moved to each look's date: ${names.length ? names.join(', ') : 'none within 9″'}`,
     checkFlags: (artefacts: string[], info: string[]) =>
-      `Artefact flags in the photos that show it: ${artefacts.length ? artefacts.join(', ') : 'none'}${info.length ? ` (information only: ${info.join(', ')})` : ''}`,
+      `Artefact flags in most of the photos that show it: ${artefacts.length ? artefacts.join(', ') : 'none'}${info.length ? ` (information only: ${info.join(', ')})` : ''}`,
     notChecked: (what: string) => `${what}: couldn't be checked just now`,
     asteroidsName: 'Known asteroids (SkyBoT)',
     catwiseName: 'CatWISE2020 (its archive at IRSA)',

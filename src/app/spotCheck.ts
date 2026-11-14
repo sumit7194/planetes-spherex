@@ -6,9 +6,13 @@
  * 2. S/N gate first: the recentred spot must reach S/N ≥ 5 in the 2.5 px aperture (5–8 px annulus,
  *    as the live look) in at least one look; else "nothing clear at this pixel".
  * 3. Then, in order, listing every check that matched:
+ *    0. on one of the five's pages, the page's own target at its predicted place (Physics, 15 Nov:
+ *       WISE 0855 is in neither Gaia nor SkyBoT, so it could never be named otherwise);
  *    a. known asteroid: a SkyBoT object within R at the date of a look where the spot is ≥ 5σ;
  *    b. known star: Gaia DR3 or CatWISE2020 within R, moved by proper motion to that look's date;
- *    c. flagged: an artefact flag (v4's FIT_REJECT, by name) in the 3×3, in a look where ≥ 5σ;
+ *    c. flagged: an artefact flag (v4's FIT_REJECT, by name) in the 3×3 in MORE THAN HALF of the
+ *       photos where the spot is ≥ 5σ (a defect that is the spot persists; a union would pick up
+ *       one-off cosmic rays). Each name's fraction is shown as information;
  *    d. otherwise unknown. A known star with a flag stays a known star, with a note.
  * 4. Flags by name only, from each file's own header. OUTLIER (fires on real asteroids) and
  *    SOURCE (a catalogue map) never count; they are shown as information.
@@ -155,6 +159,10 @@ export function flagNamesNear(
 export interface SpotFacts {
   /** S/N in each look (null: off the data). */
   sn: [number | null, number | null];
+  /** On one of the five's pages: its name when its predicted place at a look's date is within R. */
+  target?: string | null;
+  /** Other known sources (G < 19, or the page's target) within 2 px of the spot, nearest first. */
+  nearby?: string[];
   /** Per look: known asteroids within R at that look's date (names). */
   asteroids: [string[], string[]];
   /** Per look: known stars within R at that look's date ("Gaia DR3 …", "CatWISE …"). */
@@ -167,6 +175,7 @@ export interface SpotFacts {
 
 export type Verdict =
   | { kind: 'nothing' }
+  | { kind: 'target'; name: string }
   | { kind: 'asteroid'; names: string[] }
   | { kind: 'star'; names: string[]; flagged: string[] }
   | { kind: 'artefact'; flags: string[] }
@@ -176,6 +185,7 @@ export type Verdict =
 export function verdict(f: SpotFacts): Verdict {
   const bright = f.sn.map((v) => v !== null && v >= SPOT_SN) as [boolean, boolean];
   if (!bright[0] && !bright[1]) return { kind: 'nothing' };
+  if (f.target) return { kind: 'target', name: f.target };
   const inBright = <T>(x: [T[], T[]]) => [
     ...new Set([...(bright[0] ? x[0] : []), ...(bright[1] ? x[1] : [])]),
   ];
@@ -188,3 +198,23 @@ export function verdict(f: SpotFacts): Verdict {
   const best = Math.max(...f.sn.map((v) => v ?? -Infinity));
   return { kind: 'unknown', faint: best < FAINT_SN };
 }
+
+/** Physics' majority rule: flag names set in more than half of the photos that show the spot. */
+export function majorityFlags(perPhoto: Set<string>[]): {
+  counted: string[];
+  fractions: [string, number][];
+} {
+  const n = perPhoto.length;
+  const counts = new Map<string, number>();
+  for (const flags of perPhoto) for (const f of flags) counts.set(f, (counts.get(f) ?? 0) + 1);
+  const fractions = [...counts].sort((a, b) => b[1] - a[1]) as [string, number][];
+  return {
+    counted: fractions
+      .filter(([name, k]) => ARTEFACT_FLAGS.has(name) && k * 2 > n)
+      .map(([name]) => name),
+    fractions,
+  };
+}
+
+/** Two known sources within this of the spot blend at SPHEREx's 6.15″ pixels (2 px). */
+export const BLEND_ARCSEC = 2 * 6.15;

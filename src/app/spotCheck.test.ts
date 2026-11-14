@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   apertureSN,
+  majorityFlags,
   ARTEFACT_FLAGS,
   flagNamesNear,
   INFO_FLAGS,
@@ -89,5 +90,25 @@ describe('the verdict, in order', () => {
   it('marks an unknown between 5 and 7 as faint', () => {
     expect(verdict(facts({ sn: [6, 2] }))).toEqual({ kind: 'unknown', faint: true });
     expect(verdict(facts({ sn: [9, 2] }))).toEqual({ kind: 'unknown', faint: false });
+  });
+});
+
+describe("Physics' later rules (15 Nov)", () => {
+  it("names the page's own target first", () =>
+    expect(
+      verdict(facts({ sn: [30, 30], target: 'WISE 0855', stars: [['Gaia DR3 1'], []] })),
+    ).toEqual({
+      kind: 'target',
+      name: 'WISE 0855',
+    }));
+  it('counts a flag only in more than half of the photos that show the spot', () => {
+    const photos = [new Set(['PERSIST', 'TRANSIENT']), new Set(['PERSIST']), new Set(['OUTLIER'])];
+    const m = majorityFlags(photos);
+    expect(m.counted).toEqual(['PERSIST']);
+    expect(m.fractions).toContainEqual(['TRANSIENT', 1]);
+    expect(m.fractions).toContainEqual(['OUTLIER', 1]);
+    // Exactly half is not more than half; OUTLIER never counts.
+    expect(majorityFlags([new Set(['HOT']), new Set()]).counted).toEqual([]);
+    expect(majorityFlags([new Set(['OUTLIER']), new Set(['OUTLIER'])]).counted).toEqual([]);
   });
 });
