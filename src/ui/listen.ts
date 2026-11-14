@@ -128,6 +128,11 @@ export function listenControl(
 ): HTMLElement | null {
   const notes = notesFrom(points);
   if (notes.length < 2) return null;
+  // ▶ Listen / ■ Stop; the glyph is decoration, the word is the name.
+  const label = (state: boolean) => [
+    h('span', { 'aria-hidden': 'true' }, state ? '■ ' : '▶ '),
+    state ? t.stop : t.listen,
+  ];
   const on = playing?.key === key;
   const b = h(
     'button',
@@ -138,11 +143,11 @@ export function listenControl(
       'data-listen': key,
       class: 'listen',
     },
-    on ? t.stop : t.listen,
+    ...label(on),
   );
   const set = (state: boolean) => {
     b.setAttribute('aria-pressed', String(state));
-    b.textContent = state ? t.stop : t.listen;
+    b.replaceChildren(...label(state));
   };
   b.addEventListener('click', () => {
     if (playing?.key === key) {
@@ -153,9 +158,10 @@ export function listenControl(
     play(key, notes, () => {
       for (const el of document.querySelectorAll(`[data-listen="${CSS.escape(key)}"]`)) {
         el.setAttribute('aria-pressed', 'false');
-        el.textContent = t.listen;
+        el.replaceChildren(...label(false));
       }
     });
   });
-  return h('div', { class: 'listen-row' }, b, h('span', { class: 'hint' }, t.mapping));
+  // In an .actions row, so it takes the page's own pill button style (Viewer).
+  return h('div', { class: 'actions listen-row' }, b, h('span', { class: 'hint' }, t.mapping));
 }
