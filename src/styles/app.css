@@ -3221,6 +3221,9 @@ span[data-fit='1'] {
   font-size: 13px;
   color: var(--quiet);
 }
+/* Links are starlight and underlined, as .link-button: blue already means "a live look". */
 .out-links a {
-  color: var(--look);
+  color: var(--starlight);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
