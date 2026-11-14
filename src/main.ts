@@ -1682,7 +1682,7 @@ function liveSpectrumSection(look: NonNullable<typeof live>): HTMLElement {
         ),
       );
     }
-    parts.push(h('p', { class: 'hint small' }, c.caveat));
+    parts.push(h('p', { class: 'hint small' }, c.caveat(r.blendChecked, r.neighbours.length > 0)));
   }
   return h('section', { class: 'spectrum-section live-spectrum' }, ...parts);
 }

@@ -322,8 +322,9 @@ export const copy = {
         `The line joins averages of about 10 neighbouring photos each (squares, with their error bars); the ${n} faint dots are the single photos, too noisy to read on their own.`,
       caption: (n: number, flagged: number) =>
         `Each dot is one photo at its own wavelength (${n} photos)${flagged ? `; hollow dots (${flagged}) had a flag touching the aperture, so they aren't measurements` : ''}.`,
-      caveat:
-        'It measures everything within 15″ of this spot together: not checked for neighbouring stars in the aperture. Each pass saw slightly different colours, so compare passes only at matching wavelengths.',
+      /** Whether Gaia DR3 was asked about neighbours in the aperture (through the cloud helper). */
+      caveat: (checked: boolean, blended: boolean) =>
+        `It measures everything within 15″ of this spot together. ${!checked ? "Neighbouring stars in that circle weren't checked: Gaia's archive couldn't be reached." : blended ? 'Checked against Gaia DR3 for neighbouring stars.' : 'Checked against Gaia DR3: no known star there is bright enough to add much light, though one too faint for Gaia could.'} Each pass saw slightly different colours, so compare passes only at matching wavelengths.`,
     },
     /** Every photo of the look's colour range, played like Watch (14 Nov, with the cloud helper). */
     range: {
@@ -747,6 +748,12 @@ export const copy = {
         source:
           "Gaia DR3; CatWISE2020 (Marocco et al. 2021, ApJS 253, 8), via IRSA; WISE 0855's motion from Luhman & Esplin (2016)",
         terms: 'Acknowledgements below',
+      },
+      {
+        what: 'Spectrum neighbour check',
+        source:
+          "Gaia DR3 stars around the spot, asked from ESA's Gaia archive by our cloud helper, with the same rule as our pipeline",
+        terms: 'Gaia acknowledgement below',
       },
       {
         what: 'Constellation figures',
