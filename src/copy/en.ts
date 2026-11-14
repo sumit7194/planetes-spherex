@@ -104,6 +104,17 @@ export const copy = {
     sunToday: 'The Sun today, on its yearly path',
     /** The Sun on the day SPHEREx last photographed the spot looked at (Sumit, 14 Nov: say why). */
     sunOn: 'The Sun on {date}, when SPHEREx last photographed this spot',
+    /** A star the mouse rests on (Viewer, 14 Nov): honest and short. */
+    starTip: {
+      unnamed: (hip: number) => `A star · HIP ${hip}`,
+      hip: (hip: number) => `HIP ${hip}`,
+      // "Visible": Hipparcos's eye-like band, not SPHEREx's infrared brightness.
+      brightness: (v: string) => `visible brightness ${v} (Hipparcos)`,
+      checking: 'checking SPHEREx’s photos…',
+      passes: (text: string) => `photographed in ${text}`,
+      none: 'not photographed in DR1 + QR3 yet',
+      click: 'Click to look',
+    },
     lookingNear: (star: string) => `Looking near ${star}`,
     nearestNamed: (star: string) => `Nearest named star: ${star}`,
     lensField: 'a close-up shows this much',

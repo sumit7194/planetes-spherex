@@ -217,6 +217,7 @@ export class SkyView {
   #raf = 0;
   #last = 0;
   #drag: { x: number; y: number; ra: number; dec: number } | null = null;
+  #downOnStar: SkyPosition | null = null;
   /** The flat map easing back inside its top or bottom after an elastic drag. */
   #flatSpring: { from: number; to: number; t0: number } | null = null;
   /**
@@ -302,6 +303,64 @@ export class SkyView {
   onSkyTap: (at: SkyPosition) => void = () => {};
   /** The pointer moved over (or off) a lantern. */
   onHover: (id: string | null) => void = () => {};
+  /**
+   * The mouse has rested on a star (Sumit and Viewer, 14 Nov): its Hipparcos number, name if it
+   * has one, visible magnitude, catalogue place, and where it is on the page (CSS px). Null when
+   * the pointer moves off, drags, zooms or leaves. Never two at once; lanterns come first.
+   */
+  onStarRest: (
+    s: { hip: number; name: string | null; v: number; at: SkyPosition; x: number; y: number } | null,
+  ) => void = () => {};
+  /** The page says when a star tip may show (the sky place, no Surprise flight, a fine pointer). */
+  starTipsAllowed: () => boolean = () => false;
+  #rest: { x: number; y: number; timer: number } = { x: NaN, y: NaN, timer: 0 };
+  #restStar: { hip: number; at: SkyPosition; x: number; y: number } | null = null;
+  #clearRest(): void {
+    window.clearTimeout(this.#rest.timer);
+    this.#rest.x = NaN;
+    if (this.#restStar) {
+      this.#restStar = null;
+      this.onStarRest(null);
+    }
+  }
+  /** Rested 350 ms (450 on the dense flat map) within 8 px: the nearest drawn star within 10 px. */
+  #noteRest(e: PointerEvent): void {
+    const { x, y } = this.#rest;
+    if (Math.hypot(e.clientX - x, e.clientY - y) <= 8) return;
+    this.#clearRest();
+    this.#rest.x = e.clientX;
+    this.#rest.y = e.clientY;
+    const cx = e.clientX;
+    const cy = e.clientY;
+    this.#rest.timer = window.setTimeout(
+      () => this.#findRestStar(cx, cy),
+      this.#entry === 'flat' ? 450 : 350,
+    );
+  }
+  #findRestStar(cx: number, cy: number): void {
+    if (this.#drag || this.#flight || this.#riding || !this.marks || !this.starTipsAllowed()) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const u = this.canvas.width / Math.max(1, rect.width);
+    const pt = { x: (cx - rect.left) * u, y: (cy - rect.top) * u };
+    if (this.#quiet.some((b) => inBox(b, pt))) return;
+    if (this.#hit({ clientX: cx, clientY: cy } as PointerEvent)) return;
+    const limit = magnitudeLimit(this.#cssPxPerDeg()) - (this.#quality >= 1 ? 0 : 0.5);
+    let best: { d: number; star: CatalogueStar; p: { x: number; y: number } } | null = null;
+    for (const star of this.#stars) {
+      if (star[2] > limit || !star[4]) continue;
+      const p = this.project({ ra: star[0], dec: star[1] });
+      if (!p) continue;
+      const d = Math.hypot(p.x - pt.x, p.y - pt.y);
+      if (d <= 10 * u && (!best || d < best.d)) best = { d, star, p };
+    }
+    if (!best) return;
+    const [ra, dec, v, , hip] = best.star;
+    const at = { ra, dec };
+    const x = rect.left + best.p.x / u;
+    const y = rect.top + best.p.y / u;
+    this.#restStar = { hip: hip!, at, x, y };
+    this.onStarRest({ hip: hip!, name: this.#names.get(hip!) ?? null, v, at, x, y });
+  }
   /** Shift + scroll over the sky: step the time sweep by weeks. */
   onSweep: (step: number) => void = () => {};
   /**
@@ -328,7 +387,10 @@ export class SkyView {
     this.#ctx = ctx;
     canvas.addEventListener('pointerdown', (e) => this.#down(e));
     canvas.addEventListener('pointermove', (e) => this.#move(e));
-    canvas.addEventListener('pointerleave', () => (this.#pointerAt = null));
+    canvas.addEventListener('pointerleave', () => {
+      this.#pointerAt = null;
+      this.#clearRest();
+    });
     canvas.addEventListener('pointerup', (e) => this.#up(e));
     canvas.addEventListener('pointercancel', (e) => this.#up(e));
     canvas.style.touchAction = 'none';
@@ -2934,6 +2996,11 @@ export class SkyView {
   }
 
   #down(e: PointerEvent): void {
+    // A click on the star whose tip shows opens it (in #up); anything else drops the tip.
+    const tipped = this.#restStar;
+    window.clearTimeout(this.#rest.timer);
+    this.#downOnStar =
+      !!tipped && Math.hypot(e.clientX - tipped.x, e.clientY - tipped.y) <= 12 ? tipped.at : null;
     this.#flight = null;
     this.#pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (this.#pointers.size === 2) {
@@ -2973,6 +3040,7 @@ export class SkyView {
       return;
     }
     if (!this.#drag) {
+      if (e.pointerType === 'mouse') this.#noteRest(e);
       const over = this.#hit(e);
       this.canvas.style.cursor = over?.ready
         ? 'pointer'
@@ -3021,6 +3089,9 @@ export class SkyView {
       return;
     }
     const moved = this.#drag ? Math.hypot(e.clientX - this.#drag.x, e.clientY - this.#drag.y) : 0;
+    const onStar = this.#downOnStar;
+    this.#downOnStar = null;
+    if (moved >= 5 || !onStar) this.#clearRest();
     if (this.#drag && this.#entry === 'flat') {
       const limit = (this.#flatSize().h / 2) * (1 - 1 / this.#flat.zoom);
       const to = Math.max(-limit, Math.min(limit, this.#flat.dy));
@@ -3036,6 +3107,11 @@ export class SkyView {
       const l = this.#hit(e);
       if (edge) void this.flyTo(edge.lantern.at, Math.min(this.#fov, 40), 900);
       else if (l?.ready) this.onSelect(l.id);
+      else if (onStar) {
+        // The star's own catalogue place, not the pointer's (Viewer, 14 Nov).
+        this.#clearRest();
+        this.onSkyTap(onStar);
+      }
       else if (this.marks && e.target === this.canvas) {
         const rect = this.canvas.getBoundingClientRect();
         const u = this.canvas.width / Math.max(1, rect.width);
@@ -3048,6 +3124,7 @@ export class SkyView {
   }
 
   #wheel(e: WheelEvent): void {
+    this.#clearRest();
     if (e.isTrusted) this.#noteMove();
     const { dx, dy } = wheelPixels(e, this.canvas.clientHeight);
     if (e.shiftKey) {

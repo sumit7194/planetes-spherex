@@ -600,6 +600,67 @@ sky.onSkyTap = (at) => {
   if (near) void go(near.id);
   else void openLook(at);
 };
+/* ---------- a star the mouse rests on: name, visible brightness, when SPHEREx photographed it ---------- */
+const starTip = h('div', { class: 'star-tip', hidden: true, 'aria-hidden': 'true' });
+document.body.append(starTip);
+let starTipSeq = 0;
+// Mouse only (touch keeps tap = look), on the sky, not during a Surprise flight.
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+sky.starTipsAllowed = () => finePointer.matches && state.place.kind === 'sky' && !surpriseFlight;
+sky.onStarRest = (s) => {
+  const seq = ++starTipSeq;
+  if (!s) {
+    starTip.hidden = true;
+    return;
+  }
+  const t = copy.sky.starTip;
+  const passes = h('span', { class: 'star-tip-passes' }, t.checking);
+  starTip.replaceChildren(
+    ...[
+      h('strong', {}, s.name ?? t.unnamed(s.hip)),
+      s.name ? h('span', { class: 'star-tip-hip' }, t.hip(s.hip)) : null,
+      h('span', {}, t.brightness(s.v.toFixed(1))),
+      passes,
+      h('span', { class: 'star-tip-click' }, t.click),
+    ].filter((x): x is HTMLElement => x !== null),
+  );
+  // Beside the star, never on it; flipped to its left near the right edge or the search column.
+  starTip.hidden = false;
+  starTip.style.left = '0px';
+  starTip.style.top = '0px';
+  const w = starTip.offsetWidth;
+  const ht = starTip.offsetHeight;
+  const column = document.querySelector('.words')?.getBoundingClientRect();
+  let x = s.x + 14;
+  let y = s.y - ht - 10;
+  if (y < 64) y = s.y + 14;
+  const hits = (bx: number) =>
+    !!column &&
+    column.width > 0 &&
+    bx < column.right &&
+    bx + w > column.left &&
+    y < column.bottom &&
+    y + ht > column.top;
+  if (x + w > innerWidth - 8 || hits(x)) x = s.x - 14 - w;
+  starTip.style.left = `${Math.max(8, x)}px`;
+  starTip.style.top = `${Math.min(innerHeight - ht - 8, y)}px`;
+  // "checking…" for at most a second; the dates fill in when the sky index answers (tiles are
+  // cached), and a failure leaves the line out rather than showing an error.
+  const giveUp = window.setTimeout(() => {
+    if (seq === starTipSeq && passes.textContent === t.checking) passes.remove();
+  }, 1000);
+  findPhotos(s.at)
+    .then((photos) => {
+      if (seq !== starTipSeq) return;
+      passes.textContent = photos.length ? t.passes(passesText(photos.map((p) => p.mjd))) : t.none;
+      if (!passes.isConnected) starTip.insertBefore(passes, starTip.lastChild);
+    })
+    .catch(() => {
+      if (seq === starTipSeq) passes.remove();
+    })
+    .finally(() => window.clearTimeout(giveUp));
+};
+
 sky.setLanterns(lanterns);
 locator.setLanterns(lanterns.map((l) => ({ ...l, label: '' })));
 void fetch(`${import.meta.env.BASE_URL}catalog/bright-stars-v8.json`)
