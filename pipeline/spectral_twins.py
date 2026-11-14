@@ -59,18 +59,24 @@ def frames_of(slug):
     return n, out
 
 
-def flux_at(img, fl, x, y):
+SAT = 1
+
+
+def flux_at(img, fl, x, y, why=None):
     n = img.shape[0]
     yy, xx = np.mgrid[0:n, 0:n]
     r = np.hypot(xx - x, yy - y)
     ap = r <= 2.0
     ann = (r >= 4.0) & (r <= 6.0) & ((fl & BAD) == 0) & np.isfinite(img)
+    # Saturated pixels that hold data (off-detector pixels carry stray flags in these packs, #15).
+    if why is not None and ((fl[ap] & SAT) > 0)[np.isfinite(img[ap])].any():
+        why["sat"] = why.get("sat", 0) + 1
     if (fl[ap] & BAD).any() or not np.isfinite(img[ap]).all() or ann.sum() < 20:
         return None
     return float(img[ap].sum() - ap.sum() * np.median(img[ann]))
 
 
-def spectrum(points):
+def spectrum(points, info=None):
     """points: [(lambda_um, flux)] -> 24-bin log shape, or None."""
     if not points:
         return None
@@ -85,6 +91,8 @@ def spectrum(points):
     ok = np.isfinite(med)
     if ok.sum() < 20:
         return None
+    if info is not None:
+        info["interpolated"] = int((~ok).sum())
     x = np.log10(CENTRES)
     med = np.interp(x, x[ok], med[ok])
     norm = np.median(med)
@@ -126,17 +134,18 @@ def measure(slug):
     srcs, targets = sources(slug, n)
     res = []
     for s in srcs + (targets if slug in ("w0855", "epsind-b") else []):
-        pts = []
+        pts, why, info = [], {}, {}
         for f, img, fl in frames:
             p = s["pos"].get(f["season"])
             if p is None:
                 continue
-            v = flux_at(img, fl, *p)
+            v = flux_at(img, fl, *p, why)
             if v is not None:
                 pts.append((f["lambdaUm"], v))
-        sp = spectrum(pts)
+        sp = spectrum(pts, info)
         if sp is not None:
-            res.append(dict(field=slug, id=s["id"], G=s["G"], photos=len(pts), shape=sp))
+            res.append(dict(field=slug, id=s["id"], G=s["G"], photos=len(pts), shape=sp, sat=why.get("sat", 0),
+                            interpolated=info.get("interpolated", 0), at=s["pos"][min(s["pos"])]))
     return res
 
 
@@ -198,5 +207,124 @@ def main():
     (ROOT / "notes" / "spectral_twins.json").write_text(json.dumps(out, indent=1))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and __import__("sys").argv[1:] != ["--v2"]:
     main()
+
+
+# ---------------------------------------------------------------- v2: Neural's harder tests
+
+V2_DOC = """v2 (14 Nov 2026, after Neural's review of v1): descriptive, on the same 36 stars; v1's PASS stands
+but is "easy" (PC1 is the continuum slope, i.e. temperature, so BP-RP agreement is nearly given).
+  - Twins by Euclidean distance in 4 PCs (amplitude kept), beside v1's cosine in 5.
+  - Residual tests (what BP-RP can't predict): Gaia DR3 logg_gspphot and CatWISE2020 W1-W2, each
+    with its linear trend on BP-RP removed; twin |residual difference| vs random pairs.
+  - Held-out bins: PCA fit on 20 bins; the 4 withheld (2 near 2.2-2.5 um, 2 at 4.2-5 um) predicted
+    by the twin's; error vs the error using a random star.
+  - Bootstrap 95% CIs over stars (2,000 draws, seed 20261114).
+  - Field leakage: share of twins in the star's own field vs the share expected from field sizes.
+  - Flags reported: stars with any saturated aperture photo, Gaia phot_variable_flag VARIABLE,
+    bins interpolated, results by G bin."""
+
+
+def v2():
+    rng = np.random.default_rng(20261114)
+    stars = [s for slug in FIVE for s in measure(slug) if not s["id"].startswith("target:")]
+    X = np.array([s["shape"] for s in stars])
+    n = len(stars)
+    ids = ",".join(s["id"] for s in stars)
+    rows = catalogs._tap("SELECT source_id, bp_rp, logg_gspphot, phot_variable_flag, ra, dec FROM gaiadr3.gaia_source "
+                         f"WHERE source_id IN ({ids})", url=catalogs.GAIA_TAP)
+    g = {str(r["source_id"]): r for r in rows}
+    bprp = np.array([g[s["id"]]["bp_rp"] if g.get(s["id"]) and g[s["id"]]["bp_rp"] is not None else np.nan for s in stars], float)
+    logg = np.array([g[s["id"]]["logg_gspphot"] if g.get(s["id"]) and g[s["id"]]["logg_gspphot"] is not None else np.nan for s in stars], float)
+    var = [bool(g.get(s["id"]) and g[s["id"]]["phot_variable_flag"] == "VARIABLE") for s in stars]
+    # CatWISE W1-W2 by position (within 3"), one cone per field.
+    w12 = np.full(n, np.nan)
+    for slug in FIVE:
+        m = json.loads((PACKS / slug / "manifest.json").read_text())["grid"]["centre"]
+        cw = catalogs.catwise2020(m["ra"], m["dec"], 0.08, w2max=17.0)
+        for i, s in enumerate(stars):
+            if s["field"] != slug or s["id"] not in g:
+                continue
+            ra, dec = g[s["id"]]["ra"], g[s["id"]]["dec"]
+            best = min(cw, key=lambda c: math.hypot((c["ra"] - ra) * math.cos(math.radians(dec)), c["dec"] - dec), default=None)
+            if best and best.get("w1") is not None and math.hypot((best["ra"] - ra) * math.cos(math.radians(dec)), best["dec"] - dec) * 3600 < 3:
+                w12[i] = best["w1"] - best["mag"]
+
+    def pca(A, k):
+        mu = A.mean(axis=0)
+        _, sv, vt = np.linalg.svd(A - mu, full_matrices=False)
+        return mu, vt[:k], (sv[:k] ** 2 / (sv ** 2).sum())
+
+    mu, comps, _ = pca(X, 5)
+    Z5 = (X - mu) @ comps.T
+    Zn = Z5 / np.linalg.norm(Z5, axis=1, keepdims=True)
+    cos = Zn @ Zn.T
+    np.fill_diagonal(cos, -2)
+    twin_cos = cos.argmax(axis=1)
+    Z4 = Z5[:, :4]
+    dist = np.linalg.norm(Z4[:, None] - Z4[None], axis=2)
+    np.fill_diagonal(dist, np.inf)
+    twin_euc = dist.argmin(axis=1)
+
+    def residual(y):
+        ok = np.isfinite(y) & np.isfinite(bprp)
+        if ok.sum() < 8:
+            return np.full(n, np.nan)
+        a, b = np.polyfit(bprp[ok], y[ok], 1)
+        return y - (a * bprp + b)
+
+    def boot_ratio(q, twin):
+        """median |q - q[twin]| / median |q_a - q_b| over random pairs, with a bootstrap CI over stars."""
+        ok = np.nonzero(np.isfinite(q) & np.isfinite(q[twin]))[0]
+        allq = np.nonzero(np.isfinite(q))[0]
+        if len(ok) < 8:
+            return None
+        def one(sel):
+            dt = np.abs(q[sel] - q[twin[sel]])
+            a, b = rng.choice(allq, 1000), rng.choice(allq, 1000)
+            k = a != b
+            return float(np.median(dt) / np.median(np.abs(q[a[k]] - q[b[k]])))
+        est = one(ok)
+        bs = [one(rng.choice(ok, len(ok))) for _ in range(2000)]
+        return dict(ratio=round(est, 3), ci95=[round(float(np.percentile(bs, 2.5)), 3), round(float(np.percentile(bs, 97.5)), 3)], n=int(len(ok)))
+
+    out = {}
+    for name, twin in (("cosine5", twin_cos), ("euclid4", twin_euc)):
+        r = dict(bp_rp=boot_ratio(bprp, twin), logg_resid=boot_ratio(residual(logg), twin), w1w2_resid=boot_ratio(residual(w12), twin))
+        same = np.mean([stars[i]["field"] == stars[twin[i]]["field"] for i in range(n)])
+        sizes = np.array([sum(s["field"] == f for s in stars) for f in FIVE])
+        expect = float(np.sum(sizes * (sizes - 1)) / (n * (n - 1)))
+        r["sameField"] = dict(observed=round(float(same), 3), expectedIfNoField=round(expect, 3))
+        r["mutualPairs"] = int(sum(twin[twin[i]] == i for i in range(n)) // 2)
+        out[name] = r
+    # Held-out bins: 2 bins nearest 2.2-2.5 um and the 2 longest (4.2-5 um).
+    held = sorted({int(np.argmin(np.abs(CENTRES - 2.25))), int(np.argmin(np.abs(CENTRES - 2.45))), 22, 23})
+    keep = [k for k in range(24) if k not in held]
+    mu2, c2, _ = pca(X[:, keep], 4)
+    Zh = (X[:, keep] - mu2) @ c2.T
+    dh = np.linalg.norm(Zh[:, None] - Zh[None], axis=2)
+    np.fill_diagonal(dh, np.inf)
+    tw = dh.argmin(axis=1)
+    err_t = np.abs(X[:, held] - X[tw][:, held]).mean(axis=1)
+    rnd = np.array([rng.choice([j for j in range(n) if j != i]) for i in range(n)])
+    err_r = np.abs(X[:, held] - X[rnd][:, held]).mean(axis=1)
+    bs = []
+    for _ in range(2000):
+        sel = rng.choice(n, n)
+        bs.append(np.median(err_t[sel]) / np.median(err_r[sel]))
+    out["heldOutBins"] = dict(bins_um=CENTRES[held].round(3).tolist(), medianErrTwin_dex=round(float(np.median(err_t)), 4),
+                              medianErrRandom_dex=round(float(np.median(err_r)), 4),
+                              ratio=round(float(np.median(err_t) / np.median(err_r)), 3),
+                              ci95=[round(float(np.percentile(bs, 2.5)), 3), round(float(np.percentile(bs, 97.5)), 3)])
+    out["flags"] = dict(anySaturatedPhoto=int(sum(s["sat"] > 0 for s in stars)), gaiaVariable=int(sum(var)),
+                        interpolatedBins={str(k): int(sum(s["interpolated"] == k for s in stars)) for k in range(5)},
+                        byG={lab: int(sum(lo <= s["G"] < hi for s in stars)) for lab, lo, hi in (("<12", 0, 12), ("12-14", 12, 14), ("14-16", 14, 16))},
+                        withLogg=int(np.isfinite(logg).sum()), withW1W2=int(np.isfinite(w12).sum()))
+    out["doc"] = V2_DOC
+    print(json.dumps({k: v for k, v in out.items() if k != "doc"}, indent=1))
+    (ROOT / "notes" / "spectral_twins_v2.json").write_text(json.dumps(out, indent=1))
+
+
+if __name__ == "__main__" and __import__("sys").argv[1:] == ["--v2"]:
+    v2()
