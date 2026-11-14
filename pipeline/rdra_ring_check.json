@@ -1,0 +1,97 @@
+{
+ "ring": {
+  "5-9px": {
+   "1": {
+    "medianUsable": 0.972,
+    "photos": 85,
+    "shareMeasurable": 0.894
+   },
+   "2": {
+    "medianUsable": 0.914,
+    "photos": 81,
+    "shareMeasurable": 0.963
+   },
+   "3": {
+    "medianUsable": 0.849,
+    "photos": 88,
+    "shareMeasurable": 0.784
+   },
+   "4": {
+    "medianUsable": 0.277,
+    "photos": 84,
+    "shareMeasurable": 0.048
+   },
+   "5": {
+    "medianUsable": 0.718,
+    "photos": 79,
+    "shareMeasurable": 0.835
+   },
+   "6": {
+    "medianUsable": 0.955,
+    "photos": 91,
+    "shareMeasurable": 1.0
+   }
+  },
+  "8-13px": {
+   "1": {
+    "medianUsable": 0.994,
+    "photos": 84,
+    "shareMeasurable": 1.0
+   },
+   "2": {
+    "medianUsable": 0.994,
+    "photos": 77,
+    "shareMeasurable": 1.0
+   },
+   "3": {
+    "medianUsable": 0.991,
+    "photos": 88,
+    "shareMeasurable": 1.0
+   },
+   "4": {
+    "medianUsable": 0.961,
+    "photos": 81,
+    "shareMeasurable": 1.0
+   },
+   "5": {
+    "medianUsable": 0.994,
+    "photos": 79,
+    "shareMeasurable": 1.0
+   },
+   "6": {
+    "medianUsable": 0.992,
+    "photos": 90,
+    "shareMeasurable": 1.0
+   }
+  }
+ },
+ "farStars": {
+  "arcmin": [
+   5.25,
+   8.16,
+   9.59,
+   12.97,
+   9.92,
+   10.16,
+   10.64,
+   11.47,
+   13.99,
+   12.68
+  ],
+  "medianAbsDeviation": [
+   0.0245,
+   0.0225,
+   0.057,
+   0.045,
+   0.0275,
+   0.0545,
+   0.1285,
+   0.0605,
+   0.0445,
+   0.1445
+  ],
+  "spearman": 0.479,
+  "p": 0.162
+ },
+ "note": "wing_index uses only ring pixels without WING_BAD flags (saturation incl. NONLINEAR, SUR_ERROR, BLOOM; transient, hot, cold, persistence, crosstalk, streak, missing) and needs >= 60% of the ring usable"
+}
