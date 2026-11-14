@@ -976,8 +976,8 @@ export const copy = {
       'Barnard’s Star’s east component: a later check found a method effect of about 0.1 pixel in east, beyond its quoted 0.05; no number was changed, and it is said next to that number.',
     ],
     afterDesigned:
-      'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the fast-mover search’s thresholds and its fake-mover yardstick, fixed on other sky first.',
-    afterPending: 'Checked and completed by Physics, 14 November 2026.',
+      'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the fast-mover search’s thresholds, its fake-mover yardstick, and the check that fakes are found like real asteroids, all fixed on other sky first.',
+    afterPending: 'List reviewed and completed by Physics, 14 November 2026.',
     footer:
       'Every number above is read from the same data files as the tool itself, or from the run outputs linked.',
     /** The way in, from the band, a target's Facts tab, the legend and the credits page. */
