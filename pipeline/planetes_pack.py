@@ -113,8 +113,15 @@ def write_overlay(slug, t, frames, gaia, catwise, gw, size):
         return out
 
     def is_target(src):
+        # Near the target's position at the catalogue's own epoch, AND moving like it. Position
+        # alone flagged steady sources sitting where a fast mover was at that epoch (W0855's
+        # 2015 CatWISE place is ~87" from today's; found by Viewer, 14 Nov).
         tr, td = catalogs.propagate(t_src, src["epoch"])
-        return math.hypot((src["ra"] - tr) * math.cos(math.radians(td)), src["dec"] - td) * 3600 < (8 if src["cat"] == "CatWISE2020" else 2)
+        near = math.hypot((src["ra"] - tr) * math.cos(math.radians(td)), src["dec"] - td) * 3600 < (8 if src["cat"] == "CatWISE2020" else 2)
+        dpm = math.hypot((src.get("pmra") or 0.0) - t_src.get("pmra", 0.0), (src.get("pmdec") or 0.0) - t_src.get("pmdec", 0.0))
+        tpm = math.hypot(t_src.get("pmra", 0.0), t_src.get("pmdec", 0.0))
+        # mas/yr: within 30% of the target's motion, or 300 mas/yr for slow targets (CatWISE's errors).
+        return near and dpm < max(300.0, 0.3 * tpm)
 
     g = [dict(source_id=x["id"], G=x["mag"], parallax_mas=x["plx"], pmra_mas_yr=x["pmra"], pmdec_mas_yr=x["pmdec"],
               at_season=at(x), target=is_target(x)) for x in gaia]
