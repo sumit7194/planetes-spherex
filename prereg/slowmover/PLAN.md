@@ -85,3 +85,11 @@ How faint, and how slow, a mover can the season-pair search find, at a fixed fal
 3. Read the 240 fields' photos (through the cloud helper: about 20 kB per frame).
 4. Calibrate the threshold on N-A (null fields only).
 5. Inject, seal, run, score.
+
+## 8. Log of implementation changes (dated, before scoring)
+- **14 Nov 2026, 23:45 IST — the photo-list source, decided before any more results (Physics agreed).** IRSA's image search (SIA) has answered HTTP 502 since about 22:15 IST; NASA's S3 bucket is unaffected.
+  - **Rule:** if SIA still fails at **09:00 IST on Sun 15 Nov 2026**, N-A and the scored run take their photo lists from our own sky index (`pipeline/sky_index.py`, built 14 Nov from IRSA's ObsCore footprints joined with the bucket listing), with no footprint margin (`margin_deg = 0`).
+  - **No mixing:** the 23 N-A fields already done from SIA are then re-run from the index, so one source is used throughout.
+  - **Before switching:** margin-0 index lists are compared with SIA lists where we have them, photo by photo, and every difference is listed and explained. This checks the plumbing only; it looks at no detections.
+  - If SIA is back by then, nothing changes and the run continues from SIA.
+  - **Done so far (from SIA):** 23 null fields, with read order and times in `pipeline/yardstick_stacks/na_order.txt`; 12 skipped by the outage, to be retried.
