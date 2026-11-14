@@ -3568,3 +3568,72 @@ span[data-fit='1'] {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* N2: the colour ratio inside Two colours. */
+.cs-ratio-row {
+  display: flex;
+  gap: 8px;
+}
+.cs-ratio-row figure {
+  margin: 0;
+}
+.cs-ratio {
+  display: block;
+  width: 88px;
+  height: 88px;
+  image-rendering: pixelated;
+  border-radius: 4px;
+}
+.cs-ratio-row figcaption {
+  font-size: 11.5px;
+  color: var(--quiet);
+}
+.cs-ratio-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  font-size: 11.5px;
+  color: var(--quiet);
+}
+.cs-ramp {
+  flex: none;
+  width: 60px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgb(74 116 204), rgb(226 226 226), rgb(214 84 44));
+}
+.cs-ratio-row {
+  align-items: flex-start;
+}
+.cs-ratio-key li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 1px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.colour-shift-key > details.why {
+  margin-top: 0;
+}
+.cs-swatch {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.cs-hatch {
+  background: repeating-linear-gradient(45deg, #2a3046 0 2px, #161a28 2px 5px);
+}
+.colour-shift-key > p.hint {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.cs-ratio-row > .cs-ratio-key {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}

@@ -81,8 +81,14 @@ import {
   type Entry as SearchEntry,
 } from './app/searchIndex';
 import { DEEP_MAX_FOV, deepMark, patchesForView, type Patch } from './app/deepStars';
-import { COLOUR_SHIFT, colourPanels, type ColourPanel } from './app/colourShift';
-import { colourShiftFigure } from './ui/colourShift';
+import {
+  COLOUR_SHIFT,
+  colourPanels,
+  colourRatio,
+  skyToPixel,
+  type ColourPanel,
+} from './app/colourShift';
+import { colourShiftFigure, ratioCanvas } from './ui/colourShift';
 import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
@@ -1861,6 +1867,7 @@ async function openWanderer(id: TargetId): Promise<void> {
   endSpot(false);
   diffAllColours = false;
   colourShiftOn = false;
+  colourRatioOn = false;
   lens.setOverlay({ contract: 'show', catalogue: null });
   dispatch({ type: 'tapLantern', target: id });
   writeUrl();
@@ -4342,6 +4349,8 @@ function compareModes(look: LiveLook | null): HTMLElement {
 
 /** "Light by colour" is open (Physics' D2 vs D6 demonstration; the five's pages only). */
 let colourShiftOn = false;
+/** Inside it, the colour ratio (N2) instead of the 2 × 2 grid. */
+let colourRatioOn = false;
 
 /** The demonstration's block: the two colours side by side, the marks, and the distances. */
 function colourShiftBlock(): HTMLElement | null {
@@ -4390,10 +4399,89 @@ function colourShiftBlock(): HTMLElement | null {
   const neighbourMoved = moved((yr) =>
     placeAt({ ra: n.ra, dec: n.dec }, n.pmra, n.pmdec, 2016.0, yr),
   );
+  // N2 (Physics, 15 Nov): the colour ratio, long ÷ short, as a second way to read the same two
+  // colours. It failed its validation on this field (the target isn't the reddest source), and
+  // the caption says so; it's never offered as a cold-object finder on its own.
+  const ratioToggle = h(
+    'button',
+    { type: 'button', class: 'link-button', 'aria-pressed': String(colourRatioOn) },
+    colourRatioOn ? t.ratio.hide : t.ratio.show,
+  );
+  ratioToggle.addEventListener('click', () => {
+    colourRatioOn = !colourRatioOn;
+    render();
+  });
+  if (colourRatioOn && c.reddest) {
+    const q = c.reddest;
+    const maps = [early, late].map((L) => {
+      const r = colourRatio(L.a, L.b);
+      const date = monthYear(L.mjd);
+      return h(
+        'figure',
+        {},
+        ratioCanvas(
+          r,
+          {
+            reddest: skyToPixel({ ra: q.ra, dec: q.dec }, geo),
+            target: skyToPixel(placeAt(w.at, w.pm.ra, w.pm.dec, WANDERER_EPOCH, L.year), geo),
+          },
+          t.ratio.alt(date, name),
+          1.375,
+        ),
+        h('figcaption', {}, date),
+      );
+    });
+    // Compact for 1280x720: the key beside the maps; what red means in a fold.
+    const sw = (style: string, text: string, cls = 'cs-swatch') =>
+      h('li', {}, h('span', { class: cls, style, 'aria-hidden': 'true' }), text);
+    return h(
+      'div',
+      { class: 'diff-key colour-shift-key' },
+      h(
+        'p',
+        { class: 'cs-question' },
+        t.ratio.question(range(c.detectors[1]), range(c.detectors[0])),
+        ' ',
+        ratioToggle,
+      ),
+      h(
+        'div',
+        { class: 'cs-ratio-row' },
+        ...maps,
+        h(
+          'ul',
+          { class: 'cs-key cs-ratio-key' },
+          sw('background: rgb(214 84 44)', t.ratio.red),
+          sw('background: rgb(226 226 226)', t.ratio.equal),
+          sw('background: rgb(74 116 204)', t.ratio.blue),
+          sw('', t.ratio.masked, 'cs-swatch cs-hatch'),
+          h(
+            'li',
+            {},
+            h('span', { class: 'cs-glyph light', 'aria-hidden': 'true' }, '○'),
+            t.ratio.ring,
+          ),
+          h(
+            'li',
+            {},
+            h('span', { class: 'cs-glyph target', 'aria-hidden': 'true' }, '◇'),
+            t.keyTarget(name),
+          ),
+        ),
+      ),
+      h('p', { class: 'hint' }, t.ratio.caption(name)),
+      h(
+        'details',
+        { class: 'why' },
+        h('summary', {}, t.ratio.whatRed),
+        h('p', { class: 'hint' }, t.ratio.redMeans),
+      ),
+    );
+  }
   return h(
     'div',
     { class: 'diff-key colour-shift-key' },
-    h('p', { class: 'cs-question' }, t.question),
+    h('p', { class: 'cs-question' }, t.question, ' ', c.reddest ? ratioToggle : ''),
     colourShiftFigure({
       columns: [
         t.column(c.detectors[0], range(c.detectors[0])),

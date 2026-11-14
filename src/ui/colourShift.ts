@@ -149,3 +149,92 @@ export function colourShiftFigure(f: ColourShiftFigureInput): HTMLElement {
     ),
   );
 }
+
+/** The ratio's colour: log2(long ÷ short) from −2 (blue: more short light) to +2 (red). */
+export function ratioColour(r: number): [number, number, number] {
+  const t = Math.max(0, Math.min(1, (Math.log2(r) + 2) / 4));
+  const lo: [number, number, number] = [74, 116, 204];
+  const mid: [number, number, number] = [226, 226, 226];
+  const hi: [number, number, number] = [214, 84, 44];
+  const [a, b, u] = t < 0.5 ? [lo, mid, t * 2] : [mid, hi, (t - 0.5) * 2];
+  return [0, 1, 2].map((k) => Math.round((a[k] ?? 0) + ((b[k] ?? 0) - (a[k] ?? 0)) * u)) as [
+    number,
+    number,
+    number,
+  ];
+}
+
+/**
+ * One look's colour-ratio map (N2): the whole field, masked pixels hatched (never a colour), a
+ * ring on the field's reddest real source and a diamond on the target's predicted place.
+ */
+export function ratioCanvas(
+  ratio: { size: number; ratio: Float32Array },
+  marks: { reddest?: { x: number; y: number }; target?: { x: number; y: number } },
+  alt: string,
+  zoom = 2.25,
+): HTMLCanvasElement {
+  const n = ratio.size;
+  const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
+  const side = Math.round(n * zoom);
+  const canvas = h('canvas', {
+    width: String(side * dpr),
+    height: String(side * dpr),
+    role: 'img',
+    'aria-label': alt,
+    class: 'cs-ratio',
+  }) as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas;
+  ctx.scale(dpr, dpr);
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++) {
+      const v = ratio.ratio[y * n + x] ?? NaN;
+      const px = x * zoom;
+      const py = (n - 1 - y) * zoom; // north up
+      if (Number.isFinite(v) && v > 0) {
+        const [r, g, b] = ratioColour(v);
+        ctx.fillStyle = `rgb(${r} ${g} ${b})`;
+      } else ctx.fillStyle = (x + y) % 3 === 0 ? '#2a3046' : '#161a28';
+      ctx.fillRect(px, py, zoom + 0.5, zoom + 0.5);
+    }
+  const M = marks;
+  const at = (q: { x: number; y: number }) => [(q.x + 0.5) * zoom, (n - 1 - q.y + 0.5) * zoom];
+  const stroke = (draw: () => void, colour: string) => {
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+    draw();
+    ctx.stroke();
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = colour;
+    draw();
+    ctx.stroke();
+  };
+  const css = getComputedStyle(document.documentElement);
+  const tok = (v: string, f: string) => css.getPropertyValue(v).trim() || f;
+  if (M.reddest) {
+    const [x, y] = at(M.reddest);
+    stroke(
+      () => {
+        ctx.beginPath();
+        ctx.arc(x ?? 0, y ?? 0, 9, 0, 2 * Math.PI);
+      },
+      tok('--sky-starlight', '#eef1f8'),
+    );
+  }
+  if (M.target) {
+    const [x, y] = at(M.target);
+    stroke(
+      () => {
+        ctx.beginPath();
+        ctx.moveTo(x ?? 0, (y ?? 0) - 7);
+        ctx.lineTo((x ?? 0) + 7, y ?? 0);
+        ctx.lineTo(x ?? 0, (y ?? 0) + 7);
+        ctx.lineTo((x ?? 0) - 7, y ?? 0);
+        ctx.closePath();
+      },
+      tok('--sky-predicted', '#b7a8ff'),
+    );
+  }
+  return canvas;
+}

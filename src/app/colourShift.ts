@@ -27,6 +27,11 @@ export interface ColourShiftCase {
   neighbour: Neighbour;
   /** The short and long colour shown, by detector. */
   detectors: [number, number];
+  /**
+   * The reddest real source in this field's colour ratio, named from its catalogues (Physics,
+   * 15 Nov: N2's validation found it, not the target).
+   */
+  reddest?: { ra: number; dec: number; what: string };
 }
 
 /** Pages with a demonstration. Gaia DR3 values, queried 15 Nov 2026 (ESA Gaia archive). */
@@ -42,6 +47,10 @@ export const COLOUR_SHIFT: Partial<Record<TargetId, ColourShiftCase>> = {
       bpRp: 0.72,
     },
     detectors: [2, 6],
+    // CatWISE J085509.47-071502.9 (W1 14.99, W2 13.75; no proper motion) = Gaia DR3
+    // 5756955849818062592 (G 18.64; parallax -0.10 ± 0.20 mas; DR3 quasar classifier probability
+    // 1.0). Gaia position at 2016.0 (no motion to apply).
+    reddest: { ra: 133.79019, dec: -7.25029, what: 'quasar' },
   },
 };
 
@@ -110,4 +119,44 @@ export function colourPanels(
     };
   };
   return [panel(stacks[0], c.detectors[0]), panel(stacks[1], c.detectors[1])];
+}
+
+/**
+ * The colour ratio, long over short (Physics, 15 Nov, N2): each pixel's D6 ÷ D2 in one look,
+ * masked (NaN) where either colour is below S/N `minSn` or where either is saturated or rejected,
+ * so saturated cores and artefacts can't light up as false "cold" sources. Noise per stack is the
+ * robust scatter of its finite pixels (the stacks are median-subtracted, so the zodiacal light's
+ * smooth level is already off).
+ */
+export interface RatioTile {
+  size: number;
+  ratio: Float32Array;
+}
+const robustSd = (px: Float32Array): number => {
+  const v = Array.from(px)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+  if (!v.length) return NaN;
+  const med = v[v.length >> 1] ?? 0;
+  const dev = v.map((x) => Math.abs(x - med)).sort((a, b) => a - b);
+  return 1.4826 * (dev[dev.length >> 1] ?? 0);
+};
+export function colourRatio(
+  short: { size: number; pixels: Float32Array; flags: Uint8Array },
+  long: { size: number; pixels: Float32Array; flags: Uint8Array },
+  minSn = 5,
+  maskBits = 3,
+): RatioTile {
+  const n = short.size;
+  const sa = robustSd(short.pixels);
+  const sb = robustSd(long.pixels);
+  const ratio = new Float32Array(n * n).fill(NaN);
+  for (let k = 0; k < n * n; k++) {
+    const a = short.pixels[k] ?? NaN;
+    const b = long.pixels[k] ?? NaN;
+    if (((short.flags[k] ?? 0) | (long.flags[k] ?? 0)) & maskBits) continue;
+    if (!(a / sa >= minSn) || !(b / sb >= minSn)) continue;
+    ratio[k] = b / a;
+  }
+  return { size: n, ratio };
 }

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { colourPanels, pixelSepArcsec, skyToPixel, type ColourShiftCase } from './colourShift';
+import {
+  colourPanels,
+  colourRatio,
+  pixelSepArcsec,
+  skyToPixel,
+  type ColourShiftCase,
+} from './colourShift';
 import type { Grid } from './spotCheck';
 
 const g = { size: 32, scaleArcsec: 6, centre: { ra: 100, dec: 0 } };
@@ -60,4 +66,30 @@ describe('the two panels', () => {
     expect(b.fromTarget).toBeLessThan(a.fromTarget);
   });
   it('keeps the detectors in order', () => expect([a.detector, b.detector]).toEqual([2, 6]));
+});
+
+describe('the colour ratio (N2)', () => {
+  const tile = (vals: number[], flags: number[] = []) => ({
+    size: 4,
+    pixels: Float32Array.from(vals),
+    flags: Uint8Array.from(flags.length ? flags : vals.map(() => 0)),
+  });
+  // Mostly background (a little scatter), one bright pixel in both colours at index 5.
+  const bg = [0, 1, -1, 0, 1, 0, -1, 0, 1, -1, 0, 1, 0, -1, 1, 0];
+  it('gives long ÷ short where both are bright, and nothing where either is faint', () => {
+    const s = tile(bg.map((v, i) => (i === 5 ? 50 : v)));
+    const l = tile(bg.map((v, i) => (i === 5 ? 100 : i === 6 ? 80 : v)));
+    const r = colourRatio(s, l);
+    expect(r.ratio[5]).toBeCloseTo(2, 6);
+    expect(Number.isNaN(r.ratio[6] ?? 0)).toBe(true); // bright only in the long colour: masked
+    expect(Number.isNaN(r.ratio[0] ?? 0)).toBe(true);
+  });
+  it('masks saturated or rejected pixels in either colour', () => {
+    const s = tile(
+      bg.map((v, i) => (i === 5 ? 50 : v)),
+      bg.map((_, i) => (i === 5 ? 1 : 0)),
+    );
+    const l = tile(bg.map((v, i) => (i === 5 ? 100 : v)));
+    expect(Number.isNaN(colourRatio(s, l).ratio[5] ?? 0)).toBe(true);
+  });
 });
