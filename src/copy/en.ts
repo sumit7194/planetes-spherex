@@ -308,7 +308,7 @@ export const copy = {
     /** The any-spot spectrum (event pipeline's recipe in the browser), 14 Nov. */
     spectrum: {
       what: "Measure the brightness of this exact spot in up to 10 photos per colour range, each at that photo's own wavelength.",
-      button: (mb: number) => `Measure its spectrum (reads about ${mb} MB)`,
+      button: (size: string) => `Measure its spectrum (reads about ${size})`,
       reading: (done: number, total: number) =>
         total ? `Measuring photo ${done} of ${total}…` : 'Choosing photos…',
       failed: "The spectrum couldn't be measured: SPHEREx's photos of this spot didn't load.",
@@ -324,6 +324,22 @@ export const copy = {
         `Each dot is one photo at its own wavelength (${n} photos)${flagged ? `; hollow dots (${flagged}) had a flag touching the aperture, so they aren't measurements` : ''}.`,
       caveat:
         'It measures everything within 15″ of this spot together: not checked for neighbouring stars in the aperture. Each pass saw slightly different colours, so compare passes only at matching wavelengths.',
+    },
+    /** Every photo of the look's colour range, played like Watch (14 Nov, with the cloud helper). */
+    range: {
+      heading: 'Every photo in this colour range',
+      what: 'Play every photo of this spot taken in the same colour range as the pair above, in date order.',
+      button: (n: number, of: number, size: string) =>
+        of > n
+          ? `Play ${n} of its ${of.toLocaleString('en-GB')} photos, spread through time (about ${size})`
+          : `Play all ${n} photos (about ${size})`,
+      reading: (done: number, total: number) => `Reading photo ${done} of ${total}…`,
+      failed: "These photos didn't load, so there's nothing to play.",
+      span: (n: number, lo: string, hi: string) => `${n} photos, from ${lo} to ${hi} microns.`,
+      drift:
+        "Each is at its own wavelength in that range, so a star's brightness can change between them with colour alone; the fair pair above is the comparison.",
+      back: 'Back to the fair pair',
+      again: (n: number) => `Play the ${n} photos again`,
     },
     finding: 'Finding SPHEREx photos of this spot.',
     probing: (done: number, total: number, of: number) =>
@@ -349,8 +365,6 @@ export const copy = {
       `${name}, ${microns} microns. Original file: ${file}`,
     fieldLabel: 'Field of view',
     field: (arcmin: number) => `${arcmin}′`,
-    fieldCost: (mb: string) =>
-      `Wider fields show faster movers but read more: about ${mb} MB for these photos.`,
     sameColour: (n: number, microns: string) =>
       `${n === 2 ? 'Both photos are' : `All ${n} photos are`} in the same infrared colour, about ${microns} microns, so the comparison is fair.`,
     photoName: (look: number, date: string) =>
@@ -432,7 +446,7 @@ export const copy = {
   legend: {
     title: 'What am I seeing?',
     layers: [
-      "Photos: NASA SPHEREx's second quick release of data (April 2025 to July 2026), from NASA/IPAC IRSA.",
+      "Photos: NASA SPHEREx's Data Release 1 and Quick Release 3, from NASA/IPAC IRSA.",
       'Lights with names: the five wanderers, whose SPHEREx photos open when you pick one.',
       'Background stars and their names: the Hipparcos catalogue and the IAU, not SPHEREx.',
       'The soft band: the Milky Way, from Gaia star counts, not SPHEREx.',
@@ -697,6 +711,12 @@ export const copy = {
           "NASA SPHEREx spectral images, Data Release 1 and Quick Release 3, served by NASA/IPAC IRSA from its public AWS bucket and found with IRSA's image search",
         terms: 'Public data',
         link: 'https://irsa.ipac.caltech.edu/Missions/spherex.html',
+      },
+      {
+        what: 'Live looks',
+        source:
+          "Cut out by our own small helper on Cloudflare Workers, run close to NASA's bucket: it reads the same files with the same code and sends back only the cutout, kept near you for next time. If it can't be reached, your browser reads NASA's files directly. It is sent only the photo's name and the spot on the sky.",
+        terms: 'Our own code',
       },
       {
         what: "SPHEREx's all-sky map",

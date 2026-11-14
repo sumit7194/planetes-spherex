@@ -39,12 +39,15 @@ import {
 } from './data/coords';
 import {
   findPhotos,
+  helperActive,
   liveSpectrum,
   probePhoto,
   readPhoto,
+  warmUp,
   type LiveSpectrum,
   seasonsOf as passesOf,
   type LivePhoto,
+  type LiveFrame,
 } from './data/live/dr1qr3';
 import { loadCoverage, type Coverage } from './data/coverage';
 import { npix, pixelCentre } from './data/healpix';
@@ -184,6 +187,8 @@ let live: {
   done: boolean;
   abort: AbortController;
 } | null = null;
+/** A live look (`typeof live` right after its `= null` would narrow to null). */
+type LiveLook = Parameters<typeof finishLook>[0];
 
 function dispatch(event: ViewerEvent): void {
   state = transition(state, event);
@@ -778,6 +783,8 @@ for (const w of WANDERERS) {
 
 /* ---------- search: a typed position near a wanderer opens its case ---------- */
 
+// Open the connections a live look will use while the visitor is still typing (once a page).
+search.addEventListener('focus', warmUp, { once: true });
 search.addEventListener('keydown', (e) => {
   if (e.key !== 'Enter') return;
   // A name first: one of the five, or an IAU-named star (a look at its catalogue position).
@@ -894,7 +901,11 @@ document.addEventListener('keydown', (e) => {
   const typing = document.activeElement instanceof HTMLInputElement;
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
   // In a show, ← → step the series being watched.
-  if (series && watching !== null && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+  if (
+    series &&
+    (watching !== null || liveRange?.playing) &&
+    (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
+  ) {
     series.step(e.key === 'ArrowLeft' ? -1 : 1);
     e.preventDefault();
     return;
@@ -1084,17 +1095,36 @@ const lookGrid = () => ({
   scaleArcsec: SCALE_ARCSEC,
 });
 
-/** Bytes a look reads at a field: image and flag rows (with room for a half-turn) plus headers. */
-function lookMegabytes(photos: number, field: LookField): string {
-  const size = Math.round((field * 60) / SCALE_ARCSEC);
+/**
+ * Bytes one photo costs at a grid size: through the cloud helper, its finished cutout (pixels
+ * and flags); read from NASA directly, the image and flag rows (with room for a half-turn) plus
+ * headers.
+ */
+function photoBytes(size: number): number {
+  if (helperActive()) return size * size * 5 + 300;
   const rows = Math.ceil(size * Math.SQRT2) + 5;
-  const perPhoto = rows * 8160 * 2 + 14_400;
-  return ((photos * perPhoto) / 1e6).toFixed(photos * perPhoto < 1e7 ? 1 : 0);
+  return rows * 8160 * 2 + 14_400;
 }
 
-/** Photo reads at once (each splits into 4–6 range requests) and colour probes at once. */
-const READS_AT_ONCE = 3;
-const PROBES_AT_ONCE = 24;
+/** "1.2 MB" or "40 kB": a cost shown on a button. */
+function aboutSize(bytes: number): string {
+  if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(bytes < 1e7 ? 1 : 0)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1e3))} kB`;
+}
+
+/** What a look costs at a field of view. */
+function lookSize(photos: number, field: LookField): string {
+  return aboutSize(photos * photoBytes(Math.round((field * 60) / SCALE_ARCSEC)));
+}
+
+/**
+ * Photo reads and colour probes at once. Through the cloud helper each is one small request on
+ * one shared connection, so many can go together; read from NASA directly, each photo splits
+ * into 4–6 range requests and the browser allows ~6 connections per address, so a few.
+ * Asked at the start of each phase, so a look that falls back mid-way slows down, not floods.
+ */
+const readsAtOnce = () => (helperActive() ? 24 : 3);
+const probesAtOnce = () => (helperActive() ? 48 : 24);
 
 /** Runs `fn` over `items`, at most `limit` at a time; a failed item is skipped, not fatal. */
 async function eachLimited<T>(
@@ -1144,15 +1174,19 @@ async function planFrom(
   };
   if (meta.seasons < 2) return { kind: 'one-season', ...meta };
   const candidates: LiveCandidate<LivePhoto>[] = [];
-  // Probing stops early once a fair pair turns up: the look shows what it has, sooner.
+  // Read from NASA directly, probing stops early once a fair pair turns up: the look shows what
+  // it has, sooner, but which pair depends on which probes answer first. Through the cloud
+  // helper probes are cheap, so all the chosen ones run, and the same spot always gets the same
+  // pair (a shared link shows what its sender saw).
   const enough = new AbortController();
   const stop = () => enough.abort();
   signal.addEventListener('abort', stop, { once: true });
+  const thorough = helperActive();
   const probe = async (which: (p: number) => boolean) => {
     const idx = probeChoice(photos, pass).filter((i) => which(pass[i] ?? 0));
     let done = 0;
     onProbe(0, idx.length, photos.length);
-    await eachLimited(idx, PROBES_AT_ONCE, async (i) => {
+    await eachLimited(idx, probesAtOnce(), async (i) => {
       const photo = photos[i];
       if (!photo || enough.signal.aborted) return;
       const pr = await probePhoto(photo, at, enough.signal).finally(() =>
@@ -1168,7 +1202,7 @@ async function planFrom(
         colourUncertain: false,
         hit: photo,
       });
-      if (planCandidates(candidates, meta).kind === 'pair') stop();
+      if (!thorough && planCandidates(candidates, meta).kind === 'pair') stop();
     });
   };
   await probe((p) => p < 2);
@@ -1184,7 +1218,211 @@ async function planFrom(
 function stopLook(): void {
   live?.abort.abort();
   live?.spectrum?.abort.abort();
+  if (liveRange) {
+    liveRange.abort.abort();
+    if (liveRange.playing) {
+      stopReveal?.();
+      series = null;
+      drawSeriesBar();
+    }
+    liveRange = null;
+  }
   live = null;
+}
+
+/* ---------- a live look's colour range, every photo in date order (the "little video") ---------- */
+
+/** At most this many photos in a live colour-range series: evenly through time beyond it. */
+const LIVE_RANGE_MAX = 80;
+
+/** Every photo of the look's colour range (its fair pair's detector), read for "Play all". */
+interface LiveRange {
+  look: LiveLook;
+  state: 'reading' | 'ready' | 'failed';
+  done: number;
+  total: number;
+  frames: LiveFrame[];
+  playing: boolean;
+  abort: AbortController;
+}
+let liveRange: LiveRange | null = null;
+
+/** The look's photos in its pair's detector, oldest first, thinned evenly to LIVE_RANGE_MAX. */
+function rangePhotos(look: LiveLook): { photos: LivePhoto[]; of: number } {
+  const plan = look.plan;
+  if (plan?.kind !== 'pair') return { photos: [], of: 0 };
+  const det = plan.pair.a.detector;
+  const all = look.photos.filter((p) => p.det === det).sort((a, b) => a.mjd - b.mjd);
+  if (all.length <= LIVE_RANGE_MAX) return { photos: all, of: all.length };
+  const photos = Array.from(
+    { length: LIVE_RANGE_MAX },
+    (_, k) => all[Math.floor(((k + 0.5) * all.length) / LIVE_RANGE_MAX)] as LivePhoto,
+  );
+  return { photos, of: all.length };
+}
+
+/** Reads every photo of the colour range (each at its own wavelength), then plays them. */
+async function startLiveRange(look: LiveLook): Promise<void> {
+  const { photos } = rangePhotos(look);
+  const job: LiveRange = {
+    look,
+    state: 'reading',
+    done: 0,
+    total: photos.length,
+    frames: [],
+    playing: false,
+    abort: new AbortController(),
+  };
+  liveRange = job;
+  render();
+  const grid = lookGrid();
+  await eachLimited(photos, readsAtOnce(), async (p) => {
+    if (job.abort.signal.aborted) return;
+    const f = await readPhoto(p, look.at, grid.size, grid.scaleArcsec, job.abort.signal).finally(
+      () => {
+        job.done++;
+        const line = words.querySelector('.live-range .progress');
+        if (line && liveRange === job)
+          line.textContent = copy.look.range.reading(job.done, job.total);
+      },
+    );
+    if (f) job.frames.push(f);
+  });
+  if (liveRange !== job || live !== look) return;
+  job.frames.sort((a, b) => a.mjd - b.mjd);
+  job.state = job.frames.length >= 2 ? 'ready' : 'failed';
+  if (job.state === 'ready') watchLiveRange(job);
+  else render();
+}
+
+/**
+ * Plays the colour range in the lens like Watch does for the five: one shared stretch, hard
+ * cuts at 2 per second, looping until paused; never on its own under reduced motion.
+ */
+function watchLiveRange(job: LiveRange): void {
+  stopReveal?.();
+  const frames = job.frames;
+  const tiles = frames.map((f) => f.tile);
+  lens.setTiles(tiles, sharedStretch(tiles.map((t) => t.pixels)));
+  let i = 0;
+  let timer = 0;
+  const showFrame = () => {
+    const f = frames[i];
+    lens.show(i);
+    if (f)
+      lensLabel.replaceChildren(
+        h(
+          'span',
+          {},
+          copy.watch.frame(i + 1, frames.length, dayMonthYear(f.mjd), fixed(f.lambdaUm)),
+        ),
+      );
+  };
+  const pause = () => {
+    window.clearInterval(timer);
+    if (series) series.paused = true;
+  };
+  const play = () => {
+    window.clearInterval(timer);
+    timer = window.setInterval(() => {
+      i = (i + 1) % frames.length;
+      showFrame();
+    }, 500);
+    if (series) series.paused = false;
+  };
+  series = {
+    paused: true,
+    step: (delta) => {
+      pause();
+      i = (i + delta + frames.length) % frames.length;
+      showFrame();
+      drawSeriesBar();
+    },
+    toggle: () => {
+      if (series?.paused) play();
+      else pause();
+      drawSeriesBar();
+    },
+  };
+  stopReveal = pause;
+  job.playing = true;
+  showFrame();
+  if (!prefersReducedMotion()) play();
+  render();
+  drawSeriesBar();
+  // Known asteroids at each photo's own time.
+  const grid = lookGrid();
+  void moversOn(
+    job.look.at,
+    frames.map((f) => f.mjd),
+    grid.size,
+    grid.scaleArcsec,
+  ).then((marks) => {
+    if (liveRange === job && job.playing && marks !== 'failed') lens.setOverlay({ movers: marks });
+  });
+}
+
+/** Back from the colour range to the look's fair pair (its photos stay read, to play again). */
+function leaveLiveRange(): void {
+  const job = liveRange;
+  if (!job?.playing) return;
+  stopReveal?.();
+  job.playing = false;
+  series = null;
+  drawSeriesBar();
+  const look = job.look;
+  if (live !== look || !look.stretch) return;
+  lens.setTiles(look.tiles, look.stretch);
+  if (Array.isArray(look.movers)) lens.setOverlay({ movers: look.movers });
+  render();
+  showLivePhoto(look.tiles.length - 1);
+}
+
+/** "Every photo in this colour range": a button with its size, progress, then the player. */
+function liveRangeSection(look: LiveLook): HTMLElement | null {
+  const c = copy.look.range;
+  const { photos, of } = rangePhotos(look);
+  // Only worth offering when it shows more than the look already does.
+  if (photos.length <= look.tiles.length) return null;
+  const job = liveRange?.look === look ? liveRange : null;
+  const parts: (Node | null)[] = [h('h3', {}, c.heading)];
+  const button = (label: string, act: () => void) => {
+    const b = h('button', { type: 'button' }, label);
+    b.addEventListener('click', act);
+    return b;
+  };
+  if (!job) {
+    const size = aboutSize(photos.length * photoBytes(lookGrid().size));
+    parts.push(
+      h('p', { class: 'hint' }, c.what),
+      h(
+        'div',
+        { class: 'actions' },
+        button(c.button(photos.length, of, size), () => void startLiveRange(look)),
+      ),
+    );
+  } else if (job.state === 'reading') {
+    parts.push(h('p', { class: 'hint progress', role: 'status' }, c.reading(job.done, job.total)));
+  } else if (job.state === 'failed') {
+    parts.push(h('p', { class: 'hint', role: 'status' }, c.failed));
+  } else {
+    const lambdas = job.frames.map((f) => f.lambdaUm).filter(Number.isFinite);
+    const span = lambdas.length
+      ? c.span(job.frames.length, fixed(Math.min(...lambdas)), fixed(Math.max(...lambdas)))
+      : '';
+    parts.push(h('p', { class: 'hint' }, span, ' ', c.drift));
+    if (job.playing)
+      parts.push(seriesBar, h('div', { class: 'actions' }, button(c.back, leaveLiveRange)));
+    else
+      parts.push(
+        h(
+          'div',
+          { class: 'actions' },
+          button(c.again(job.frames.length), () => watchLiveRange(job)),
+        ),
+      );
+  }
+  return h('section', { class: 'live-range' }, ...parts);
 }
 
 /**
@@ -1238,6 +1476,7 @@ function surpriseShiftLine(s: SurpriseSpot): string {
 
 /** A live look at a famous fast star or variable, a different one from the last. */
 async function surpriseMe(): Promise<void> {
+  warmUp();
   const spots = await loadSurprises();
   const others = spots.filter((x) => x.name !== surprise?.name);
   const pick = others[Math.floor(Math.random() * others.length)];
@@ -1298,8 +1537,7 @@ async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Pro
   }
   dispatch({ type: 'indexReady', planned: plan.set.length });
   const grid = lookGrid();
-  // Each read opens several connections of its own (split range reads), so a few at a time.
-  await eachLimited(plan.set, READS_AT_ONCE, async (c) => {
+  await eachLimited(plan.set, readsAtOnce(), async (c) => {
     const frame = await readPhoto(c.hit, at, grid.size, grid.scaleArcsec, look.abort.signal);
     if (!frame || live !== look || look.done) return;
     look.landed.push({ candidate: c, tile: frame.tile, key: c.hit.key });
@@ -1349,13 +1587,17 @@ function finishLook(look: NonNullable<typeof live>): void {
   });
 }
 
-/** About how much the spectrum reads: ~0.25 MB per photo, up to 10 per colour range. */
+/**
+ * About how much the spectrum reads: up to 10 photos per colour range, each a 20-pixel box
+ * (~0.25 MB of rows from NASA directly, ~2 kB through the cloud helper).
+ */
 const SPECTRUM_PER_DETECTOR = 10;
-function spectrumMegabytes(photos: LivePhoto[]): number {
+function spectrumSize(photos: LivePhoto[]): string {
   const perDet = [1, 2, 3, 4, 5, 6].map((d) =>
     Math.min(SPECTRUM_PER_DETECTOR, photos.filter((p) => p.det === d).length),
   );
-  return Math.max(1, Math.round(perDet.reduce((a, b) => a + b, 0) * 0.25));
+  const n = perDet.reduce((a, b) => a + b, 0);
+  return aboutSize(n * (helperActive() ? photoBytes(20) : 250_000));
 }
 
 /** Measures the spot's spectrum, photo by photo, at each photo's own wavelength. */
@@ -1371,6 +1613,7 @@ function startLiveSpectrum(look: NonNullable<typeof live>): void {
   render();
   void liveSpectrum(look.at, look.photos, {
     perDetector: SPECTRUM_PER_DETECTOR,
+    concurrency: helperActive() ? 24 : 4,
     signal: job.abort.signal,
     onPoint: (_p, done, total) => {
       job.done = done;
@@ -1402,7 +1645,7 @@ function liveSpectrumSection(look: NonNullable<typeof live>): HTMLElement {
   const parts: (Node | null)[] = [h('h3', {}, copy.spectrum.heading)];
   const job = look.spectrum;
   if (!job) {
-    const b = h('button', { type: 'button' }, c.button(spectrumMegabytes(look.photos)));
+    const b = h('button', { type: 'button' }, c.button(spectrumSize(look.photos)));
     b.addEventListener('click', () => startLiveSpectrum(look));
     parts.push(h('p', { class: 'hint' }, c.what), h('div', { class: 'actions' }, b));
   } else if (job.state === 'reading') {
@@ -1467,6 +1710,7 @@ function livePhotoName(i: number): string {
 }
 
 function showLivePhoto(i: number): void {
+  if (liveRange?.playing) leaveLiveRange();
   liveShown = i;
   lens.show(i);
   lensLabel.replaceChildren(h('span', {}, livePhotoName(i)));
@@ -1477,6 +1721,7 @@ function showLivePhoto(i: number): void {
 
 /** Hard cuts through the photos in time order, twice, ending on the last. */
 function flipLook(): void {
+  if (liveRange?.playing) leaveLiveRange();
   stopReveal?.();
   const n = live?.tiles.length ?? 0;
   if (n < 2) return;
@@ -2840,6 +3085,7 @@ function lookWords(): HTMLElement[] {
         strip,
         h('div', { class: 'actions' }, replay, copyLinkButton(), aladinLink(look.at)),
         liveMoversLine(look),
+        liveRangeSection(look),
         fieldControl(look.tiles.length),
         // The same rows as a show's, so a look's empty rows say plainly what it isn't.
         h(
@@ -3450,7 +3696,7 @@ function fieldControl(photos: number): HTMLElement {
       'button',
       { type: 'button', 'aria-pressed': String(f === lookField) },
       h('span', {}, copy.look.field(f)),
-      h('small', {}, `${lookMegabytes(photos, f)} MB`),
+      h('small', {}, lookSize(photos, f)),
     );
     b.addEventListener('click', () => {
       if (f === lookField || !live) return;
