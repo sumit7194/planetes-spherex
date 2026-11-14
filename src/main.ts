@@ -1395,7 +1395,12 @@ function liveRangeSection(look: LiveLook): HTMLElement | null {
   } else {
     const lambdas = job.frames.map((f) => f.lambdaUm).filter(Number.isFinite);
     const span = lambdas.length
-      ? c.span(job.frames.length, fixed(Math.min(...lambdas)), fixed(Math.max(...lambdas)))
+      ? c.span(
+          job.frames.length,
+          job.total,
+          fixed(Math.min(...lambdas)),
+          fixed(Math.max(...lambdas)),
+        )
       : '';
     parts.push(h('p', { class: 'hint' }, span, ' ', c.drift));
     if (job.playing)
@@ -2548,13 +2553,20 @@ function showWords(): Node[] {
             ),
           ]
         : [],
-      { badge: String(pack.manifest.frames.length), cue: watchCue() },
+      {
+        badge: String(pack.manifest.frames.length),
+        badgeLabel: copy.panel.badge.photos(String(pack.manifest.frames.length)),
+        cue: watchCue(),
+      },
     ),
     tabSpec('facts', facts),
     tabSpec(
       'spectrum',
       spectrumTab.length ? spectrumTab : [h('p', { class: 'hint' }, copy.panel.noSpectrum)],
-      { badge: spectra.get(id)?.status === 'measured' ? '●' : null },
+      {
+        badge: spectra.get(id)?.status === 'measured' ? '●' : null,
+        badgeLabel: copy.panel.badge.measured,
+      },
     ),
   ];
 
@@ -3180,6 +3192,7 @@ function lookWords(): HTMLElement[] {
         ]),
         tabSpec('watch', [liveRangeSection(look), fieldControl(look.tiles.length)], {
           badge: range.photos.length > 2 ? String(range.photos.length) : null,
+          badgeLabel: copy.panel.badge.photos(String(range.photos.length)),
           cue: watchCue(),
         }),
         tabSpec('facts', [
@@ -3204,6 +3217,7 @@ function lookWords(): HTMLElement[] {
         ]),
         tabSpec('spectrum', [liveSpectrumSection(look)], {
           badge: look.spectrum?.result ? '●' : null,
+          badgeLabel: copy.panel.badge.measured,
         }),
       ]);
     }

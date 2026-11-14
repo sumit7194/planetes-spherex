@@ -331,16 +331,18 @@ export const copy = {
     /** Every photo of the look's colour range, played like Watch (14 Nov, with the cloud helper). */
     range: {
       heading: 'Every photo in this colour range',
-      what: 'Play every photo of this spot taken in the same colour range as the pair above, in date order.',
+      what: 'Play every photo of this spot taken in the same colour range as the fair pair, in date order.',
       button: (n: number, of: number, size: string) =>
         of > n
           ? `Play ${n} of its ${of.toLocaleString('en-GB')} photos, spread through time (about ${size})`
           : `Play all ${n} photos (about ${size})`,
       reading: (done: number, total: number) => `Reading photo ${done} of ${total}…`,
       failed: "These photos didn't load, so there's nothing to play.",
-      span: (n: number, lo: string, hi: string) => `${n} photos, from ${lo} to ${hi} microns.`,
+      /** of: photos asked for; some may not cover the spot (the edge of a photo). */
+      span: (n: number, of: number, lo: string, hi: string) =>
+        `${n < of ? `${n} of ${of} photos cover this spot` : `${n} photos`}, from ${lo} to ${hi} microns.`,
       drift:
-        "Each is at its own wavelength in that range, so a star's brightness can change between them with colour alone; the fair pair above is the comparison.",
+        "Each is at its own wavelength in that range, so a star's brightness can change between them with colour alone; the fair pair (Compare) is the comparison.",
       back: 'Back to the fair pair',
       again: (n: number) => `Play the ${n} photos again`,
     },
@@ -502,7 +504,7 @@ export const copy = {
     move: 'Move',
     brightness: 'Brightness',
     spectrum: 'Spectrum',
-    spectrumMeasured: 'measured · chart below',
+    spectrumMeasured: 'measured · see Spectrum',
     spectrumTooBright: 'too bright: saturated',
     spectrumBlended: 'too faint beside a brighter star',
     notMeasured: 'not measured',
@@ -705,6 +707,8 @@ export const copy = {
     /** The summary's honest state line for a live look. */
     lookState: 'Not measured: a look at the photos, not a search or a measurement',
     noSpectrum: 'No spectrum for this one yet.',
+    /** What a tab's badge says to a screen reader. */
+    badge: { photos: (n: string) => `${n} photos`, measured: 'measured' },
     /** The phone sheet's handle: what a press does next. */
     sheet: {
       peek: 'Showing the summary only. Show more',

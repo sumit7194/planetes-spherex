@@ -46,8 +46,10 @@ export interface TabSpec {
   /** One line under the tab row: what to do here. */
   hint: string;
   content: (Node | null)[];
-  /** A small count or word after the label (e.g. the number of photos). */
+  /** A small count or mark after the label (e.g. the number of photos). */
   badge?: string | null;
+  /** What the badge means, for screen readers ("70 photos", "measured"); the mark itself is hidden. */
+  badgeLabel?: string;
   /** A quiet dot: something new here the visitor hasn't opened yet. */
   cue?: boolean;
 }
@@ -84,7 +86,8 @@ export function tabbedPanel(opts: {
         class: t.cue && !on ? 'cue' : undefined,
       },
       h('span', {}, t.label),
-      t.badge ? h('small', { class: 'badge' }, t.badge) : null,
+      t.badge ? h('small', { class: 'badge', 'aria-hidden': 'true' }, t.badge) : null,
+      t.badge && t.badgeLabel ? h('span', { class: 'visually-hidden' }, `, ${t.badgeLabel}`) : null,
     );
     b.addEventListener('click', () => {
       if (on) return;
