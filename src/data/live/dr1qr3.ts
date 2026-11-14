@@ -1116,15 +1116,18 @@ export function blendNeighbours(
   apertureArcsec: number,
 ): string[] {
   const dt = 2026.0 - 2016.0;
-  const seps = stars.map((x) => {
-    const dec = x.dec + (x.pmdec * dt) / 3.6e6;
-    const ra = x.ra + (x.pmra * dt) / 3.6e6 / Math.max(1e-6, Math.cos(x.dec * RAD));
-    let dra = ra - at.ra;
-    if (dra > 180) dra -= 360;
-    if (dra < -180) dra += 360;
-    const sep = Math.hypot(dra * Math.cos(at.dec * RAD), dec - at.dec) * 3600;
-    return { sep, x };
-  });
+  // The pipeline asks Gaia for G < 19.5 only, so fainter stars are neither target nor neighbour.
+  const seps = stars
+    .filter((x) => x.g != null && x.g < 19.5)
+    .map((x) => {
+      const dec = x.dec + (x.pmdec * dt) / 3.6e6;
+      const ra = x.ra + (x.pmra * dt) / 3.6e6 / Math.max(1e-6, Math.cos(x.dec * RAD));
+      let dra = ra - at.ra;
+      if (dra > 180) dra -= 360;
+      if (dra < -180) dra += 360;
+      const sep = Math.hypot(dra * Math.cos(at.dec * RAD), dec - at.dec) * 3600;
+      return { sep, x };
+    });
   const me = seps.filter((s) => s.sep <= 2).sort((a, b) => a.sep - b.sep)[0];
   const limit = me?.x.g != null ? me.x.g + 3.3 : 19.5;
   return seps
@@ -1153,10 +1156,9 @@ export async function liveSpectrum(
   const per = opts.perDetector ?? 10;
   // Known neighbours, asked in parallel with the photos (the aperture is APER_PX grid pixels).
   const apertureArcsec = APER_PX * 6.15;
-  const gaia = gaiaNear(at, Math.ceil(apertureArcsec) + 5, opts.signal).catch((e: unknown) => {
-    if (opts.signal?.aborted) throw e;
-    return null;
-  });
+  // The search reaches 15″ beyond the aperture: Gaia positions are at 2016, and a neighbour
+  // moving up to 1.5″/yr is still found. Never rejects (a Stop is re-checked after the photos).
+  const gaia = gaiaNear(at, Math.ceil(apertureArcsec) + 15, opts.signal).catch(() => null);
   const seasons = seasonsOf(photos);
   const withSeason = photos.map((p, i) => ({ p, s: seasons[i]! }));
   const chosen = [1, 2, 3, 4, 5, 6].flatMap((d) =>
@@ -1225,6 +1227,7 @@ export async function liveSpectrum(
     reason = `nothing bright enough here: median S/N ${medSn.toFixed(1)} per photo`;
   }
   const stars = await gaia;
+  if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
   const neighbours = stars ? blendNeighbours(at, stars, apertureArcsec) : [];
   if (neighbours.length) {
     status = 'not measurable';

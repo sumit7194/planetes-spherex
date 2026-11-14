@@ -98,9 +98,9 @@ const GAIA_TAP = 'https://gea.esac.esa.int/tap-server/tap/sync';
 
 /** Gaia DR3 stars near a position (positions at epoch 2016.0, motions in mas/yr). */
 async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
-  if (!url.searchParams.has('ra') || !url.searchParams.has('dec'))
+  if (!url.searchParams.get('ra') || !url.searchParams.get('dec'))
     return bad('ra and dec are required');
-  const ra = Number(Number(url.searchParams.get('ra')).toFixed(5));
+  const ra = Number(Number(url.searchParams.get('ra')).toFixed(5)) % 360;
   const dec = Number(Number(url.searchParams.get('dec')).toFixed(5));
   const r = Math.round(Number(url.searchParams.get('r') ?? 30));
   if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
@@ -122,18 +122,23 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   const q = new URLSearchParams({ REQUEST: 'doQuery', LANG: 'ADQL', FORMAT: 'csv', QUERY: adql });
   const t0 = Date.now();
   let text = '';
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // Two tries, the second only after a network error or a 5xx from the archive.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let res: Response;
     try {
-      const res = await fetch(`${GAIA_TAP}?${q}`, {
+      res = await fetch(`${GAIA_TAP}?${q}`, {
         headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(11_000),
       });
-      if (!res.ok) throw new Error(`Gaia archive HTTP ${res.status}`);
+    } catch (e) {
+      if (attempt === 1) return bad(`Gaia query failed: ${(e as Error).message}`, 502);
+      continue;
+    }
+    if (res.ok) {
       text = await res.text();
       break;
-    } catch (e) {
-      if (attempt === 2) return bad(`Gaia query failed: ${(e as Error).message}`, 502);
     }
+    if (res.status < 500 || attempt === 1) return bad(`Gaia archive HTTP ${res.status}`, 502);
   }
   const lines = text.trim().split(/\r?\n/);
   const head = (lines.shift() ?? '').split(',');
@@ -144,19 +149,21 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   >;
   if (Object.values(at).some((c) => c < 0)) return bad('Gaia answer had unexpected columns', 502);
   const num = (v: string | undefined) => (v === undefined || v === '' ? null : Number(v));
-  const stars = lines
-    .filter((l) => l.length)
-    .map((l) => {
-      const f = l.split(',');
-      return {
-        id: f[at.source_id] ?? '',
-        ra: num(f[at.ra]),
-        dec: num(f[at.dec]),
-        pmra: num(f[at.pmra]) ?? 0,
-        pmdec: num(f[at.pmdec]) ?? 0,
-        g: num(f[at.phot_g_mean_mag]),
-      };
-    });
+  const rows = lines.filter((l) => l.length);
+  // A cut-off answer must not be cached for a month.
+  if (rows.some((l) => l.split(',').length !== head.length))
+    return bad('Gaia answer was incomplete', 502);
+  const stars = rows.map((l) => {
+    const f = l.split(',');
+    return {
+      id: f[at.source_id] ?? '',
+      ra: num(f[at.ra]),
+      dec: num(f[at.dec]),
+      pmra: num(f[at.pmra]) ?? 0,
+      pmdec: num(f[at.pmdec]) ?? 0,
+      g: num(f[at.phot_g_mean_mag]),
+    };
+  });
   const body = JSON.stringify({
     catalog: 'Gaia DR3',
     epoch: 2016.0,

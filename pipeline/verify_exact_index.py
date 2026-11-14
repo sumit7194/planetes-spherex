@@ -98,6 +98,8 @@ async def fetch(s, sem, r):
                 e = i
                 while buf[e:e + 8] != b"END     ":
                     e += 80
+                    if e >= len(buf):
+                        raise ValueError("IMAGE header longer than 12 blocks")
                 hl = (e - i) // BLOCK * BLOCK + BLOCK
                 h = fits.Header.fromstring(buf[i:i + hl].decode("ascii"))
                 img_off = i + hl

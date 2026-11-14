@@ -141,6 +141,7 @@ describe('the live spectrum blend rule', () => {
       star('close-bright', 8, 0, 17), // inside, within 3.3 mag: counts
       star('close-faint', 0, -9, 19), // inside, 4 mag fainter: ignored
       star('outside', 20, 0, 12), // outside the 15.4" aperture: ignored
+      star('too-faint-for-the-pipeline', -5, 5, 20), // G >= 19.5: the pipeline never sees it
     ];
     const n = blendNeighbours(at, stars, 15.375);
     expect(n).toHaveLength(1);
