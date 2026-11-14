@@ -1063,7 +1063,7 @@ export const copy = {
     x: 'wavelength, microns',
     y: 'brightness, mJy',
     tooBright:
-      "Too bright: SPHEREx's detector saturates on this star, so it can't measure its spectrum.",
+      "Too bright: its centre saturates SPHEREx's detector, and SPHEREx's PSF model doesn't reach far enough out to measure its spectrum from the star's edges.",
     blended: 'Too faint and too close to a brighter star for a clean spectrum.',
   },
   /** The photos' own flags (checklist C8): outlined on request, never hidden. Truth: Physics, 29 Oct (FLAGS header MP_* comments; FINDINGS D-1: OUTLIER at 67% of 293 known asteroids). */
