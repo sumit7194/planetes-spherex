@@ -984,7 +984,7 @@ export const copy = {
         quote: '',
         hard: 'A giant star that brightens and fades over about eight months, bright enough to saturate SPHEREx, in one of the fields SPHEREx photographs most often.',
         limit:
-          'Its glare reaches the comparison stars in its field, which vary by 34% between passes, so the method can’t be checked here. Re-checked with comparison stars outside its glare: a possible dimming of about 40%, not yet tested on a steady star as bright as R Draconis.',
+          'Its glare reaches the comparison stars in its field, which vary by 34% between passes, so the method can’t be checked here. Re-checked with comparison stars outside its glare: a possible dimming of about 40%. Not confirmed: the same method on steady stars as saturated as R Draconis didn’t stay steady enough (it failed in two colour ranges and couldn’t be tried in the third).',
         live: 'Opens 2,500 photos in 3 passes (a deep field; the look picks a few), compared at 0.82 µm. A live look doesn’t measure brightness.',
       },
     } as Record<

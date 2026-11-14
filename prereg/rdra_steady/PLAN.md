@@ -30,3 +30,10 @@
 ## 4. Rules
 - Any change after step 3 is a new version and a new run.
 - The result is shown with this test named next to it.
+
+## Log
+- **be1c757:** step 2 chosen list (flags only). No star matches in all of D1/D5/D6, so the per-detector rule applies: D1 can't be tested; D5 and D6 get 5 stars each.
+- **step 3 (14 Nov):** inner ring 5–9 px: D6, all 5 pass; D5, 2 of 5 fail (HIP 49841, 42911). D5 isn't trusted.
+- **Box enlarged after step 3; rule unchanged:** the ±20 px boxes couldn't hold the 8–13 px ring (it needs r_out + 7 = 20 px of margin), so the 8–13 values are computed after the 5–9 results were seen, on the same chosen stars, with ±30 px boxes (`rdra_steady.py --outer`). Told to Physics before any 8–13 value was seen.
+- **For R Draconis in D6 to be MEASURED (Physics):** its own ring check must hold too (5–9 and 8–13 within 10% for the headline pair). The headline stays the pre-stated last pass over first (1→3); 1→2 and 2→3 are shown beside it, not picked from.
+- **Outer ring (8–13 px, ±30 px boxes; 14 Nov):** D6 fails: HIP 49841 reads 0.90 and 1.091 (both outside 1.00 ± 0.06), while the other four stay inside. D5 fails again. **No detector is trusted** at R Draconis's brightness, so by the registered rule R Draconis stays "possible dimming, not confirmed": the method isn't steady enough on steady stars this bright, especially in the outer ring.
