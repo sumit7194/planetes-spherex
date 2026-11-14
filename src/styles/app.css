@@ -3325,3 +3325,30 @@ span[data-fit='1'] {
 .fade-end {
   white-space: nowrap;
 }
+
+/* "What's at this spot?": the card under Compare's actions. */
+.spot-check-card {
+  margin: 6px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 10px;
+}
+.spot-check-verdict {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--starlight);
+}
+.spot-check-at {
+  margin: 0 0 2px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mist);
+}
+.spot-check-list {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--mist);
+}
+.spot-check-card a {
+  color: var(--starlight);
+}

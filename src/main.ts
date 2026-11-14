@@ -54,6 +54,8 @@ import {
 } from './data/coords';
 import {
   apertureFlux,
+  catwiseNear,
+  readNative,
   gaiaNear,
   findPhotos,
   helperActive,
@@ -106,6 +108,20 @@ import {
 import { differenceFilm, type DifferenceFrame, type FilmInput } from './data/live/film';
 import { targetPlaceAt, type PassPlaces } from './app/targetPlace';
 import { NEAR_DEG, SkyView, type CatalogueStar, type Figure, type Lantern } from './render/sky';
+import {
+  apertureSN,
+  ARTEFACT_FLAGS,
+  flagNamesNear,
+  INFO_FLAGS,
+  MATCH_ARCSEC,
+  recentre,
+  SPOT_SN,
+  tileGrid,
+  verdict,
+  type Grid,
+  type SpotFacts,
+  type Verdict,
+} from './app/spotCheck';
 import { fadedTile } from './render/fade';
 import { renderTimeColour, TIME_EARLY, TIME_LATE } from './render/timeColour';
 import { sharedStretch, type Stretch } from './render/stretch';
@@ -2404,6 +2420,12 @@ async function openLook(
   surprise = named;
   liveColouring = false;
   fadeAt = null;
+  if (markMode) {
+    markMode = false;
+    spotResult = null;
+    spotSeq++;
+    lensCanvas.style.cursor = '';
+  }
   stopReveal?.();
   stopLook();
   endSpot(false);
@@ -3335,6 +3357,441 @@ function differenceKey(): HTMLElement | null {
         )
       : null,
   );
+}
+
+/* ---------- "What's at this spot?" (D9; Physics' rules and Viewer's design, 15 Nov) ---------- */
+
+interface SpotCheckResult {
+  state: 'checking' | 'done';
+  at: SkyPosition;
+  /** S/N in the earlier and later look. */
+  sn: [number | null, number | null];
+  dates: [string, string];
+  /** Seen at S/N >= 5 in N of the M photos read (null: photos not read). */
+  seen: { n: number; m: number } | null;
+  facts: SpotFacts;
+  verdict: Verdict | null;
+  checked: { gaia: boolean; catwise: boolean; asteroids: boolean; flags: boolean };
+}
+let markMode = false;
+let spotResult: SpotCheckResult | null = null;
+let spotSeq = 0;
+
+/** What the check reads: the two looks, the grid's geometry and dates, and the looks' photos. */
+function spotContext(): {
+  early: Tile;
+  late: Tile;
+  size: number;
+  scale: number;
+  centre: SkyPosition;
+  mjd: [number, number];
+  photos: (at: SkyPosition) => Promise<{ photo: LivePhoto; look: 0 | 1 }[]>;
+} | null {
+  if (current && 'target' in state.place) {
+    const [early, late] = current.pair;
+    if (!early || !late) return null;
+    const g = current.pack.manifest.grid;
+    const seasons = current.show.seasons;
+    const frames = current.pack.manifest.frames;
+    const mean = (season: number) => {
+      const fs = frames.filter((f) => f.season === season);
+      return fs.reduce((a, f) => a + f.mjd, 0) / Math.max(1, fs.length);
+    };
+    const ids: [Set<string>, Set<string>] = [
+      new Set(frames.filter((f) => f.season === seasons[0]).map((f) => f.obsId)),
+      new Set(frames.filter((f) => f.season === seasons[1]).map((f) => f.obsId)),
+    ];
+    return {
+      early,
+      late,
+      size: g.size,
+      scale: g.pixelScaleArcsec,
+      centre: g.centre,
+      mjd: [mean(seasons[0]), mean(seasons[1])],
+      // The looks' photos at the clicked spot, matched to the sky index by photo id; at most 40
+      // per look, spread through time.
+      photos: async (at) => {
+        const all = await findPhotos(at);
+        const pick = (look: 0 | 1) => {
+          const list = all.filter((p) => ids[look].has(p.obsId));
+          const step = Math.max(1, list.length / 40);
+          return Array.from(
+            { length: Math.min(40, list.length) },
+            (_, i) => list[Math.floor(i * step)],
+          )
+            .filter((p): p is LivePhoto => !!p)
+            .map((photo) => ({ photo, look }));
+        };
+        return [...pick(0), ...pick(1)];
+      },
+    };
+  }
+  const look = live;
+  const p = look ? livePairTiles(look) : null;
+  if (!look || !p || look.plan?.kind !== 'pair') return null;
+  const grid = lookGrid();
+  const earlySeason = look.plan.pair.a.season;
+  return {
+    early: p[0],
+    late: p[1],
+    size: grid.size,
+    scale: grid.scaleArcsec,
+    centre: look.at,
+    mjd: [p[2], p[3]],
+    // A live look's own photos: the pair and the others read in its colour.
+    photos: () =>
+      Promise.resolve(
+        look.landed.map((x) => ({
+          photo: x.candidate.hit,
+          look: (x.candidate.season === earlySeason ? 0 : 1) as 0 | 1,
+        })),
+      ),
+  };
+}
+
+const yearOfMjd = (mjd: number) => 2000 + (mjd - 51544.5) / 365.25;
+
+/** Runs the check at a lens click (pack pixels from the lens centre). */
+async function runSpotCheck(shift: Shift): Promise<void> {
+  const ctx = spotContext();
+  if (!ctx) return;
+  const seq = ++spotSeq;
+  const c = ctx.size / 2 - 0.5;
+  // Tiles are north up, east left: east is to smaller x, north to larger y.
+  const r = recentre(tileGrid(ctx.late), c - shift.east, c + shift.north);
+  const eastPx = c - r.x;
+  const northPx = r.y - c;
+  const cosd = Math.cos((ctx.centre.dec * Math.PI) / 180);
+  const at = {
+    ra: (((ctx.centre.ra + (eastPx * ctx.scale) / 3600 / cosd) % 360) + 360) % 360,
+    dec: ctx.centre.dec + (northPx * ctx.scale) / 3600,
+  };
+  lens.setOverlay({ guess: { east: eastPx, north: northPx } });
+  const sn: [number | null, number | null] = [
+    apertureSN(tileGrid(ctx.early), r.x, r.y),
+    apertureSN(tileGrid(ctx.late), r.x, r.y),
+  ];
+  const facts: SpotFacts = {
+    sn,
+    asteroids: [[], []],
+    stars: [[], []],
+    artefacts: [[], []],
+    info: [],
+  };
+  const result: SpotCheckResult = {
+    state: 'checking',
+    at,
+    sn,
+    dates: [monthYear(ctx.mjd[0]), monthYear(ctx.mjd[1])],
+    seen: null,
+    facts,
+    verdict: null,
+    checked: { gaia: false, catwise: false, asteroids: false, flags: false },
+  };
+  spotResult = result;
+  render();
+  // Physics' gate first: nothing at S/N >= 5 in either look, nothing to look up.
+  if (!sn.some((v) => v !== null && v >= SPOT_SN)) {
+    result.state = 'done';
+    result.verdict = verdict(facts);
+    render();
+    return;
+  }
+  const stale = () => seq !== spotSeq || spotResult !== result;
+  const near = (a: SkyPosition, b: SkyPosition) => separationDeg(a, b) * 3600 <= MATCH_ARCSEC;
+  const lookYears = ctx.mjd.map(yearOfMjd) as [number, number];
+
+  const gaia = gaiaNear(at, 30).catch(() => null);
+  const cat = catwiseNear(at, 150).catch(() => null);
+  // Each photo of the looks, read small through the helper: is the spot there, and which flags.
+  const photoReads = helperActive()
+    ? ctx
+        .photos(at)
+        .then(async (list) => {
+          const out: { look: 0 | 1; mjd: number; sn: number | null; flags: Set<string> }[] = [];
+          await eachLimited(list, 16, async ({ photo, look }) => {
+            const box = await readNative(photo, at, 10).catch(() => null);
+            if (!box) return;
+            const g: Grid = {
+              w: box.w,
+              h: box.h,
+              at: (x, y) => box.image[y * box.w + x] ?? NaN,
+            };
+            const x = box.xt - box.x0;
+            const y = box.yt - box.y0;
+            out.push({
+              look,
+              mjd: box.mjd,
+              sn: apertureSN(g, x, y),
+              flags: flagNamesNear(box.flags, box.w, box.h, x, y, box.bits),
+            });
+          });
+          return out;
+        })
+        .catch(() => null)
+    : Promise.resolve(null);
+
+  const [stars, cw, photos] = await Promise.all([gaia, cat, photoReads]);
+  if (stale()) return;
+  if (stars) {
+    result.checked.gaia = true;
+    for (const look of [0, 1] as const)
+      for (const s of stars) {
+        const pos = placeAt(
+          { ra: s.ra, dec: s.dec },
+          s.pmra || 0,
+          s.pmdec || 0,
+          2016.0,
+          lookYears[look],
+        );
+        if (near(pos, at))
+          facts.stars[look].push(`Gaia DR3 ${s.id}${s.g !== null ? ` (G ${s.g.toFixed(1)})` : ''}`);
+      }
+  }
+  if (cw) {
+    result.checked.catwise = true;
+    for (const look of [0, 1] as const)
+      for (const s of cw) {
+        const pos = placeAt(
+          { ra: s.ra, dec: s.dec },
+          s.pmra,
+          s.pmdec,
+          yearOfMjd(57170),
+          lookYears[look],
+        );
+        if (near(pos, at)) facts.stars[look].push(`CatWISE2020 ${s.id}`);
+      }
+  }
+  // The photos where the spot shows: their flags, and the dates for the asteroid check.
+  let dates: [number[], number[]] = [[ctx.mjd[0]], [ctx.mjd[1]]];
+  if (photos && photos.length) {
+    result.checked.flags = true;
+    const shows = photos.filter((p) => p.sn !== null && p.sn >= SPOT_SN);
+    result.seen = { n: shows.length, m: photos.length };
+    for (const p of shows) {
+      for (const f of p.flags) {
+        if (ARTEFACT_FLAGS.has(f) && !facts.artefacts[p.look].includes(f))
+          facts.artefacts[p.look].push(f);
+        if (INFO_FLAGS.has(f) && !facts.info.includes(f)) facts.info.push(f);
+      }
+    }
+    const by = (look: 0 | 1) => shows.filter((p) => p.look === look).map((p) => p.mjd);
+    dates = [by(0).length ? by(0) : dates[0], by(1).length ? by(1) : dates[1]];
+  }
+  const moving = await knownMoversAt(at, [...dates[0], ...dates[1]], MATCH_ARCSEC / 3600).catch(
+    () => null,
+  );
+  if (stale()) return;
+  if (moving && moving.failed === 0) {
+    result.checked.asteroids = true;
+    for (const look of [0, 1] as const)
+      for (const m of dates[look])
+        for (const o of moving.byMjd.get(m) ?? []) {
+          const name = o.number ? `(${o.number}) ${o.name}` : o.name;
+          if (!facts.asteroids[look].includes(name)) facts.asteroids[look].push(name);
+        }
+  }
+  result.state = 'done';
+  result.verdict = verdict(facts);
+  render();
+}
+
+/** The mark used for keyboard marking: arrows move it, Enter checks (Viewer's design). */
+let markCross: Shift = { east: 0, north: 0 };
+
+function setMarkMode(on: boolean): void {
+  markMode = on;
+  lensCanvas.style.cursor = on ? 'crosshair' : '';
+  if (on) {
+    lensCanvas.tabIndex = 0;
+    markCross = { east: 0, north: 0 };
+    lens.setOverlay({ guess: markCross });
+  } else {
+    lensCanvas.removeAttribute('tabindex');
+    lens.setOverlay({ guess: null });
+    spotResult = null;
+    spotSeq++;
+  }
+  render();
+}
+
+lensCanvas.addEventListener('click', (e) => {
+  if (!markMode) return;
+  void runSpotCheck(lens.shiftAt(e.clientX, e.clientY));
+});
+lensCanvas.addEventListener('keydown', (e) => {
+  if (!markMode) return;
+  const step: Record<string, [number, number]> = {
+    ArrowLeft: [1, 0],
+    ArrowRight: [-1, 0],
+    ArrowUp: [0, 1],
+    ArrowDown: [0, -1],
+  };
+  const d = step[e.key];
+  if (d) {
+    e.preventDefault();
+    e.stopPropagation();
+    // East is left on the lens, as on the sky.
+    markCross = { east: markCross.east + d[0], north: markCross.north + d[1] };
+    lens.setOverlay({ guess: markCross });
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    void runSpotCheck(markCross);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    setMarkMode(false);
+  }
+});
+
+/** The button that turns marking on, for Compare's actions. */
+function markButton(): HTMLElement | null {
+  if (!spotContext()) return null;
+  const b = h(
+    'button',
+    { type: 'button', 'aria-pressed': String(markMode), class: 'diff-toggle' },
+    copy.spotCheck.button,
+  );
+  b.addEventListener('click', () => {
+    setMarkMode(!markMode);
+    if (markMode) lensCanvas.focus({ preventScroll: true });
+  });
+  return b;
+}
+
+/** The card: the verdict, then every check, then the honest limits and a copyable report. */
+function spotCard(): HTMLElement | null {
+  if (!markMode) return null;
+  const t = copy.spotCheck;
+  if (!spotResult) return h('p', { class: 'hint spot-check-hint' }, t.how);
+  const r = spotResult;
+  const v = r.verdict;
+  const snText = (i: 0 | 1) => {
+    const x = r.sn[i];
+    return x === null ? t.snNone(r.dates[i]) : t.sn(r.dates[i], x.toFixed(1));
+  };
+  const lines: (HTMLElement | null)[] = [
+    // Full precision: positionText rounds to 10 s when given a field of view.
+    h('p', { class: 'spot-check-at' }, positionText(r.at)),
+    h('p', { class: 'hint' }, snText(0), ' · ', snText(1)),
+  ];
+  if (r.state === 'checking') lines.push(h('p', { class: 'hint', role: 'status' }, t.checking));
+  if (v) {
+    const head =
+      v.kind === 'nothing'
+        ? t.nothing
+        : v.kind === 'asteroid'
+          ? t.asteroid(v.names.join(', '))
+          : v.kind === 'star'
+            ? t.star(v.names.join(', '))
+            : v.kind === 'artefact'
+              ? t.artefact(v.flags.join(', '))
+              : t.unknown;
+    lines.unshift(h('p', { class: 'spot-check-verdict', role: 'status' }, head));
+    if (v.kind === 'star' && v.flagged.length)
+      lines.push(h('p', { class: 'hint' }, t.starFlagged(v.flagged.join(', '))));
+    if (v.kind !== 'nothing') {
+      const f = r.facts;
+      if (r.seen) lines.push(h('p', { class: 'hint' }, t.seen(r.seen.n, r.seen.m)));
+      const all = (x: [string[], string[]]) => [...new Set([...x[0], ...x[1]])];
+      const checks = h(
+        'ul',
+        { class: 'spot-check-list' },
+        h(
+          'li',
+          {},
+          r.checked.asteroids ? t.checkAsteroids(all(f.asteroids)) : t.notChecked(t.asteroidsName),
+        ),
+        h(
+          'li',
+          {},
+          r.checked.gaia
+            ? t.checkStars('Gaia DR3', [
+                ...new Set(f.stars.flat().filter((x) => x.startsWith('Gaia'))),
+              ])
+            : t.notChecked('Gaia DR3'),
+        ),
+        h(
+          'li',
+          {},
+          r.checked.catwise
+            ? t.checkStars('CatWISE2020', [
+                ...new Set(f.stars.flat().filter((x) => x.startsWith('CatWISE'))),
+              ])
+            : t.notChecked(t.catwiseName),
+        ),
+        h(
+          'li',
+          {},
+          r.checked.flags ? t.checkFlags(all(f.artefacts), f.info) : t.notChecked(t.flagsName),
+        ),
+      );
+      lines.push(checks);
+      if (v.kind === 'unknown') {
+        lines.push(h('p', { class: 'hint' }, t.unknownWhy));
+        if (v.faint) lines.push(h('p', { class: 'hint' }, t.faint));
+        lines.push(
+          h(
+            'p',
+            { class: 'hint' },
+            t.next,
+            ' ',
+            h(
+              'a',
+              {
+                href: `http://byw.tools/wiseview#ra=${r.at.ra.toFixed(5)}&dec=${r.at.dec.toFixed(5)}&size=176`,
+                target: '_blank',
+                rel: 'noopener',
+              },
+              'WiseView',
+            ),
+            ' · ',
+            h(
+              'a',
+              {
+                href: 'https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9',
+                target: '_blank',
+                rel: 'noopener',
+              },
+              'Backyard Worlds',
+            ),
+          ),
+        );
+      }
+      lines.push(h('p', { class: 'hint' }, t.limits));
+    }
+    if (r.state === 'done') {
+      const copyBtn = h('button', { type: 'button', class: 'link-button' }, t.copy);
+      copyBtn.addEventListener('click', () => {
+        void navigator.clipboard?.writeText(spotReport(r)).then(() => {
+          copyBtn.textContent = t.copied;
+        });
+      });
+      lines.push(h('p', {}, copyBtn));
+    }
+  }
+  return h('div', { class: 'spot-check-card', 'aria-live': 'polite' }, ...lines);
+}
+
+/** Plain text: the spot, the dates, the photos, what was checked and what matched. */
+function spotReport(r: SpotCheckResult): string {
+  const t = copy.spotCheck;
+  const v = r.verdict;
+  const f = r.facts;
+  const all = (x: [string[], string[]]) => [...new Set([...x[0], ...x[1]])].join(', ') || 'none';
+  return [
+    `Planetes: What's at this spot? (SPHEREx DR1 + QR3)`,
+    `Position (ICRS): RA ${r.at.ra.toFixed(5)}°, Dec ${r.at.dec.toFixed(5)}° (${positionText(r.at)})`,
+    `Looks: ${r.dates[0]} (S/N ${r.sn[0]?.toFixed(1) ?? 'n/a'}), ${r.dates[1]} (S/N ${r.sn[1]?.toFixed(1) ?? 'n/a'})`,
+    r.seen
+      ? `Seen at S/N >= 5 in ${r.seen.n} of ${r.seen.m} photos read`
+      : 'Photos: not read one by one',
+    `Verdict: ${v?.kind ?? 'n/a'}`,
+    `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}"): ${r.checked.asteroids ? all(f.asteroids) : 'not checked'}`,
+    `Known stars (Gaia DR3, CatWISE2020, moved to each look's date): ${r.checked.gaia || r.checked.catwise ? all(f.stars) : 'not checked'}${r.checked.catwise ? '' : ' (CatWISE2020 not checked)'}`,
+    `Artefact flags (v4 FIT_REJECT, by name): ${r.checked.flags ? all(f.artefacts) : 'not checked'}; information only: ${f.info.join(', ') || 'none'}`,
+    t.reportNote,
+    `Link: ${location.href}`,
+  ].join('\n');
 }
 
 /** The pair the fade blends: the five's shown looks, or a live look's fair pair. */
@@ -4333,9 +4790,12 @@ function showWords(): Node[] {
     copy.show.byDate,
   );
   byDate.addEventListener('click', () => (colouring ? endTimeColour() : showTimeColour()));
-  actions.append(diff, byDate, replay);
+  const mark = markButton();
+  actions.append(diff, byDate, ...(mark ? [mark] : []), replay);
   out.push(actions);
   out.push(fadeControl());
+  const card = spotCard();
+  if (card) out.push(card);
   // Only while the pack is still arriving; during the reveal, holding simply ends it.
   if (canHold && !ready && place.kind !== 'reveal')
     out.push(h('p', { class: 'hint' }, copy.show.holdNotYet));
@@ -4730,8 +5190,9 @@ function lookWords(): HTMLElement[] {
         tabSpec('compare', [
           h('h3', {}, copy.look.shownHeading(look.tiles.length, plan.total)),
           strip,
-          h('div', { class: 'actions' }, replay, byDate, copyLinkButton()),
+          h('div', { class: 'actions' }, replay, byDate, markButton(), copyLinkButton()),
           fadeControl(),
+          spotCard(),
           liveTimeColourKey(look),
           aladinLink(look.at),
           liveMoversLine(look),

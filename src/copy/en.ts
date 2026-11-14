@@ -905,6 +905,42 @@ export const copy = {
     wiseviewTitle:
       "The same spot in WISE's photos from 2010 on (WiseView, Backyard Worlds): a longer span of years than SPHEREx's. WiseView is http only, so your browser may warn before opening it.",
   },
+  /** "What's at this spot?" (D9): Physics' rules and wording, Viewer's design (15 Nov). */
+  spotCheck: {
+    button: "What's at this spot?",
+    how: 'Click a spot in the lens, or use the arrow keys and Enter. Esc stops.',
+    checking: 'Checking the photos and the catalogues…',
+    sn: (date: string, sn: string) => `${date}: S/N ${sn}`,
+    snNone: (date: string) => `${date}: off the photo`,
+    nothing: 'Nothing clear at this pixel (below S/N 5 in both looks).',
+    asteroid: (names: string) => `A known asteroid: ${names}.`,
+    star: (names: string) => `A known star: ${names}.`,
+    starFlagged: (flags: string) =>
+      `Flags at this pixel too (${flags}): a bright or saturated star gets flagged.`,
+    artefact: (flags: string) => `Probably an artefact (flags: ${flags}).`,
+    unknown: 'Not in Gaia, CatWISE or the known-asteroid list: a candidate, not a discovery.',
+    unknownWhy:
+      "Most spots like this are noise, artefacts or blends we can't separate at 6″ pixels.",
+    faint: 'Faint: likely noise.',
+    next: "To take it further, check it in other surveys first. Backyard Worlds takes brown-dwarf candidates; asteroid reports go to the Minor Planet Center through an observatory code, so a single SPHEREx look isn't enough.",
+    limits:
+      "Two looks months apart can't show an object's path, so this check can't tell a new asteroid from an artefact.",
+    seen: (n: number, m: number) => `Seen at S/N 5 or more in ${n} of the ${m} photos read.`,
+    checkAsteroids: (names: string[]) =>
+      `Known asteroids (SkyBoT, at the photos' dates): ${names.length ? names.join(', ') : 'none within 9″'}`,
+    checkStars: (cat: string, names: string[]) =>
+      `${cat}, moved to each look's date: ${names.length ? names.join(', ') : 'none within 9″'}`,
+    checkFlags: (artefacts: string[], info: string[]) =>
+      `Artefact flags in the photos that show it: ${artefacts.length ? artefacts.join(', ') : 'none'}${info.length ? ` (information only: ${info.join(', ')})` : ''}`,
+    notChecked: (what: string) => `${what}: couldn't be checked just now`,
+    asteroidsName: 'Known asteroids (SkyBoT)',
+    catwiseName: 'CatWISE2020 (its archive at IRSA)',
+    flagsName: 'Flags in each photo (needs the cloud helper)',
+    copy: 'Copy report',
+    copied: 'Report copied',
+    reportNote:
+      'A look, not a measurement. Unknowns are candidates, not discoveries; most are noise, artefacts or blends.',
+  },
   /** Catalogue overlays (checklist C6), from Physics' overlay files: catalogue, not SPHEREx. */
   overlay: {
     title: 'Catalogue stars on the photos',
@@ -1215,6 +1251,12 @@ export const copy = {
           "IRSA's SPHEREx Data Explorer (search, cutouts, its own spectrum tool), the Moving Object Search Tool for asteroids, and IRSA's SPHEREx tutorial notebooks for reading these files in Python",
         terms: 'NASA/IPAC IRSA',
         link: 'https://caltech-ipac.github.io/irsa-tutorials/spherex/',
+      },
+      {
+        what: "What's at this spot?",
+        source:
+          'Gaia DR3 (ESA), CatWISE2020 (NASA/IPAC IRSA) and known asteroids (SkyBoT, IMCCE), asked through our helper. Only the clicked position is sent: to our helper, and from there to ESA, IRSA and IMCCE.',
+        terms: 'Checks, not discoveries',
       },
       {
         what: 'Star names',

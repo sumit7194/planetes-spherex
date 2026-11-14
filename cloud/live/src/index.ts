@@ -23,6 +23,9 @@
  *                                       bp_rp|null, pmra, pmdec], ...]}: Gaia DR3 in one HEALPix
  *                                       NESTED patch, in that order's G range (src/data/gaiaTiers),
  *                                       brightest first, at most GAIA_PATCH_MAX. Cached 30 days.
+ *   GET /v1/catwise?ra=&dec=&r=      -> JSON {stars: [{id, ra, dec, pmra, pmdec, w1, w2}], epochMjd:
+ *                                       57170}: CatWISE2020 within r arcsec (<= 150), from IRSA's TAP
+ *                                       (motions converted to mas/yr). Cached 30 days.
  *   GET /v1/resolve?name=            -> JSON {found, name, type, ra, dec, epoch: 2000, pmra, pmdec,
  *                                       plx, spType}: SIMBAD via CDS Sesame (the search box's names
  *                                       beyond its own index; browsers get no CORS through CDS's
@@ -244,6 +247,92 @@ async function gaiaPatch(url: URL, ctx: ExecutionContext): Promise<Response> {
     gLo: tier.gLo,
     gHi: tier.gHi,
     capped: rows.length >= GAIA_PATCH_MAX,
+    stars,
+  });
+  const h = new Headers({
+    ...CORS,
+    'content-type': 'application/json',
+    'cache-control': 'public, max-age=2592000',
+    'x-planetes-ms': String(Date.now() - t0),
+  });
+  ctx.waitUntil(cache.put(cacheKey, new Response(body, { headers: h })));
+  h.set('x-planetes-cache', 'miss');
+  return new Response(body, { headers: h });
+}
+
+const IRSA_TAP = 'https://irsa.ipac.caltech.edu/TAP/sync';
+
+/**
+ * CatWISE2020 near a position, for "What's at this spot?" (D9): positions at MJD 57170 (2015.4),
+ * motions in mas/yr. From IRSA's TAP (browsers can't query it: no CORS). Cached 30 days.
+ */
+async function catwise(url: URL, ctx: ExecutionContext): Promise<Response> {
+  const ra = Number(Number(url.searchParams.get('ra')).toFixed(5)) % 360;
+  const dec = Number(Number(url.searchParams.get('dec')).toFixed(5));
+  const r = Math.round(Number(url.searchParams.get('r') ?? 60));
+  if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
+  if (!(r >= 1 && r <= 150)) return bad('r must be 1..150 arcsec');
+  const cacheKey = new Request(
+    `https://cache.planetes/${VERSION}/v1/catwise?ra=${ra}&dec=${dec}&r=${r}`,
+  );
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    const h = new Headers(hit.headers);
+    h.set('x-planetes-cache', 'hit');
+    return new Response(hit.body, { status: hit.status, headers: h });
+  }
+  const adql =
+    'SELECT source_name, ra_pm, dec_pm, pmra, pmdec, w1mpro_pm, w2mpro_pm FROM catwise_2020 ' +
+    `WHERE CONTAINS(POINT('ICRS', ra_pm, dec_pm), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1`;
+  const q = new URLSearchParams({ QUERY: adql, FORMAT: 'csv' });
+  const t0 = Date.now();
+  let text = '';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${IRSA_TAP}?${q}`, {
+        headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
+        signal: AbortSignal.timeout(20_000),
+      });
+    } catch (e) {
+      if (attempt === 1) return bad(`CatWISE query failed: ${(e as Error).message}`, 502);
+      continue;
+    }
+    if (res.ok) {
+      text = await res.text();
+      break;
+    }
+    if (res.status < 500 || attempt === 1) return bad(`IRSA HTTP ${res.status}`, 502);
+  }
+  const lines = text.trim().split(/\r?\n/);
+  const head = (lines.shift() ?? '').split(',');
+  const names = ['source_name', 'ra_pm', 'dec_pm', 'pmra', 'pmdec', 'w1mpro_pm', 'w2mpro_pm'];
+  const at = names.map((n) => head.indexOf(n));
+  if (at.some((c) => c < 0)) return bad('CatWISE answer had unexpected columns', 502);
+  const rows = lines.filter((l) => l.length);
+  if (rows.some((l) => l.split(',').length !== head.length))
+    return bad('CatWISE answer was incomplete', 502);
+  const num = (v: string | undefined) => (v === undefined || v === '' ? null : Number(v));
+  const stars = rows.map((l) => {
+    const f = l.split(',');
+    const [id, ra2, dec2, pmra, pmdec, w1, w2] = at.map((c) => f[c]);
+    return {
+      id: (id ?? '').replace(/"/g, '').trim(),
+      ra: num(ra2),
+      dec: num(dec2),
+      // IRSA gives arcsec/yr; sent as mas/yr, as the Gaia route does.
+      pmra: (num(pmra) ?? 0) * 1000,
+      pmdec: (num(pmdec) ?? 0) * 1000,
+      w1: num(w1),
+      w2: num(w2),
+    };
+  });
+  const body = JSON.stringify({
+    catalog: 'CatWISE2020',
+    epochMjd: 57170,
+    centre: { ra, dec },
+    radiusArcsec: r,
     stars,
   });
   const h = new Headers({
@@ -491,6 +580,7 @@ export default {
     }
     if (route === '/v1/gaia') return gaia(url, ctx);
     if (route === '/v1/gaiapatch') return gaiaPatch(url, ctx);
+    if (route === '/v1/catwise') return catwise(url, ctx);
     if (route === '/v1/resolve') return resolve(url, ctx);
     if (route === '/v1/psf') return psf(url, ctx);
     if (route !== '/v1/frame' && route !== '/v1/probe' && route !== '/v1/native')

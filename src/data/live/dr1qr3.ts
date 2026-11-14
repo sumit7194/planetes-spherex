@@ -1329,6 +1329,39 @@ export async function gaiaNear(
   }
 }
 
+export interface CatwiseStar {
+  id: string;
+  /** Position at MJD 57170 (2015.4), degrees; proper motion in mas/yr. */
+  ra: number;
+  dec: number;
+  pmra: number;
+  pmdec: number;
+  w1: number | null;
+  w2: number | null;
+}
+
+/** CatWISE2020 within `radiusArcsec` (positions at 2015.4), through the helper; null if unavailable. */
+export async function catwiseNear(
+  at: SkyPosition,
+  radiusArcsec: number,
+  signal?: AbortSignal,
+): Promise<CatwiseStar[] | null> {
+  if (!helperActive()) return null;
+  try {
+    const r = await helperGet(
+      `${helperBase}/v1/catwise?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}`,
+      'gaia',
+      signal,
+    );
+    if (!r) return null;
+    const d = (await r.json()) as { stars: CatwiseStar[] };
+    return d.stars.filter((x) => Number.isFinite(x.ra) && Number.isFinite(x.dec));
+  } catch (e) {
+    if (signal?.aborted) throw e;
+    return null;
+  }
+}
+
 /**
  * The pack pipeline's blend rule (planetes_pack.write_spectrum): the target is the Gaia star
  * within 2″ of the spot; a neighbour counts if it sits inside the aperture (2″ < sep ≤ aperture)

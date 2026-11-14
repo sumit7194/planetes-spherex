@@ -23,6 +23,7 @@ export default {
       '/v1/probe',
       '/v1/gaia',
       '/v1/gaiapatch',
+      '/v1/catwise',
       '/v1/native',
       '/v1/resolve',
       '/v1/psf',
