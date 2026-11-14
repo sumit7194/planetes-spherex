@@ -1,0 +1,1247 @@
+{
+ "rule": ", fixed before any of these photos were read (14 Nov 2026, ~20:00 IST):\n  - Gaia DR3, G < 14 (as measure.py), 4' to 15' from R Draconis;\n  - isolated: no other Gaia star with G < (its G + 1) within 30\";\n  - the 10 brightest that pass; each read as a +/-20 px box from every photo of R Draconis's pack\n    search (sx.search + group_passes, as planetes_pack.py), cached in pipeline/cache.\n  - a comparison star counts only if >= 200 photos measure its wings (as measure.py).",
+ "comparisonStars": [
+  {
+   "gaia": "1636318909837963008",
+   "G": 8.14,
+   "arcmin": 5.25,
+   "photos": 521,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     0.973,
+     0.016,
+     51
+    ],
+    "D2 s0s1": [
+     0.927,
+     0.025,
+     69
+    ],
+    "D3 s0s1": [
+     1.022,
+     0.042,
+     32
+    ],
+    "D4 s0s1": [
+     0.996,
+     0.015,
+     50
+    ],
+    "D5 s0s1": [
+     0.982,
+     0.008,
+     198
+    ],
+    "D6 s0s1": [
+     1.008,
+     0.016,
+     91
+    ],
+    "D1 s0s2": [
+     0.953,
+     0.016,
+     29
+    ],
+    "D2 s0s2": [
+     0.924,
+     0.032,
+     40
+    ],
+    "D3 s0s2": [
+     0.95,
+     0.029,
+     61
+    ],
+    "D4 s0s2": [
+     1.02,
+     0.014,
+     31
+    ],
+    "D5 s0s2": [
+     1.033,
+     0.009,
+     83
+    ],
+    "D6 s0s2": [
+     0.984,
+     0.01,
+     178
+    ],
+    "D1 s1s2": [
+     0.987,
+     0.017,
+     51
+    ],
+    "D2 s1s2": [
+     1.037,
+     0.049,
+     36
+    ],
+    "D3 s1s2": [
+     0.94,
+     0.03,
+     63
+    ],
+    "D4 s1s2": [
+     0.999,
+     0.012,
+     52
+    ],
+    "D5 s1s2": [
+     1.05,
+     0.012,
+     106
+    ],
+    "D6 s1s2": [
+     0.994,
+     0.009,
+     193
+    ]
+   }
+  },
+  {
+   "gaia": "1648324923977330688",
+   "G": 9.45,
+   "arcmin": 8.16,
+   "photos": 498,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     1.019,
+     0.015,
+     52
+    ],
+    "D2 s0s1": [
+     0.963,
+     0.016,
+     50
+    ],
+    "D3 s0s1": [
+     1.042,
+     0.018,
+     36
+    ],
+    "D4 s0s1": [
+     0.987,
+     0.011,
+     48
+    ],
+    "D5 s0s1": [
+     1.05,
+     0.015,
+     133
+    ],
+    "D6 s0s1": [
+     1.045,
+     0.025,
+     94
+    ],
+    "D1 s0s2": [
+     1.018,
+     0.011,
+     34
+    ],
+    "D2 s0s2": [
+     0.986,
+     0.023,
+     26
+    ],
+    "D3 s0s2": [
+     0.95,
+     0.011,
+     54
+    ],
+    "D4 s0s2": [
+     1.007,
+     0.016,
+     28
+    ],
+    "D5 s0s2": [
+     0.951,
+     0.015,
+     59
+    ],
+    "D6 s0s2": [
+     1.029,
+     0.017,
+     162
+    ],
+    "D1 s1s2": [
+     1.015,
+     0.013,
+     56
+    ],
+    "D2 s1s2": [
+     1.016,
+     0.023,
+     36
+    ],
+    "D3 s1s2": [
+     0.926,
+     0.013,
+     62
+    ],
+    "D4 s1s2": [
+     1.014,
+     0.015,
+     54
+    ],
+    "D5 s1s2": [
+     0.974,
+     0.015,
+     109
+    ],
+    "D6 s1s2": [
+     1.016,
+     0.013,
+     196
+    ]
+   }
+  },
+  {
+   "gaia": "1648344268510039936",
+   "G": 10.41,
+   "arcmin": 9.59,
+   "photos": 425,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     1.005,
+     0.022,
+     40
+    ],
+    "D2 s0s1": [
+     1.06,
+     0.039,
+     18
+    ],
+    "D3 s0s1": [
+     1.054,
+     0.027,
+     35
+    ],
+    "D4 s0s1": [
+     1.021,
+     0.035,
+     39
+    ],
+    "D5 s0s1": [
+     1.31,
+     0.138,
+     56
+    ],
+    "D6 s0s1": [
+     0.915,
+     0.086,
+     81
+    ],
+    "D1 s0s2": [
+     1.061,
+     0.032,
+     32
+    ],
+    "D2 s0s2": [
+     0.991,
+     0.04,
+     29
+    ],
+    "D3 s0s2": [
+     1.094,
+     0.026,
+     65
+    ],
+    "D4 s0s2": [
+     1.027,
+     0.025,
+     30
+    ],
+    "D5 s0s2": [
+     1.247,
+     0.124,
+     43
+    ],
+    "D6 s0s2": [
+     1.264,
+     0.071,
+     134
+    ],
+    "D1 s1s2": [
+     1.04,
+     0.031,
+     43
+    ],
+    "D2 s1s2": [
+     0.946,
+     0.039,
+     29
+    ],
+    "D3 s1s2": [
+     1.036,
+     0.024,
+     61
+    ],
+    "D4 s1s2": [
+     0.974,
+     0.023,
+     41
+    ],
+    "D5 s1s2": [
+     1.195,
+     0.103,
+     43
+    ],
+    "D6 s1s2": [
+     1.153,
+     0.077,
+     171
+    ]
+   }
+  },
+  {
+   "gaia": "1636343167812582272",
+   "G": 10.65,
+   "arcmin": 12.97,
+   "photos": 452,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     0.964,
+     0.034,
+     36
+    ],
+    "D2 s0s1": [
+     0.982,
+     0.036,
+     39
+    ],
+    "D3 s0s1": [
+     0.992,
+     0.055,
+     31
+    ],
+    "D4 s0s1": [
+     0.942,
+     0.039,
+     36
+    ],
+    "D5 s0s1": [
+     1.038,
+     0.043,
+     122
+    ],
+    "D6 s0s1": [
+     0.555,
+     0.064,
+     70
+    ],
+    "D1 s0s2": [
+     0.979,
+     0.065,
+     27
+    ],
+    "D2 s0s2": [
+     1.033,
+     0.039,
+     25
+    ],
+    "D3 s0s2": [
+     1.013,
+     0.031,
+     69
+    ],
+    "D4 s0s2": [
+     0.961,
+     0.052,
+     27
+    ],
+    "D5 s0s2": [
+     0.949,
+     0.057,
+     51
+    ],
+    "D6 s0s2": [
+     1.219,
+     0.091,
+     142
+    ],
+    "D1 s1s2": [
+     0.962,
+     0.026,
+     38
+    ],
+    "D2 s1s2": [
+     0.939,
+     0.028,
+     42
+    ],
+    "D3 s1s2": [
+     0.934,
+     0.036,
+     60
+    ],
+    "D4 s1s2": [
+     1.094,
+     0.041,
+     38
+    ],
+    "D5 s1s2": [
+     0.886,
+     0.063,
+     98
+    ],
+    "D6 s1s2": [
+     1.658,
+     0.151,
+     153
+    ]
+   }
+  },
+  {
+   "gaia": "1636312823866864256",
+   "G": 10.76,
+   "arcmin": 9.92,
+   "photos": 525,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     1.054,
+     0.033,
+     51
+    ],
+    "D2 s0s1": [
+     0.939,
+     0.024,
+     77
+    ],
+    "D3 s0s1": [
+     1.032,
+     0.045,
+     32
+    ],
+    "D4 s0s1": [
+     0.997,
+     0.029,
+     50
+    ],
+    "D5 s0s1": [
+     0.874,
+     0.031,
+     169
+    ],
+    "D6 s0s1": [
+     1.57,
+     0.143,
+     99
+    ],
+    "D1 s0s2": [
+     1.064,
+     0.04,
+     33
+    ],
+    "D2 s0s2": [
+     0.947,
+     0.029,
+     38
+    ],
+    "D3 s0s2": [
+     1.005,
+     0.029,
+     55
+    ],
+    "D4 s0s2": [
+     0.982,
+     0.029,
+     31
+    ],
+    "D5 s0s2": [
+     0.777,
+     0.034,
+     85
+    ],
+    "D6 s0s2": [
+     1.005,
+     0.056,
+     160
+    ],
+    "D1 s1s2": [
+     0.984,
+     0.027,
+     53
+    ],
+    "D2 s1s2": [
+     1.023,
+     0.024,
+     39
+    ],
+    "D3 s1s2": [
+     0.991,
+     0.022,
+     90
+    ],
+    "D4 s1s2": [
+     1.002,
+     0.023,
+     51
+    ],
+    "D5 s1s2": [
+     0.98,
+     0.046,
+     110
+    ],
+    "D6 s1s2": [
+     0.784,
+     0.044,
+     204
+    ]
+   }
+  },
+  {
+   "gaia": "1636315508221425152",
+   "G": 11.15,
+   "arcmin": 10.16,
+   "photos": 526,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     0.991,
+     0.027,
+     52
+    ],
+    "D2 s0s1": [
+     1.038,
+     0.029,
+     75
+    ],
+    "D3 s0s1": [
+     1.09,
+     0.033,
+     32
+    ],
+    "D4 s0s1": [
+     1.016,
+     0.034,
+     49
+    ],
+    "D5 s0s1": [
+     0.987,
+     0.038,
+     191
+    ],
+    "D6 s0s1": [
+     0.526,
+     0.03,
+     97
+    ],
+    "D1 s0s2": [
+     0.937,
+     0.033,
+     32
+    ],
+    "D2 s0s2": [
+     1.003,
+     0.044,
+     39
+    ],
+    "D3 s0s2": [
+     1.059,
+     0.032,
+     57
+    ],
+    "D4 s0s2": [
+     0.942,
+     0.038,
+     31
+    ],
+    "D5 s0s2": [
+     1.07,
+     0.068,
+     91
+    ],
+    "D6 s0s2": [
+     0.843,
+     0.037,
+     154
+    ],
+    "D1 s1s2": [
+     0.949,
+     0.028,
+     56
+    ],
+    "D2 s1s2": [
+     0.969,
+     0.042,
+     38
+    ],
+    "D3 s1s2": [
+     1.001,
+     0.026,
+     64
+    ],
+    "D4 s1s2": [
+     0.952,
+     0.04,
+     53
+    ],
+    "D5 s1s2": [
+     1.178,
+     0.054,
+     112
+    ],
+    "D6 s1s2": [
+     1.283,
+     0.074,
+     200
+    ]
+   }
+  },
+  {
+   "gaia": "1636341930861998848",
+   "G": 11.77,
+   "arcmin": 10.64,
+   "photos": 454,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     1.229,
+     0.047,
+     46
+    ],
+    "D2 s0s1": [
+     1.182,
+     0.037,
+     67
+    ],
+    "D3 s0s1": [
+     1.142,
+     0.052,
+     30
+    ],
+    "D4 s0s1": [
+     1.097,
+     0.06,
+     25
+    ],
+    "D5 s0s1": [
+     1.131,
+     0.076,
+     151
+    ],
+    "D6 s0s1": [
+     0.759,
+     0.119,
+     36
+    ],
+    "D1 s0s2": [
+     1.156,
+     0.093,
+     31
+    ],
+    "D2 s0s2": [
+     1.079,
+     0.066,
+     35
+    ],
+    "D3 s0s2": [
+     0.968,
+     0.043,
+     66
+    ],
+    "D4 s0s2": [
+     1.093,
+     0.091,
+     31
+    ],
+    "D5 s0s2": [
+     1.063,
+     0.089,
+     69
+    ],
+    "D6 s0s2": [
+     0.648,
+     0.076,
+     94
+    ],
+    "D1 s1s2": [
+     0.943,
+     0.055,
+     45
+    ],
+    "D2 s1s2": [
+     0.928,
+     0.048,
+     39
+    ],
+    "D3 s1s2": [
+     0.876,
+     0.032,
+     78
+    ],
+    "D4 s1s2": [
+     1.162,
+     0.065,
+     20
+    ],
+    "D5 s1s2": [
+     0.874,
+     0.067,
+     82
+    ],
+    "D6 s1s2": [
+     0.671,
+     0.07,
+     94
+    ]
+   }
+  },
+  {
+   "gaia": "1636309594051458816",
+   "G": 11.84,
+   "arcmin": 11.47,
+   "photos": 483,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     1.047,
+     0.074,
+     49
+    ],
+    "D2 s0s1": [
+     1.227,
+     0.065,
+     75
+    ],
+    "D3 s0s1": [
+     0.963,
+     0.097,
+     33
+    ],
+    "D4 s0s1": [
+     0.942,
+     0.078,
+     48
+    ],
+    "D5 s0s1": [
+     0.843,
+     0.05,
+     117
+    ],
+    "D6 s0s1": [
+     0.914,
+     0.119,
+     64
+    ],
+    "D1 s0s2": [
+     0.925,
+     0.078,
+     30
+    ],
+    "D2 s0s2": [
+     1.002,
+     0.114,
+     36
+    ],
+    "D3 s0s2": [
+     1.241,
+     0.078,
+     57
+    ],
+    "D4 s0s2": [
+     1.063,
+     0.067,
+     30
+    ],
+    "D5 s0s2": [
+     1.028,
+     0.129,
+     48
+    ],
+    "D6 s0s2": [
+     0.769,
+     0.072,
+     111
+    ],
+    "D1 s1s2": [
+     1.009,
+     0.052,
+     55
+    ],
+    "D2 s1s2": [
+     0.905,
+     0.071,
+     36
+    ],
+    "D3 s1s2": [
+     0.99,
+     0.056,
+     66
+    ],
+    "D4 s1s2": [
+     0.951,
+     0.06,
+     52
+    ],
+    "D5 s1s2": [
+     1.254,
+     0.131,
+     66
+    ],
+    "D6 s1s2": [
+     1.046,
+     0.082,
+     93
+    ]
+   }
+  },
+  {
+   "gaia": "1648346639332018688",
+   "G": 11.96,
+   "arcmin": 13.99,
+   "photos": 413,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     0.969,
+     0.059,
+     39
+    ],
+    "D2 s0s1": [
+     1.008,
+     0.104,
+     18
+    ],
+    "D3 s0s1": [
+     0.914,
+     0.034,
+     30
+    ],
+    "D4 s0s1": [
+     1.019,
+     0.042,
+     37
+    ],
+    "D5 s0s1": [
+     0.7,
+     0.072,
+     45
+    ],
+    "D6 s0s1": [
+     1.03,
+     0.102,
+     73
+    ],
+    "D1 s0s2": [
+     1.117,
+     0.041,
+     28
+    ],
+    "D2 s0s2": [
+     1.081,
+     0.058,
+     28
+    ],
+    "D3 s0s2": [
+     0.951,
+     0.04,
+     55
+    ],
+    "D4 s0s2": [
+     1.317,
+     0.068,
+     26
+    ],
+    "D5 s0s2": [
+     0.623,
+     0.088,
+     34
+    ],
+    "D6 s0s2": [
+     0.92,
+     0.085,
+     124
+    ],
+    "D1 s1s2": [
+     1.029,
+     0.048,
+     41
+    ],
+    "D2 s1s2": [
+     1.001,
+     0.058,
+     19
+    ],
+    "D3 s1s2": [
+     0.992,
+     0.026,
+     86
+    ],
+    "D4 s1s2": [
+     1.149,
+     0.041,
+     41
+    ],
+    "D5 s1s2": [
+     0.963,
+     0.168,
+     37
+    ],
+    "D6 s1s2": [
+     0.96,
+     0.074,
+     158
+    ]
+   }
+  },
+  {
+   "gaia": "1648325542452610176",
+   "G": 12.25,
+   "arcmin": 12.68,
+   "photos": 413,
+   "used": true,
+   "ratios": {
+    "D1 s0s1": [
+     1.066,
+     0.063,
+     51
+    ],
+    "D2 s0s1": [
+     0.783,
+     0.085,
+     32
+    ],
+    "D3 s0s1": [
+     1.168,
+     0.133,
+     45
+    ],
+    "D4 s0s1": [
+     1.09,
+     0.098,
+     44
+    ],
+    "D5 s0s1": [
+     0.462,
+     0.053,
+     37
+    ],
+    "D6 s0s1": [
+     0.676,
+     0.129,
+     37
+    ],
+    "D1 s0s2": [
+     1.281,
+     0.091,
+     31
+    ],
+    "D2 s0s2": [
+     1.121,
+     0.159,
+     19
+    ],
+    "D3 s0s2": [
+     0.898,
+     0.05,
+     47
+    ],
+    "D4 s0s2": [
+     1.26,
+     0.175,
+     29
+    ],
+    "D5 s0s2": [
+     0.532,
+     0.07,
+     22
+    ],
+    "D6 s0s2": [
+     1.058,
+     0.124,
+     62
+    ],
+    "D1 s1s2": [
+     1.092,
+     0.065,
+     53
+    ],
+    "D2 s1s2": [
+     1.356,
+     0.176,
+     31
+    ],
+    "D3 s1s2": [
+     0.891,
+     0.085,
+     56
+    ],
+    "D4 s1s2": [
+     1.203,
+     0.102,
+     49
+    ],
+    "D5 s1s2": [
+     1.089,
+     0.125,
+     59
+    ],
+    "D6 s1s2": [
+     1.044,
+     0.136,
+     77
+    ]
+   }
+  }
+ ],
+ "systematicError": 0.02784945919850232,
+ "nStarsUsed": 10,
+ "nRatioPairs": 180,
+ "rdra": [
+  {
+   "key": "brightness-ratio-detector-1-s0s1",
+   "value": 0.6071,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
+   "basis": [
+    "40 photo pairs matched in wavelength (within lambda/80), detector 1, passes 1 and 2",
+    "ring 5-9 px: 0.607; ring 8-13 px: 0.566 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 0.99, s0s2 0.96, s1s2 0.96 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0723
+  },
+  {
+   "key": "brightness-ratio-detector-2-s0s1",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
+   "basis": [
+    "not reliable: fails the steady-star test",
+    "49 photo pairs matched in wavelength (within lambda/80), detector 2, passes 1 and 2",
+    "ring 5-9 px: 0.738; ring 8-13 px: 0.714 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.99, s0s2 1.18, s1s2 1.24, so its wing ratios are not trusted"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-3-s0s1",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
+   "basis": [
+    "not reliable: fails the steady-star test; the two rings disagree by more than 10%; the change (0.87) is within 3 errors of no change",
+    "19 photo pairs matched in wavelength (within lambda/80), detector 3, passes 1 and 2",
+    "ring 5-9 px: 0.867; ring 8-13 px: 1.061 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.91, s0s2 1.05, s1s2 1.19, so its wing ratios are not trusted"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-5-s0s1",
+   "value": 0.7216,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
+   "basis": [
+    "70 photo pairs matched in wavelength (within lambda/80), detector 5, passes 1 and 2",
+    "ring 5-9 px: 0.722; ring 8-13 px: 0.692 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0505
+  },
+  {
+   "key": "brightness-ratio-detector-6-s0s1",
+   "value": 0.8387,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
+   "basis": [
+    "114 photo pairs matched in wavelength (within lambda/80), detector 6, passes 1 and 2",
+    "ring 5-9 px: 0.839; ring 8-13 px: 0.800 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 0.99, s1s2 1.01 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0511
+  },
+  {
+   "key": "brightness-ratio-detector-1",
+   "value": 0.6162,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
+   "basis": [
+    "23 photo pairs matched in wavelength (within lambda/80), detector 1, passes 1 and 3",
+    "ring 5-9 px: 0.616; ring 8-13 px: 0.586 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 0.99, s0s2 0.96, s1s2 0.96 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0602
+  },
+  {
+   "key": "brightness-ratio-detector-2",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
+   "basis": [
+    "not reliable: fails the steady-star test",
+    "28 photo pairs matched in wavelength (within lambda/80), detector 2, passes 1 and 3",
+    "ring 5-9 px: 0.525; ring 8-13 px: 0.505 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.99, s0s2 1.18, s1s2 1.24, so its wing ratios are not trusted"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-3",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
+   "basis": [
+    "not reliable: fails the steady-star test; the two rings disagree by more than 10%",
+    "37 photo pairs matched in wavelength (within lambda/80), detector 3, passes 1 and 3",
+    "ring 5-9 px: 0.503; ring 8-13 px: 0.447 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.91, s0s2 1.05, s1s2 1.19, so its wing ratios are not trusted"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-5",
+   "value": 0.6892,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
+   "basis": [
+    "28 photo pairs matched in wavelength (within lambda/80), detector 5, passes 1 and 3",
+    "ring 5-9 px: 0.689; ring 8-13 px: 0.652 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0544
+  },
+  {
+   "key": "brightness-ratio-detector-6",
+   "value": 0.539,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
+   "basis": [
+    "183 photo pairs matched in wavelength (within lambda/80), detector 6, passes 1 and 3",
+    "ring 5-9 px: 0.539; ring 8-13 px: 0.500 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 0.99, s1s2 1.01 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0504
+  },
+  {
+   "key": "brightness-ratio-detector-1-s1s2",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
+   "basis": [
+    "not reliable: the change (1.07) is within 3 errors of no change",
+    "50 photo pairs matched in wavelength (within lambda/80), detector 1, passes 2 and 3",
+    "ring 5-9 px: 1.069; ring 8-13 px: 1.066 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 0.99, s0s2 0.96, s1s2 0.96 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-2-s1s2",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
+   "basis": [
+    "not reliable: fails the steady-star test; the change (0.80) is within 3 errors of no change",
+    "39 photo pairs matched in wavelength (within lambda/80), detector 2, passes 2 and 3",
+    "ring 5-9 px: 0.803; ring 8-13 px: 0.824 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.99, s0s2 1.18, s1s2 1.24, so its wing ratios are not trusted"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-3-s1s2",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
+   "basis": [
+    "not reliable: fails the steady-star test; the two rings disagree by more than 10%",
+    "37 photo pairs matched in wavelength (within lambda/80), detector 3, passes 2 and 3",
+    "ring 5-9 px: 0.572; ring 8-13 px: 0.499 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.91, s0s2 1.05, s1s2 1.19, so its wing ratios are not trusted"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-5-s1s2",
+   "value": null,
+   "unit": "ratio",
+   "status": "NOT_RELIABLE",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
+   "basis": [
+    "not reliable: the change (0.85) is within 3 errors of no change",
+    "100 photo pairs matched in wavelength (within lambda/80), detector 5, passes 2 and 3",
+    "ring 5-9 px: 0.847; ring 8-13 px: 0.823 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+  },
+  {
+   "key": "brightness-ratio-detector-6-s1s2",
+   "value": 0.6663,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
+   "basis": [
+    "203 photo pairs matched in wavelength (within lambda/80), detector 6, passes 2 and 3",
+    "ring 5-9 px: 0.666; ring 8-13 px: 0.647 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+    "comparison stars: 10 Gaia stars 4-15' away, outside its glare (rdra_far_comparisons.py); systematic error 0.050 (their scatter beyond their own noise, at least 0.05)",
+    "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 0.99, s1s2 1.01 in this detector",
+    "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0505
+  },
+  {
+   "key": "brightness-change",
+   "value": 0.6162,
+   "unit": "ratio",
+   "status": "MEASURED",
+   "method": "median over the detectors that pass, of the wing-brightness ratio, last pass / first pass; it differs by wavelength (season 0 -> 2)",
+   "basis": [
+    "D1 0.62, D5 0.69, D6 0.54",
+    "passes 1 -> 3"
+   ],
+   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+   "error": 0.0544
+  }
+ ]
+}

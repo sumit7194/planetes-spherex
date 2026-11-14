@@ -369,7 +369,7 @@ def wing_ratios(exps: list, ra: float, dec: float, r_in: float, r_out: float):
     return out, len(pts)
 
 
-def measure_wings(t, exps, catalog):
+def measure_wings(t, exps, catalog, ctrl=None):
     """Brightness change of a saturated star from its PSF wings, checked three ways: two rings must
     agree, the change must stand out from comparison stars measured the same way in the same
     photos, and enough matched photo pairs must exist."""
@@ -386,8 +386,9 @@ def measure_wings(t, exps, catalog):
     outer, _ = wing_ratios(exps, t["ra"], t["dec"], *rings[k_in + 1])
     ring_txt = (f"{rings[k_in][0]:g}-{rings[k_in][1]:g} px", f"{rings[k_in + 1][0]:g}-{rings[k_in + 1][1]:g} px")
     # Comparison stars: Gaia stars in the field, not the target, with plenty of usable photos.
-    devs, n_ctrl = [], 0
-    for s_ in sorted((g for g in catalog if g["mag"] is not None and g["mag"] < 14.0), key=lambda g: g["mag"])[:10]:
+    # `ctrl` = (n_stars, devs, note) measured elsewhere in the same photos (rdra_far_comparisons.py).
+    devs, n_ctrl = ([], 0) if ctrl is None else (list(ctrl[1]), ctrl[0])
+    for s_ in [] if ctrl is not None else sorted((g for g in catalog if g["mag"] is not None and g["mag"] < 14.0), key=lambda g: g["mag"])[:10]:
         ra, dec = catalogs.propagate(s_, 2026.0)
         if math.hypot((ra - t["ra"]) * math.cos(math.radians(dec)), dec - t["dec"]) * 3600 < 40:
             continue
@@ -422,7 +423,7 @@ def measure_wings(t, exps, catalog):
                   + ("agree within 10%" if agree else "disagree by more than 10%")
                   + "; a partial check that the result doesn't depend on which part of the wing is measured, "
                   "which matters because a dimmer star's saturated core is smaller)") if o else "outer ring: too few photos",
-                 f"comparison stars: {n_ctrl} Gaia stars; systematic error {sys_err:.3f} (their scatter beyond their own noise, at least 0.05)" if sys_err is not None else "comparison stars: too few",
+                 f"comparison stars: {n_ctrl} Gaia stars{'' if ctrl is None else ' ' + ctrl[2]}; systematic error {sys_err:.3f} (their scatter beyond their own noise, at least 0.05)" if sys_err is not None else "comparison stars: too few",
                  (("steady-star test passed: Barnard's Star, saturated but steady, gives "
                    + ", ".join(f"{k} {v[0]:.2f}" for k, v in valid["detectors"][str(d)]["ratios"].items()) + " in this detector")
                   if steady else
@@ -457,7 +458,8 @@ def measure_wings(t, exps, catalog):
     else:
         why = [f"{n_in} wing measurements of the star (ring {ring_txt[0]})"]
         if sys_err is not None and sys_err > 0.2:
-            why.append(f"the comparison stars vary by {sys_err:.0%} between passes: in this field they sit in the star's own glare, so the method can't be checked here")
+            why.append(f"the comparison stars vary by {sys_err:.0%} between passes"
+                       + (": in this field they sit in the star's own glare, so the method can't be checked here" if ctrl is None else f" ({ctrl[2]})"))
         elif sys_err is None:
             why.append("too few comparison stars in the field to check the method")
         out.append(m_entry("brightness-change", None, "ratio", "NOT_RELIABLE",
