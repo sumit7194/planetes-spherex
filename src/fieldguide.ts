@@ -110,10 +110,22 @@ async function drawPanels(card: Card): Promise<HTMLElement[]> {
           if (!on(x, y)) continue;
           const X = x * Z;
           const Y = (n - 1 - y) * Z;
-          if (!on(x, y + 1)) (ctx.moveTo(X, Y + 0.5), ctx.lineTo(X + Z, Y + 0.5));
-          if (!on(x, y - 1)) (ctx.moveTo(X, Y + Z - 0.5), ctx.lineTo(X + Z, Y + Z - 0.5));
-          if (!on(x - 1, y)) (ctx.moveTo(X + 0.5, Y), ctx.lineTo(X + 0.5, Y + Z));
-          if (!on(x + 1, y)) (ctx.moveTo(X + Z - 0.5, Y), ctx.lineTo(X + Z - 0.5, Y + Z));
+          if (!on(x, y + 1)) {
+            ctx.moveTo(X, Y + 0.5);
+            ctx.lineTo(X + Z, Y + 0.5);
+          }
+          if (!on(x, y - 1)) {
+            ctx.moveTo(X, Y + Z - 0.5);
+            ctx.lineTo(X + Z, Y + Z - 0.5);
+          }
+          if (!on(x - 1, y)) {
+            ctx.moveTo(X + 0.5, Y);
+            ctx.lineTo(X + 0.5, Y + Z);
+          }
+          if (!on(x + 1, y)) {
+            ctx.moveTo(X + Z - 0.5, Y);
+            ctx.lineTo(X + Z - 0.5, Y + Z);
+          }
         }
       ctx.stroke();
       if (p.ring) {
