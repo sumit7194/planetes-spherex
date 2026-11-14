@@ -3215,7 +3215,12 @@ span[data-fit='1'] {
   }
 }
 
-/* Aladin and WiseView sit in the actions row as two plain links. */
+/* "Open this spot in: Aladin Lite · WiseView": one quiet line under the actions. */
 .out-links {
-  display: contents;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--quiet);
+}
+.out-links a {
+  color: var(--look);
 }

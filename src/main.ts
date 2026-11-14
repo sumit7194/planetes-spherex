@@ -2406,8 +2406,9 @@ interface LookColour {
   fullyChecked: Set<Detector>;
   /** The colour being checked photo by photo just now (its button says so). */
   checking: Detector | null;
-  /** Every scored colour's aperture was saturated: too bright to score, not "nothing there". */
-  saturated: boolean;
+  /** How many colours with a fair pair had a saturated centre (only when none stood out). */
+  saturated: number;
+  ofPairs: number;
   /** Physics' blend check: the nearest Gaia star (G < 19) within 2 px; undefined until Gaia answers. */
   blend?: { g: number; sepArcsec: number } | null | undefined;
 }
@@ -2490,7 +2491,8 @@ async function chooseColour(
     unavailable: wanted && !pairs.includes(wanted) ? wanted : null,
     fullyChecked: fully,
     checking: null,
-    saturated: why === 'shortest' && pairs.length > 0 && pairs.every((d) => saturatedIn.has(d)),
+    saturated: why === 'shortest' ? pairs.filter((d) => saturatedIn.has(d)).length : 0,
+    ofPairs: pairs.length,
   };
   const colour = look.colour;
   const year = 2000 + ((shown.pair.a.mjd + shown.pair.b.mjd) / 2 - 51544.5) / 365.25;
@@ -2649,7 +2651,7 @@ function colourRow(look: LiveLook): HTMLElement | null {
       : c.why === 'clearest'
         ? t.whyClearest(rangeText(c.chosen))
         : c.saturated
-          ? t.whySaturated(rangeText(c.chosen))
+          ? t.whySaturated(rangeText(c.chosen), c.saturated, c.ofPairs)
           : t.whyShortest(rangeText(c.chosen));
   return h(
     'div',
@@ -4055,13 +4057,8 @@ function showWords(): Node[] {
     pairChooser(id),
     looksRow(),
     spotRow,
-    h(
-      'div',
-      { class: 'actions links' },
-      copyLinkButton(),
-      aladinLink(current.pack.manifest.grid.centre),
-      keysBtn,
-    ),
+    h('div', { class: 'actions links' }, copyLinkButton(), keysBtn),
+    aladinLink(current.pack.manifest.grid.centre),
     h(
       'p',
       { class: 'release-line' },
@@ -4342,7 +4339,8 @@ function lookWords(): HTMLElement[] {
         tabSpec('compare', [
           h('h3', {}, copy.look.shownHeading(look.tiles.length, plan.total)),
           strip,
-          h('div', { class: 'actions' }, replay, copyLinkButton(), aladinLink(look.at)),
+          h('div', { class: 'actions' }, replay, copyLinkButton()),
+          aladinLink(look.at),
           liveMoversLine(look),
         ]),
         tabSpec('watch', [liveRangeSection(look), fieldControl(look.tiles.length)], {
@@ -5389,7 +5387,8 @@ function aladinLink(at: { ra: number; dec: number }): HTMLElement {
     },
     copy.share.wiseview,
   );
-  return h('span', { class: 'out-links' }, aladin, wise);
+  // One labelled line, so the two read as a pair at any width (Viewer, 14 Nov).
+  return h('p', { class: 'out-links' }, copy.share.openIn, ' ', aladin, ' · ', wise);
 }
 
 /** "RA 17h 57m 48s, Dec +4° 41′ 00″" for the eyebrow: the same format as the echo and readout. */

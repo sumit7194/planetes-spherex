@@ -477,8 +477,10 @@ export const copy = {
       whyShortest: (range: string) =>
         `Shown at ${range}: nothing clear sits at your spot, so this is the shortest colour with a fair pair. Pick another colour to look.`,
       whyChosen: (range: string) => `Shown at ${range}, as chosen.`,
-      whySaturated: (range: string) =>
-        `Shown at ${range}: the star at your spot is so bright it saturates SPHEREx's detector in every colour, so no colour can be scored; this is the shortest colour with a fair pair. Pick another colour to look.`,
+      whySaturated: (range: string, n: number, of: number) =>
+        n === of
+          ? `Shown at ${range}: the star at your spot is so bright it saturates SPHEREx's detector in all ${of} colours with a fair pair, so none can be scored; this is the shortest of them. Pick another colour to look.`
+          : `Shown at ${range}: the star at your spot saturates SPHEREx's detector in ${n} of the ${of} colours with a fair pair and doesn't stand out clearly in the others, so this is the shortest of them. Pick another colour to look.`,
       unavailable: (range: string) => `There's no fair pair at ${range} here.`,
       cold: 'Cold objects such as brown dwarfs show best at 3–5 µm.',
       /** Physics' blend line (14 Nov): text only, never changes the colour picked. */
@@ -853,10 +855,11 @@ export const copy = {
     copy: 'Copy link',
     copied: 'Link copied',
     openFull: 'Open in Planetes',
-    aladin: 'Open in Aladin Lite',
-    wiseview: 'Open in WiseView',
+    openIn: 'Open this spot in:',
+    aladin: 'Aladin Lite',
+    wiseview: 'WiseView',
     wiseviewTitle:
-      "The same spot in WISE's photos from 2010 on (WiseView, Backyard Worlds): a longer span of years than SPHEREx's",
+      "The same spot in WISE's photos from 2010 on (WiseView, Backyard Worlds): a longer span of years than SPHEREx's. WiseView is http only, so your browser may warn before opening it.",
   },
   /** Catalogue overlays (checklist C6), from Physics' overlay files: catalogue, not SPHEREx. */
   overlay: {
@@ -1102,6 +1105,9 @@ export const copy = {
     afterDesigned:
       'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the fast-mover search’s thresholds, its fake-mover yardstick, and the check that fakes are found like real asteroids, all fixed on other sky first.',
     afterPending: 'List reviewed and completed by Physics, 14 November 2026.',
+    /** Viewer (14 Nov): a resource we looked at and didn't use belongs here, not in the credits. */
+    notUsed:
+      "Considered and not used: Canada's NEOSSat photos (the CSA's asteroid-watching telescope, in the Canadian Astronomy Data Centre). CADC's search didn't answer when we tried during the event.",
     footer:
       'Every number above is read from the same data files as the tool itself, or from the run outputs linked.',
     /** The way in, from the band, a target's Facts tab, the legend and the credits page. */
@@ -1165,13 +1171,6 @@ export const copy = {
           "IRSA's SPHEREx Data Explorer (search, cutouts, its own spectrum tool), the Moving Object Search Tool for asteroids, and IRSA's SPHEREx tutorial notebooks for reading these files in Python",
         terms: 'NASA/IPAC IRSA',
         link: 'https://caltech-ipac.github.io/irsa-tutorials/spherex/',
-      },
-      {
-        what: "Canada's NEOSSat (not used here)",
-        source:
-          "The Canadian Space Agency's NEOSSat watches asteroids and near-Earth space; its photos are in the Canadian Astronomy Data Centre (CADC), with a Python tutorial. Planetes doesn't use them yet: CADC's search didn't answer when we tried during the event.",
-        terms: 'CSA open data',
-        link: 'https://data.asc-csa.gc.ca/dataset/neossat',
       },
       {
         what: 'Star names',

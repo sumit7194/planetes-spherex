@@ -288,6 +288,7 @@ async function main(): Promise<void> {
     h('ul', { class: 'after' }, ...t.after.map((a) => h('li', {}, a))),
     h('p', {}, t.afterDesigned),
     h('p', { class: 'note' }, t.afterPending),
+    h('p', { class: 'not-used' }, t.notUsed),
     h('footer', {}, h('span', {}, t.footer)),
   );
 }
