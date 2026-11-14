@@ -2,6 +2,7 @@ node_modules/
 dist/
 pipeline/.venv/
 pipeline/cache/
+pipeline/yardstick_stacks/
 pipeline/logs/
 pipeline/__pycache__/
 pipeline/pm_lookup.out

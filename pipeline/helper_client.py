@@ -22,6 +22,9 @@ import numpy as np
 import build_pack as bp
 
 HELPER = "https://planetes-edge.planetes.workers.dev"
+# Batch jobs that never re-read a box go straight to the helper (no edge cache to fill), which
+# also keeps them to one Worker request per box.
+DIRECT = "https://planetes-live.planetes.workers.dev"
 BUCKET = "https://nasa-irsa-spherex.s3.amazonaws.com/"
 UA = {"User-Agent": "planetes-pipeline/1 (Space Apps 2026)"}
 

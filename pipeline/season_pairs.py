@@ -117,6 +117,14 @@ def quiet_gaia(slug: str, n: int, season: int):
 def search(slug: str):
     m, stacks = load(slug)
     n = m["grid"]["size"]
+    return search_stacks(stacks, n, lambda season: quiet_gaia(slug, n, season))
+
+
+def search_stacks(stacks: dict, n: int, quiet_for, pairs=None):
+    """The search on any one-detector stacks {(season, det): {img, mjd, sat}}: the packs' seasons,
+    or the yardstick's helper-read fields (field_stacks.py). quiet_for(season) gives the grid
+    pixels of Gaia stars moving < 50 mas/yr; pairs limits which season pairs are compared (the
+    split-pass null N-A compares only each pass's two halves)."""
     seasons = sorted({s for s, _ in stacks})
     dets = sorted({d for _, d in stacks})
     ref = np.nanmedian(np.stack([v["img"] for v in stacks.values()]), axis=0)
@@ -141,7 +149,7 @@ def search(slug: str):
     srcs = [s_ for s_ in srcs if not in_glare(s_[0], s_[1])]
     c = (n - 1) / 2
     out = []
-    for a, b in itertools.combinations(seasons, 2):
+    for a, b in (pairs if pairs is not None else itertools.combinations(seasons, 2)):
         per = {}  # source index -> {det: (dx, dy)}
         years = []
         for d in dets:
@@ -156,7 +164,7 @@ def search(slug: str):
         if not per:
             continue
         # common shift per detector, from Gaia-quiet stars, then each source's residual shift
-        quiet = quiet_gaia(slug, n, a)
+        quiet = quiet_for(a)
         is_quiet = {i for i, (x, y, _) in enumerate(srcs) if any(np.hypot(x - qx, y - qy) < 1.5 for qx, qy in quiet)}
         removed = {}
         for d in dets:
@@ -174,11 +182,16 @@ def search(slug: str):
         sig = 1.4826 * np.median(np.abs(mags - np.median(mags))) + np.median(mags) if len(mags) else np.nan
         dt = float(np.median(years)) if years else np.nan
         cands = []
+        # Every cross-detector-consistent source's significance over 0.3 px, whatever the
+        # threshold: the null calibration (yardstick N-A) sets the threshold from these.
+        consistent_sig = []
         for i, v in mean.items():
             shifts = np.array(list(per[i].values()))
             spread = np.max(np.hypot(*(shifts - v).T)) if len(shifts) else 0
             mag = float(np.hypot(*v))
             consistent = spread < max(0.5 * mag, 0.3)
+            if consistent and mag > 0.3 and sig > 0:
+                consistent_sig.append(round(mag / sig, 2))
             if consistent and mag > max(5 * sig, 0.3):
                 x, y, peak = srcs[i]
                 cands.append(dict(x=round(x, 1), y=round(y, 1), fromCentrePx=round(float(np.hypot(x - c, y - c)), 1),
@@ -190,7 +203,8 @@ def search(slug: str):
         out.append(dict(seasons=[a, b], years=round(dt, 2), sources=len(srcs), glareVetoed=vetoed,
                         notSearchedFraction=round(not_searched, 3), commonShiftRemoved=removed, measured=len(mean),
                         steadyScatterPx=round(float(sig), 3), candidates=cands[:8],
-                        targetRank=None if target is None else target + 1, nCandidates=len(cands)))
+                        targetRank=None if target is None else target + 1, nCandidates=len(cands),
+                        consistentSignificance=sorted(consistent_sig, reverse=True)[:20]))
     return out
 
 
