@@ -35,3 +35,48 @@ button {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* More contrast (Viewer's audit, 15 Nov): tokens only, no layout. Quiet text takes the mist
+   value and mist takes starlight; hairlines one step brighter; focus rings 3 px. The sky's own
+   tokens move too, so text over the sky gains as well. */
+@media (prefers-contrast: more) {
+  :root {
+    --sky-quiet: #d2cbc2;
+    --sky-mist: #efe8dd;
+    --sky-dusk-line: #4a536e;
+    --quiet: var(--sky-quiet);
+    --mist: var(--sky-mist);
+    --dusk-line: var(--sky-dusk-line);
+  }
+  :root[data-ui='light'] {
+    --quiet: #353d4e;
+    --mist: #121826;
+    --dusk-line: #8f99aa;
+  }
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Windows High Contrast (Viewer's audit): fills are replaced, so every state shown by a fill
+   alone gets an outline, every button a visible border, and link-buttons the link colour.
+   Canvases keep their own pixels. */
+@media (forced-colors: active) {
+  button {
+    border: 1px solid ButtonText;
+  }
+  [aria-pressed='true'],
+  [aria-selected='true'],
+  [aria-checked='true'] {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .link-button {
+    border: 0;
+    color: LinkText;
+  }
+  .mk {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+}
