@@ -195,6 +195,35 @@ export const copy = {
     /** Under Learn's first step: what the blue band is. */
     ringNote:
       "The blue band is one week of SPHEREx's photos, from its own records; it moves on as the weeks play.",
+    /** Search as you type (agreed with Viewer, 14 Nov): the dropdown's words. */
+    find: {
+      tags: {
+        test: 'challenge test',
+        mover: 'fast star',
+        variable: 'variable',
+        star: 'star',
+        constellation: 'constellation',
+        simbad: 'SIMBAD',
+        position: 'position',
+      },
+      tryGroup: 'Try',
+      nearGroup: 'Near here',
+      footer: 'RA and Dec in ICRS (J2000), in degrees or hours, or a name.',
+      count: (n: number) => (n === 0 ? 'No matches' : n === 1 ? '1 match' : `${n} matches`),
+      testMeta: (short: string) => `${short} · opens its page`,
+      moverMeta: (pm: string) => `moves ${pm}″ a year · a live look`,
+      variableMeta: 'its brightness changes · a live look',
+      starMeta: (pos: string) => `${pos} · a live look`,
+      constellationMeta: 'shows it on the sky',
+      positionMeta: 'a live look at this spot',
+      simbadMeta: (type: string | null, moved: boolean) =>
+        `${type ? `${type} · ` : ''}${moved ? 'moved to today by its motion' : 'position for 2000'} · a live look`,
+      nearMeta: (away: string, meta: string) => `${away} away · ${meta}`,
+      looking: (q: string) => `Looking up “${q}” in SIMBAD…`,
+      notFound: (q: string) => `“${q}” isn’t in SIMBAD either.`,
+      failed: 'SIMBAD couldn’t be reached just now.',
+      keepTyping: 'Keep typing: a right ascension, then a declination.',
+    },
     rideAlong: 'Ride along',
     riding: 'Riding along',
   },
@@ -1004,6 +1033,13 @@ export const copy = {
         terms: 'Our own code',
       },
       {
+        what: 'Names in the search',
+        source:
+          "The five, the IAU star names and the constellations are in the page itself. A name it doesn't know is looked up in SIMBAD (CDS, Strasbourg) through CDS's Sesame name resolver, by our helper: only the typed name is sent, to the helper and from there to CDS (or its Harvard mirror).",
+        terms: 'Acknowledgement requested',
+        link: 'https://simbad.cds.unistra.fr/simbad/',
+      },
+      {
         what: "SPHEREx's all-sky map",
         source:
           "SPHEREx DR1 all-sky map in 102 colours (IRSA's HiPS cube), shown with Aladin Lite v3 (CDS, Strasbourg), loaded from jsDelivr",
@@ -1110,6 +1146,8 @@ export const copy = {
     },
     ackHeading: 'Acknowledgements, as the archives ask them to be printed',
     acknowledgements: [
+      /** As CDS asks for SIMBAD (search names it doesn't hold locally go there; 14 Nov). */
+      'This research has made use of the SIMBAD database, CDS, Strasbourg Astronomical Observatory, France.',
       /** As IRSA's SPHEREx page asks it to be printed (Physics, checked 29 Oct). */
       'This publication makes use of data products from the Spectro-Photometer for the History of the Universe, Epoch of Reionization and Ices Explorer (SPHEREx), which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration.',
       /** IRSA's own sentence for its datasets and services. */

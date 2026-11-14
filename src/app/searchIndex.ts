@@ -105,7 +105,7 @@ function nameScore(name: string, q: string): number {
   const qw = q.split(' ');
   // Every typed word starts some word of the name, in order ("barn st", "eps ind b").
   let k = 0;
-  for (const w of words) if (k < qw.length && w.startsWith(qw[k]!)) k++;
+  for (const w of words) if (k < qw.length && w.startsWith(qw[k] ?? '')) k++;
   if (k === qw.length) return 600;
   if (qc.length >= 3 && n.includes(qc)) return 400;
   // One typo, on a prefix of the same length (from 4 letters on: "barnrd", "betelguese").

@@ -34,8 +34,6 @@ import {
 } from './app/shows';
 import {
   parseSkyPosition,
-  raText,
-  decText,
   degText,
   positionText,
   positionFromQuery,
@@ -57,6 +55,14 @@ import {
 import { loadCoverage, type Coverage } from './data/coverage';
 import { passCount, passStarts, weekCounts, type BandFile } from './app/passes';
 import { skyBand, type SkyBand } from './ui/skyBand';
+import { combobox, type ComboOption } from './ui/combobox';
+import {
+  nearby,
+  normalise,
+  placeAt,
+  search as searchNames,
+  type Entry as SearchEntry,
+} from './app/searchIndex';
 import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
@@ -294,7 +300,6 @@ const header = h(
   h('h1', { class: 'wordmark' }, embedded ? openFullLink() : homeLink),
   dial,
   searchAnchor,
-  search,
   schemeSwitch(copy.scheme, copy.scheme.group),
   h('a', { class: 'credits-link', href: 'credits.html' }, copy.nav.credits),
 );
@@ -577,7 +582,11 @@ void fetch(`${import.meta.env.BASE_URL}catalog/bright-stars-v8.json`)
     indexStarNames();
     return loadFigures(c.stars);
   })
-  .then((figures) => sky.setFigures(figures))
+  .then((figures) => {
+    sky.setFigures(figures);
+    figureLabels = figures.flatMap((f) => (f.labels[0] ? [{ name: f.name, at: f.labels[0] }] : []));
+    rebuildSearchIndex();
+  })
   .catch(() => undefined);
 
 void fetch(`${import.meta.env.BASE_URL}catalog/milkyway-gaia-dr3-n64.bin`)
@@ -611,6 +620,7 @@ void fetch(`${import.meta.env.BASE_URL}catalog/star-names-iau.json`)
     );
     sky.setNames(starNames);
     indexStarNames();
+    rebuildSearchIndex();
   })
   .catch(() => undefined);
 
@@ -824,20 +834,10 @@ function angleText(arcsec: number): string {
 
 // Open the connections a live look will use while the visitor is still typing (once a page).
 search.addEventListener('focus', warmUp, { once: true });
-search.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter' || e.isComposing) return;
-  e.preventDefault();
-  // Not inside the keydown: opening a look moves the input from the homepage column to the
-  // header, and moving a focused field mid-event loses keys and autofill (Viewer, 14 Nov).
-  window.clearTimeout(typedTimer);
-  setTimeout(submitSearch, 0);
-});
 
-/* ---------- the homepage search: an echo as you type, the sky turning to the spot ---------- */
+/* ---------- search as you type (Sumit, 14 Nov; agreed with Viewer) ---------- */
 
-/** Under the homepage field: what the typing reads as (a check, or what to type). */
-const searchEcho = h('p', { class: 'search-echo', role: 'status' }, copy.home.echoEmpty);
-/** A complete name or position typed but not yet entered: the band's sixth row. */
+/** The active option's spot (before Enter): the band's sixth row and the sky's spot lines. */
 let typed: {
   key: string;
   at: SkyPosition;
@@ -845,84 +845,290 @@ let typed: {
   mjds: number[] | null;
   failed: boolean;
 } | null = null;
-let typedTimer = 0;
 let typedSeq = 0;
 let lastFlown = '';
-let composing = false;
-search.addEventListener('compositionstart', () => (composing = true));
-search.addEventListener('compositionend', () => {
-  composing = false;
-  queueTyped();
-});
-search.addEventListener('input', () => {
-  if (!composing) queueTyped();
-});
-function queueTyped(): void {
-  window.clearTimeout(typedTimer);
-  typedTimer = window.setTimeout(onTyped, 400);
+let followTimer = 0;
+
+/** Every name the page knows, rebuilt as each source arrives (the five, surprises, stars, figures). */
+let searchIndex: SearchEntry[] = [];
+let surpriseList: SurpriseSpot[] = [];
+let figureLabels: { name: string; at: SkyPosition }[] = [];
+function rebuildSearchIndex(): void {
+  const five: SearchEntry[] = WANDERERS.map((w) => ({
+    id: w.id,
+    name: copy.wanderers[w.id].name,
+    names: [copy.wanderers[w.id].name, ...WANDERER_NAMES[w.id]],
+    kind: 'test',
+    at: w.at,
+  }));
+  const spots: SearchEntry[] = surpriseList.map((x) => ({
+    id: `surprise:${x.name}`,
+    name: x.name,
+    names: [x.name],
+    kind: 'surprise',
+    at: { ra: x.ra, dec: x.dec },
+  }));
+  const stars: SearchEntry[] = [];
+  for (const [ra, dec, v, , hip] of catalogueStars) {
+    const name = hip === undefined ? undefined : starNames.get(hip);
+    if (name)
+      stars.push({ id: `hip:${hip}`, name, names: [name], kind: 'star', at: { ra, dec }, mag: v });
+  }
+  const figs: SearchEntry[] = figureLabels.map((f) => ({
+    id: `con:${f.name}`,
+    name: f.name,
+    names: [f.name],
+    kind: 'constellation',
+    at: f.at,
+  }));
+  searchIndex = [...five, ...spots, ...stars, ...figs];
+}
+// After the whole module has run (loadSurprises' cache is declared further down).
+queueMicrotask(
+  () =>
+    void loadSurprises().then((list) => {
+      surpriseList = list;
+      rebuildSearchIndex();
+    }),
+);
+
+/** SIMBAD's answer for a name (through the helper), cached per name for the page's life. */
+type Resolved = {
+  found: boolean;
+  name?: string;
+  type?: string | null;
+  ra?: number;
+  dec?: number;
+  pmra?: number | null;
+  pmdec?: number | null;
+};
+const simbadCache = new Map<string, Resolved | 'failed'>();
+let simbadPending: { key: string; abort: AbortController; done: Promise<void> } | null = null;
+let simbadTimer = 0;
+const HELPER = 'https://planetes-edge.planetes.workers.dev';
+function lookUp(q: string): void {
+  const key = normalise(q);
+  if (simbadCache.has(key) || simbadPending?.key === key) return;
+  simbadPending?.abort.abort();
+  const abort = new AbortController();
+  const done = fetch(`${HELPER}/v1/resolve?name=${encodeURIComponent(q.trim())}&v=2`, {
+    signal: AbortSignal.any([abort.signal, AbortSignal.timeout(6000)]),
+  })
+    .then((r) =>
+      r.ok ? (r.json() as Promise<Resolved>) : Promise.reject(new Error(String(r.status))),
+    )
+    .then((r) => void simbadCache.set(key, r))
+    .catch(() => {
+      if (!abort.signal.aborted) simbadCache.set(key, 'failed');
+    })
+    .finally(() => {
+      if (simbadPending?.key === key) simbadPending = null;
+      if (normalise(search.value) === key) refreshOptions();
+    });
+  simbadPending = { key, abort, done };
 }
 
-/** What the field holds, if it's complete: one of the five, a named star, or RA and Dec. */
-type Typed = {
-  at: SkyPosition;
-  name: string | null;
-  /** One of the five: Enter opens its page, so the row shows its pack's photos. */
-  id?: TargetId;
-  /** What Enter will do, when it isn't simply "look here". */
-  echo?: string;
-  /** The sixth row's name, when it isn't "Your spot" or the typed name. */
-  title?: string;
+/** Today's place for a SIMBAD answer: moved from 2000 by its proper motion when it has one. */
+const NOW_YEAR = 2000 + (Date.now() / 86_400_000 - 10957.5) / 365.25;
+function simbadPlace(r: Resolved): { at: SkyPosition; moved: boolean } {
+  const at = { ra: r.ra ?? 0, dec: r.dec ?? 0 };
+  if (r.pmra == null || r.pmdec == null) return { at, moved: false };
+  return { at: placeAt(at, r.pmra, r.pmdec, 2000, NOW_YEAR), moved: true };
+}
+
+/** Coordinates, not a name: digits first, and only h/d/m/s and symbols besides (not "M31"). */
+const looksLikeCoordinates = (q: string) => {
+  const t = q.replace(/(^|[\s,(])(ra|dec|α|δ)\s*[:=]?/gi, ' ').trim();
+  return /^[+\-−]?\d/.test(t) && /^[\d\s:+\-−.,°′″'"hdms]+$/i.test(t);
 };
-function resolveTyped(value: string): Typed | null {
-  const key = searchKey(value);
-  const id = wandererByName.get(key);
-  const w = id && WANDERERS.find((x) => x.id === id);
-  if (w && id) return { at: w.at, name: copy.wanderers[id].name, id };
-  const star = namedStars.get(key);
-  if (star) return { at: star, name: value.trim() };
-  const parsed = parseSkyPosition(value);
-  if (!parsed.ok) return null;
-  // Next to one of the five, Enter opens its page (submitSearch): say so before Enter, and show
-  // its photos, not "your spot" (the challenge's WISE 0855 coordinates are its 2010 place).
-  const near = WANDERERS.find((x) => separationDeg(x.at, parsed.position) < NEAR_WANDERER_DEG);
-  if (!near?.ready) return { at: parsed.position, name: null };
-  const name = copy.wanderers[near.id].name;
-  const past = pastPlace(near, parsed.position);
-  const moved = past ? angleText(past.movedArcsec) : null;
+
+type Opt = ComboOption & { at?: SkyPosition; title?: string; packOf?: TargetId; go: () => void };
+const awayText = (deg: number) => (deg >= 1 ? `${deg.toFixed(1)}°` : angleText(deg * 3600));
+
+function entryOpt(e: SearchEntry, group?: string, away?: number): Opt {
+  const f = copy.home.find;
+  const spot =
+    e.kind === 'surprise' ? surpriseList.find((x) => `surprise:${x.name}` === e.id) : undefined;
+  const tag =
+    e.kind === 'test'
+      ? f.tags.test
+      : e.kind === 'surprise'
+        ? spot?.kind === 'variable'
+          ? f.tags.variable
+          : f.tags.mover
+        : e.kind === 'star'
+          ? f.tags.star
+          : f.tags.constellation;
+  const meta =
+    e.kind === 'test'
+      ? f.testMeta(copy.wanderers[e.id as TargetId].short)
+      : e.kind === 'surprise'
+        ? spot?.kind === 'variable'
+          ? f.variableMeta
+          : f.moverMeta(String(Math.round((spot?.pmArcsecYr ?? 0) * 10) / 10))
+        : e.kind === 'star'
+          ? f.starMeta(positionText(e.at, 60))
+          : f.constellationMeta;
   return {
-    at: near.at,
-    name,
-    id: near.id,
-    echo:
-      past && moved
-        ? copy.home.echoPast(name, Math.floor(past.year), moved)
-        : copy.home.echoNear(name),
-    title: moved ? copy.home.spotMoved(name, moved) : name,
+    id: e.id,
+    label: e.name,
+    tag,
+    meta: away !== undefined ? f.nearMeta(awayText(away), meta) : meta,
+    ...(group ? { group } : {}),
+    ...(e.kind !== 'constellation' ? { at: e.at } : {}),
+    title: e.name,
+    ...(e.kind === 'test' ? { packOf: e.id as TargetId } : {}),
+    go: () => goEntryOpt(e, spot),
   };
 }
 
-function onTyped(): void {
-  const value = search.value.trim();
-  const t = value ? resolveTyped(value) : null;
-  const enter = touchOnly ? copy.home.enterTouch : copy.home.enter;
-  searchEcho.textContent = !value
-    ? copy.home.echoEmpty
-    : !t
-      ? copy.home.echoPartial
-      : t.echo
-        ? t.echo
-        : t.name
-          ? copy.home.echoName(t.name, enter)
-          : // Hours first (the challenge page and catalogues), degrees in brackets (Viewer).
-            copy.home.echoPosition(
-              `${raText(t.at.ra)} (${degText(t.at.ra)})`,
-              `${decText(t.at.dec)} (${degText(t.at.dec)})`,
-              enter,
-            );
-  searchEcho.classList.toggle('ok', !!t);
-  // The spot's own RA and Dec lines on the sky, crossing at it, until the field clears.
-  sky.setSpot(t ? t.at : null);
+function goEntryOpt(e: SearchEntry, spot?: SurpriseSpot): void {
+  searchNote = '';
+  typedNote = null;
+  if (e.kind === 'test') void openWanderer(e.id as TargetId);
+  else if (e.kind === 'surprise' && spot) void openLook({ ra: spot.ra, dec: spot.dec }, spot);
+  else if (e.kind === 'constellation') {
+    // A constellation is a region, not a spot to look at: show it on the sky.
+    if (state.place.kind !== 'sky') leaveShow();
+    if (state.entry !== 'inside') switchEntry('inside');
+    void sky.flyTo(e.at, 45, prefersReducedMotion() ? 0 : 1200);
+  } else {
+    // A named star: today's place from SIMBAD (its motion applied), else its Hipparcos place.
+    void (async () => {
+      const key = normalise(e.name);
+      if (!simbadCache.has(key)) {
+        lookUp(e.name);
+        await Promise.race([simbadPending?.done, new Promise((r) => setTimeout(r, 1500))]);
+      }
+      const r = simbadCache.get(key);
+      void openLook(r && r !== 'failed' && r.found ? simbadPlace(r).at : e.at);
+    })();
+  }
+}
+
+function buildOptions(q: string): { opts: Opt[]; footer: string } {
+  const f = copy.home.find;
+  const t = q.trim();
   if (!t) {
+    // Empty: the examples Sumit wanted out of the page, here on focus.
+    const ex = copy.home.examples;
+    const w = searchIndex.find((e) => e.id === 'w0855');
+    const b = searchIndex.find((e) => e.id === 'barnard');
+    const tg = searchIndex.find((e) => e.name === ex.teegardenName);
+    const opts: Opt[] = [];
+    if (w)
+      opts.push({
+        id: 'try:w0855',
+        label: ex.w0855,
+        tag: f.tags.test,
+        meta: ex.w0855Value,
+        group: f.tryGroup,
+        at: w.at,
+        title: w.name,
+        packOf: 'w0855',
+        go: () => {
+          search.value = ex.w0855Value;
+          submitSearch();
+        },
+      });
+    if (b) opts.push({ ...entryOpt(b, f.tryGroup), id: 'try:barnard' });
+    if (tg) opts.push({ ...entryOpt(tg, f.tryGroup), id: 'try:teegarden' });
+    return { opts, footer: f.footer };
+  }
+  if (looksLikeCoordinates(t)) {
+    const parsed = parseSkyPosition(t);
+    if (!parsed.ok)
+      return {
+        opts: [
+          {
+            id: 'note:coords',
+            label: /expected/.test(parsed.reason)
+              ? f.keepTyping
+              : copy.search.unreadable(parsed.reason),
+            note: true,
+            go: () => undefined,
+          },
+        ],
+        footer: f.footer,
+      };
+    const at = parsed.position;
+    const near = WANDERERS.find((x) => separationDeg(x.at, at) < NEAR_WANDERER_DEG);
+    const past = near ? pastPlace(near, at) : null;
+    const name = near ? copy.wanderers[near.id].name : null;
+    const moved = past ? angleText(past.movedArcsec) : null;
+    const first: Opt = {
+      id: `pos:${at.ra.toFixed(5)},${at.dec.toFixed(5)}`,
+      label: positionText(at),
+      tag: f.tags.position,
+      meta:
+        near && name
+          ? past && moved
+            ? copy.home.echoPast(name, Math.floor(past.year), moved)
+            : copy.home.echoNear(name)
+          : `${degText(at.ra)}, ${degText(at.dec)} · ${f.positionMeta}`,
+      at: near?.at ?? at,
+      title: near && name ? (moved ? copy.home.spotMoved(name, moved) : name) : copy.home.spotTitle,
+      ...(near ? { packOf: near.id } : {}),
+      go: submitSearch,
+    };
+    const around = nearby(searchIndex, at, 3, 4, near?.id).filter(
+      (n) => n.entry.kind !== 'surprise' || n.sepDeg <= 1,
+    );
+    return {
+      opts: [first, ...around.map((n) => entryOpt(n.entry, f.nearGroup, n.sepDeg))],
+      footer: '',
+    };
+  }
+  const local = searchNames(searchIndex, t, 6).map((m) => entryOpt(m.entry));
+  const opts: Opt[] = [...local];
+  // Beyond our own names: SIMBAD, after 3 letters, when few local matches, debounced.
+  if (t.length >= 3 && local.length < 3) {
+    const r = simbadCache.get(normalise(t));
+    if (r === undefined) {
+      opts.push({ id: 'note:looking', label: f.looking(t), note: true, go: () => undefined });
+      window.clearTimeout(simbadTimer);
+      simbadTimer = window.setTimeout(() => lookUp(t), 300);
+    } else if (r === 'failed')
+      opts.push({ id: 'note:failed', label: f.failed, note: true, go: () => undefined });
+    else if (!r.found) {
+      if (!local.length)
+        opts.push({ id: 'note:none', label: f.notFound(t), note: true, go: () => undefined });
+    } else if (
+      // The same object as a local result (within 1′): don't list it twice.
+      !local.some(
+        (o) => o.at && r.ra !== undefined && separationDeg(o.at, simbadPlace(r).at) < 1 / 60,
+      )
+    ) {
+      const { at, moved } = simbadPlace(r);
+      opts.push({
+        id: `simbad:${normalise(r.name ?? t)}`,
+        label: r.name ?? t,
+        tag: f.tags.simbad,
+        meta: f.simbadMeta(r.type ?? null, moved),
+        at,
+        title: r.name ?? t,
+        go: () => {
+          searchNote = '';
+          typedNote = null;
+          void openLook(at);
+        },
+      });
+    }
+  }
+  return { opts, footer: '' };
+}
+
+function refreshOptions(): void {
+  const { opts, footer } = buildOptions(search.value);
+  combo.setOptions(opts, footer);
+}
+
+/** The sky and the band follow the active option (else the first): its spot lines and row now,
+ * a short flight after a pause (Viewer: never on hover, not on phones, not under reduced motion). */
+function followOpt(o: Opt | null): void {
+  sky.setSpot(o?.at ?? null);
+  if (!o?.at) {
+    window.clearTimeout(followTimer);
     if (typed) {
       typed = null;
       typedSeq++;
@@ -930,43 +1136,77 @@ function onTyped(): void {
     }
     return;
   }
-  const key = `${t.at.ra.toFixed(4)},${t.at.dec.toFixed(4)}`;
+  const at = o.at;
+  const key = `${at.ra.toFixed(4)},${at.dec.toFixed(4)}`;
+  // The same spot again (the list re-rendered, e.g. a SIMBAD answer arrived): leave its pending
+  // flight and lookup alone.
   if (typed?.key === key) return;
-  typed = { key, at: t.at, name: t.title ?? t.name, mjds: null, failed: false };
+  window.clearTimeout(followTimer);
+  typed = { key, at, name: o.title ?? null, mjds: null, failed: false };
   const seq = ++typedSeq;
   if (state.place.kind === 'sky') renderBand();
-  flyToTyped(t.at, key);
   // One of the five: the same photos as its row (its pack's), so the two counts agree.
-  const own = t.id && bandData?.targets[t.id];
+  const own = o.packOf && bandData?.targets[o.packOf];
   if (own) {
     typed.mjds = own.map((f) => f[0]);
     if (state.place.kind === 'sky') renderBand();
-    return;
   }
-  findPhotos(t.at)
-    .then((photos) => {
-      if (seq !== typedSeq || !typed) return;
-      typed.mjds = photos.map((p) => p.mjd);
-    })
-    .catch(() => {
-      if (seq === typedSeq && typed) typed.failed = true;
-    })
-    .finally(() => {
-      if (seq === typedSeq && state.place.kind === 'sky') renderBand();
-    });
+  followTimer = window.setTimeout(() => {
+    flyToTyped(at, key);
+    if (own) return;
+    findPhotos(at)
+      .then((photos) => {
+        if (seq !== typedSeq || !typed) return;
+        typed.mjds = photos.map((p) => p.mjd);
+      })
+      .catch(() => {
+        if (seq === typedSeq && typed) typed.failed = true;
+      })
+      .finally(() => {
+        if (seq === typedSeq && state.place.kind === 'sky') renderBand();
+      });
+  }, 400);
 }
 
 /**
- * The sky turns to a typed spot before Enter: only on a complete name or position, debounced,
- * never twice to the same place, never on load, and not at all under reduced motion.
+ * The sky turns to the active option before Enter: debounced, a short flight, never twice to
+ * the same place, never on load, not on phones (the keyboard covers the sky), and not under
+ * reduced motion.
  */
 function flyToTyped(at: SkyPosition, key: string): void {
-  if (key === lastFlown || prefersReducedMotion()) return;
+  if (key === lastFlown || prefersReducedMotion() || touchOnly) return;
   if (state.place.kind !== 'sky' || state.room !== 'play' || state.entry !== 'inside') return;
   if (sky.steppedOut) return;
   lastFlown = key;
-  void sky.flyTo(at, 20, 1200);
+  void sky.flyTo(at, 20, 600);
 }
+
+const combo = combobox(search, {
+  query: () => refreshOptions(),
+  active: (o) => followOpt((o as Opt | null) ?? null),
+  choose: (o) => {
+    const opt = o as Opt | null;
+    // Only a SIMBAD lookup on the way: wait for it (about a second), then take its answer.
+    if (!opt && simbadPending) {
+      void Promise.race([simbadPending.done, new Promise((r) => setTimeout(r, 1200))]).then(() => {
+        refreshOptions();
+        const next = combo.current() as Opt | null;
+        if (next) {
+          combo.close();
+          setTimeout(next.go, 0);
+        }
+      });
+      return;
+    }
+    if (!opt || opt.note) return;
+    combo.close();
+    // Not inside the keydown: opening a look moves the field from the homepage column to the
+    // header, and moving a focused field mid-event loses keys and autofill (Viewer, 14 Nov).
+    setTimeout(opt.go, 0);
+  },
+  status: copy.home.find.count,
+});
+const searchBox = combo.el;
 
 /** Opens what the field holds: one of the five, a named star, or a live look at a position. */
 function submitSearch(): void {
@@ -2643,53 +2883,15 @@ function renderWords(): Node[] {
 
 /**
  * The homepage column (agreed with Viewer, 14 Nov): the headline, the search field itself
- * (moved here from the header on the homepage only), its echo, one-click examples, Surprise
- * me, and a quiet line for clicking the sky. The scale of the survey is the band's sentence.
+ * (moved here from the header on the homepage only) with its dropdown, which holds the examples
+ * (Sumit: "use them as a drop down… when clicked or start typing"), Surprise me, and a quiet
+ * line for clicking the sky.
  */
 function homeColumn(): HTMLElement[] {
-  const ex = copy.home.examples;
-  const example = (label: string, run: () => void) => {
-    const b = h('button', { type: 'button', class: 'example' }, label);
-    b.addEventListener('click', run);
-    return h('li', {}, b);
-  };
-  // An example types itself, so the visitor sees what a search looks like, then opens.
-  const typeIn = (value: string) => {
-    window.clearTimeout(typedTimer);
-    search.value = value;
-  };
-  const examples = h(
-    'ul',
-    { class: 'examples', 'aria-label': copy.home.examplesLabel },
-    example(ex.w0855, () => {
-      typeIn(ex.w0855Value);
-      submitSearch();
-    }),
-    example(ex.barnard, () => {
-      typeIn(copy.wanderers.barnard.name);
-      submitSearch();
-    }),
-    // A second fast mover, which a live look shows well (Mira saturates SPHEREx, and a look
-    // can't measure brightness; Viewer, 14 Nov).
-    example(ex.teegarden, () => {
-      typeIn(ex.teegardenName);
-      void loadSurprises().then((list) => {
-        const spot = list.find((x) => x.name === ex.teegardenName);
-        if (spot) void openLook({ ra: spot.ra, dec: spot.dec }, spot);
-        else submitSearch();
-      });
-    }),
-  );
   const parts: (HTMLElement | null)[] = [
     h('h2', { class: 'home-headline' }, copy.home.headline),
-    h('div', { class: 'home-search on-sky' }, search, searchEcho),
+    h('div', { class: 'home-search on-sky' }, searchBox),
     searchNote ? h('p', { class: 'hint search-note', role: 'alert' }, searchNote) : null,
-    h(
-      'div',
-      { class: 'home-try' },
-      h('span', { class: 'home-try-label', 'aria-hidden': 'true' }, copy.home.examplesLabel),
-      examples,
-    ),
     surpriseButton(),
     h('p', { class: 'home-quiet' }, touchOnly ? copy.home.quietTouch : copy.home.quiet),
     legend(true),
@@ -4919,7 +5121,7 @@ function render(): void {
   const caret = [search.selectionStart, search.selectionEnd] as const;
   words.replaceChildren(...renderWords());
   // The search input lives in the homepage column, and in the header everywhere else.
-  if (!words.contains(search)) searchAnchor.after(search);
+  if (!words.contains(searchBox)) searchAnchor.after(searchBox);
   if (searchHadFocus && document.activeElement !== search) {
     search.focus({ preventScroll: true });
     if (caret[0] !== null) search.setSelectionRange(caret[0], caret[1]);
