@@ -78,6 +78,9 @@ def run_field(field: dict) -> list[dict]:
         r["field"] = field["field"]
         r["nPhotos"] = [sum(v["n"] for (g, _), v in stacks.items() if g == s) for s in r["seasons"]]
         r["detectors"] = len(r["commonShiftRemoved"])
+        z = np.load(OUT / f"{field['field']}_halves.npz")
+        r["edgeDropped"] = int(z["edge_dropped"][0]) if "edge_dropped" in z.files else None
+        r["rowsFrom"] = str(z["rows_from"][0]) if "rows_from" in z.files else "irsa"
     return res
 
 

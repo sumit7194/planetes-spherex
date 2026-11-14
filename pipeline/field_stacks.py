@@ -36,6 +36,7 @@ HERE = Path(__file__).parent
 OUT = HERE / "yardstick_stacks"
 SIZE = 64
 HALF = int(SIZE * 0.75) + 6
+EDGE_PX = 8  # PLAN.md §8 edge rule
 
 
 # Where the photo list comes from: IRSA's image search (as registered), or our own sky index
@@ -92,10 +93,18 @@ def stack_field(field: dict, mode: str) -> dict:
     gw = bp.out_grid(ra, dec, SIZE)
     labels = groups_of(rows, mode)
     per: dict[tuple[str, int], list] = {}
+    edge_dropped = 0
     for r, e, g in zip(rows, exps, labels):
         if e is None:
             continue
-        img, fl = pp.resample_frame(e, WCS(fits.Header.fromstring(e["wcs_hdr"])), gw, SIZE)
+        w_exp = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+        # The edge rule (prereg/slowmover/PLAN.md §8, 15 Nov): the field centre's own pixel
+        # within EDGE_PX of the detector's edge leaves the photo out, whatever the photo list.
+        nx, ny = w_exp.pixel_shape
+        if min(e["xt"], e["yt"], nx - 1 - e["xt"], ny - 1 - e["yt"]) < EDGE_PX:
+            edge_dropped += 1
+            continue
+        img, fl = pp.resample_frame(e, w_exp, gw, SIZE)
         if np.isfinite(img).mean() < 0.5:
             continue
         per.setdefault((g, e["det"]), []).append((img, fl, e["mjd"]))
@@ -113,6 +122,8 @@ def stack_field(field: dict, mode: str) -> dict:
         out[key + "_flags"] = sfl
         out[key + "_mjd"] = np.array([float(np.mean([m for _, _, m in items]))])
         out[key + "_n"] = np.array([len(items)])
+    out["edge_dropped"] = np.array([edge_dropped])
+    out["rows_from"] = np.array([ROWS_FROM])
     return out
 
 
