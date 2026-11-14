@@ -1991,6 +1991,8 @@ async function surpriseMe(spotIn?: SurpriseSpot): Promise<void> {
       if (!surpriseCancelled) await new Promise((r) => setTimeout(r, 150));
     } finally {
       surpriseFlight = null;
+      // No stale "Flying to…" left in the live region (Viewer).
+      surpriseStatus.textContent = '';
     }
     if (surpriseCancelled || state.place.kind !== 'sky') {
       // The visitor took over: stay where they are, the spot still marked, its dive on offer.

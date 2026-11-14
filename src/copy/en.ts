@@ -424,7 +424,7 @@ export const copy = {
   },
   /** "Surprise me": famous fast stars and variables (public/data/surprise.json, Gaia DR3). */
   surprise: {
-    button: 'Surprise me: a famous fast star',
+    button: 'Surprise me: a famous fast or changing star',
     /** While the sky flies to it (Sumit, 14 Nov: fly, then dive). */
     flying: (name: string) => `Flying to ${name}…`,
     /** After a flight the visitor interrupted: the dive, on offer for a few seconds. */
