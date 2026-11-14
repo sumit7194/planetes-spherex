@@ -8,6 +8,9 @@
  *   GET /v1/frame?key=<S3 key>&ra=&dec=[&size=64][&scale=6.15][&mjd=]
  *       -> binary frame (see encodeFrame), or 204 when the spot is off this photo.
  *   GET /v1/probe?key=&ra=&dec=      -> JSON {x, y, lambdaUm, bandwidthUm} or 204.
+ *   GET /v1/gaia?ra=&dec=&r=         -> JSON {stars: [{id, ra, dec, pmra, pmdec, g}], epoch: 2016}:
+ *                                       Gaia DR3 within r arcsec (<= 120), G < 21, from ESA's
+ *                                       archive (browsers can't query it: no CORS). Cached 30 days.
  *   GET /v1/health                   -> JSON {ok, version, colo}; colo is where the request
  *                                       entered Cloudflare. Where the code ran shows in the
  *                                       cf-placement response header (e.g. remote-ATL).
@@ -91,6 +94,87 @@ function encodeFrame(f: NonNullable<Awaited<ReturnType<typeof readPhoto>>>): Uin
   return out;
 }
 
+const GAIA_TAP = 'https://gea.esac.esa.int/tap-server/tap/sync';
+
+/** Gaia DR3 stars near a position (positions at epoch 2016.0, motions in mas/yr). */
+async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
+  if (!url.searchParams.has('ra') || !url.searchParams.has('dec'))
+    return bad('ra and dec are required');
+  const ra = Number(Number(url.searchParams.get('ra')).toFixed(5));
+  const dec = Number(Number(url.searchParams.get('dec')).toFixed(5));
+  const r = Math.round(Number(url.searchParams.get('r') ?? 30));
+  if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
+  if (!(r >= 1 && r <= 120)) return bad('r must be 1..120 arcsec');
+  const cacheKey = new Request(
+    `https://cache.planetes/${VERSION}/v1/gaia?ra=${ra}&dec=${dec}&r=${r}`,
+  );
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    const h = new Headers(hit.headers);
+    h.set('x-planetes-cache', 'hit');
+    return new Response(hit.body, { status: hit.status, headers: h });
+  }
+  const adql =
+    'SELECT source_id, ra, dec, pmra, pmdec, phot_g_mean_mag FROM gaiadr3.gaia_source ' +
+    `WHERE CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1 ` +
+    'AND phot_g_mean_mag < 21';
+  const q = new URLSearchParams({ REQUEST: 'doQuery', LANG: 'ADQL', FORMAT: 'csv', QUERY: adql });
+  const t0 = Date.now();
+  let text = '';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(`${GAIA_TAP}?${q}`, {
+        headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (!res.ok) throw new Error(`Gaia archive HTTP ${res.status}`);
+      text = await res.text();
+      break;
+    } catch (e) {
+      if (attempt === 2) return bad(`Gaia query failed: ${(e as Error).message}`, 502);
+    }
+  }
+  const lines = text.trim().split(/\r?\n/);
+  const head = (lines.shift() ?? '').split(',');
+  const names = ['source_id', 'ra', 'dec', 'pmra', 'pmdec', 'phot_g_mean_mag'] as const;
+  const at = Object.fromEntries(names.map((n) => [n, head.indexOf(n)])) as Record<
+    (typeof names)[number],
+    number
+  >;
+  if (Object.values(at).some((c) => c < 0)) return bad('Gaia answer had unexpected columns', 502);
+  const num = (v: string | undefined) => (v === undefined || v === '' ? null : Number(v));
+  const stars = lines
+    .filter((l) => l.length)
+    .map((l) => {
+      const f = l.split(',');
+      return {
+        id: f[at.source_id] ?? '',
+        ra: num(f[at.ra]),
+        dec: num(f[at.dec]),
+        pmra: num(f[at.pmra]) ?? 0,
+        pmdec: num(f[at.pmdec]) ?? 0,
+        g: num(f[at.phot_g_mean_mag]),
+      };
+    });
+  const body = JSON.stringify({
+    catalog: 'Gaia DR3',
+    epoch: 2016.0,
+    centre: { ra, dec },
+    radiusArcsec: r,
+    stars,
+  });
+  const h = new Headers({
+    ...CORS,
+    'content-type': 'application/json',
+    'cache-control': 'public, max-age=2592000',
+    'x-planetes-ms': String(Date.now() - t0),
+  });
+  ctx.waitUntil(cache.put(cacheKey, new Response(body, { headers: h })));
+  h.set('x-planetes-cache', 'miss');
+  return new Response(body, { headers: h });
+}
+
 export default {
   async fetch(request: Request, _env: unknown, ctx: ExecutionContext): Promise<Response> {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -107,6 +191,7 @@ export default {
         { headers: { ...CORS, 'cache-control': 'no-store' } },
       );
     }
+    if (route === '/v1/gaia') return gaia(url, ctx);
     if (route !== '/v1/frame' && route !== '/v1/probe') return bad('unknown route', 404);
 
     const key = url.searchParams.get('key') ?? '';

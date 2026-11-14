@@ -18,7 +18,7 @@ export default {
       return Response.json({ error: 'GET /v1/... only' }, { status: 404, headers: CORS });
     }
     const colo = request.cf?.colo ?? '';
-    const cacheable = url.pathname === '/v1/frame' || url.pathname === '/v1/probe';
+    const cacheable = ['/v1/frame', '/v1/probe', '/v1/gaia'].includes(url.pathname);
     const cache = caches.default;
     const key = new Request(url.toString());
     if (cacheable) {
@@ -34,7 +34,11 @@ export default {
     for (const [k, v] of Object.entries(CORS)) h.set(k, v);
     h.set('x-planetes-edge', `miss ${colo}`);
     const body = res.status === 204 ? null : await res.arrayBuffer();
-    if (cacheable && (res.status === 200 || res.status === 204)) {
+    if (
+      cacheable &&
+      (res.status === 200 || res.status === 204) &&
+      h.get('cache-control')?.includes('public')
+    ) {
       ctx.waitUntil(cache.put(key, new Response(body, { status: res.status, headers: h })));
     }
     return new Response(body, { status: res.status, headers: h });

@@ -21,6 +21,17 @@ aws sts get-caller-identity --profile planetes
 ```
 Profile `planetes`: region `us-east-1`, output `json`.
 
+**What this account may use (checked 14 Nov 2026):** it belongs to an AWS Organization (management account 0575…0962) whose policy *explicitly denies* most services.
+| Allowed | Denied |
+|---|---|
+| S3, IAM, CloudWatch Logs, **Lightsail**, Bedrock, Budgets | **Lambda, EC2, ECS, Batch**, CloudFormation, CodeBuild, Glue, EMR Serverless, Athena, Step Functions, DynamoDB, SageMaker, ECR, App Runner |
+
+So "batch jobs next to NASA's data" can't run here as planned (no Lambda or EC2). Options:
+1. a **Lightsail** server in Virginia (allowed; needs an SSH key created and Sumit's OK);
+2. **GitHub Actions** (built the 1.63 M-photo index in 52 min);
+3. **Cloudflare Workers** placed next to the bucket (already doing the live reads);
+4. a different AWS account without these limits.
+
 **Important:** NASA's SPHEREx bucket must be read **without signing** (`--no-sign-request`, or plain HTTPS as our code does). Signed requests from this account get *403 Forbidden*.
 
 The single sign-on steps below are kept for later, if we ever want separate users.

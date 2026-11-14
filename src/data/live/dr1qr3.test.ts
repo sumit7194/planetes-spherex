@@ -123,3 +123,30 @@ describe('the cloud helper frame', () => {
     expect(decodeHelperFrame(buf, photo, 2).tile.size).toBe(2);
   });
 });
+
+describe('the live spectrum blend rule', () => {
+  it('flags a neighbour inside the aperture within 3.3 mag of the target, like the pipeline', async () => {
+    const { blendNeighbours } = await import('./dr1qr3');
+    const at = { ra: 10, dec: 20 };
+    const star = (id: string, dEastArcsec: number, dNorthArcsec: number, g: number | null) => ({
+      id,
+      ra: at.ra + dEastArcsec / 3600 / Math.cos((20 * Math.PI) / 180),
+      dec: at.dec + dNorthArcsec / 3600,
+      pmra: 0,
+      pmdec: 0,
+      g,
+    });
+    const stars = [
+      star('target', 0.3, 0, 15),
+      star('close-bright', 8, 0, 17), // inside, within 3.3 mag: counts
+      star('close-faint', 0, -9, 19), // inside, 4 mag fainter: ignored
+      star('outside', 20, 0, 12), // outside the 15.4" aperture: ignored
+    ];
+    const n = blendNeighbours(at, stars, 15.375);
+    expect(n).toHaveLength(1);
+    expect(n[0]).toContain('close-bright');
+    // Target not in Gaia: anything brighter than G 19.5 inside counts.
+    const n2 = blendNeighbours(at, stars.slice(1), 15.375);
+    expect(n2.map((s) => s.split(' ')[2])).toEqual(['close-bright', 'close-faint']);
+  });
+});

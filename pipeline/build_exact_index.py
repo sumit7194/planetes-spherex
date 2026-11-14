@@ -13,13 +13,17 @@ Output: <out>/index.json, <out>/t/<band>_<bin>.bin with 152-byte records, little
          24  crval1 f64, crval2 f64                 (deg)
          40  crpix1 f32, crpix2 f32                 (FITS 1-based)
          48  pc11 f32, pc12 f32, pc21 f32, pc22 f32 (CDELT folded in: deg per pixel)
-         64  ap[10] f32, then bp[10] f32           (reverse SIP, terms p+q <= 3 in the order
+         64  a[10] f32, then b[10] f32             (FORWARD SIP A/B, terms p+q <= 3 in the order
                                                     (0,0) (0,1) (0,2) (0,3) (1,0) (1,1) (1,2) (2,0) (2,1) (3,0))
         144  image_offset u32                       (byte where IMAGE data starts)
         148  flags_header_blocks u16               (FLAGS header length / 2880)
-        150  sip_order u8, pad u8
+        150  sip_order u8 (A_ORDER), pad u8
+        Pixel of a sky position: TAN projection with CRVAL -> (U, V) by the inverse PC, then solve
+        u + A(u, v) = U, v + B(u, v) = V (a few fixed-point steps from u = U), x = u + crpix - 1.
+        This is exact (astropy's inverse); the files' reverse polynomial AP/BP is ~0.003 px off.
         Tiles: 2-degree declination bands, RA bins of ~2 deg (bins[k] in index.json).
-        Plus <out>/wave_d<1-6>.json: each detector's WCS-WAVE table (identical across photos).
+        Plus <out>/wave_<dr1|qr3>_d<1-6>.json: each detector's WCS-WAVE table per release
+        (identical across photos of a release).
 
 Usage: python build_exact_index.py --out public/data/index/dr1qr3x [--limit N] [--conc 256]
 """
@@ -118,10 +122,10 @@ def record(raw: bytes, h: fits.Header, img_off: int, fblocks: int) -> bytes:
         pc = [h["CD1_1"], h.get("CD1_2", 0.0), h.get("CD2_1", 0.0), h["CD2_2"]]
     else:
         pc = [c1 * h.get("PC1_1", 1.0), c1 * h.get("PC1_2", 0.0), c2 * h.get("PC2_1", 0.0), c2 * h.get("PC2_2", 1.0)]
-    ap = [float(h.get(f"AP_{p}_{q}", 0.0)) for p, q in SIP_TERMS]
-    bp = [float(h.get(f"BP_{p}_{q}", 0.0)) for p, q in SIP_TERMS]
+    ap = [float(h.get(f"A_{p}_{q}", 0.0)) for p, q in SIP_TERMS]
+    bp = [float(h.get(f"B_{p}_{q}", 0.0)) for p, q in SIP_TERMS]
     return RECORD.pack(raw, h["CRVAL1"], h["CRVAL2"], h["CRPIX1"], h["CRPIX2"], *pc, *ap, *bp,
-                       img_off, fblocks, int(h.get("AP_ORDER", 0)))
+                       img_off, fblocks, int(h.get("A_ORDER", 0)))
 
 
 async def main_async(out: Path, limit: int, conc: int):
@@ -150,21 +154,34 @@ async def main_async(out: Path, limit: int, conc: int):
     for (k, b), recs in tiles.items():
         (out / "t" / f"{k}_{b}.bin").write_bytes(b"PXX1" + struct.pack("<I", len(recs)) + b"".join(recs))
         n += len(recs)
-    # The six colour tables, once each.
+    # The colour tables, once per detector and release (Physics: key them by release; QR2 and DR1
+    # differ by 0.0064 um in D5/D6, so a future release may too). Also records whether DR1 and
+    # QR3 are identical here.
+    same = {}
     async with aiohttp.ClientSession() as s:
         rd = sx.RangeReader(s)
         for d in range(1, 7):
-            url = next(u for _, _, _, det, u in rows if det == d)
-            t = await sx.read_wave(rd, url)
-            (out / f"wave_d{d}.json").write_text(json.dumps(dict(detector=d, x=t["x"].tolist(), y=t["y"].tolist(),
-                                                                  values_um=np.round(t["vals"], 6).tolist(),
-                                                                  layout="values_um[y][x] = [wavelength, bandwidth]; x, y are 1-based FITS pixels")))
+            tabs = {}
+            for rel in ("dr1", "qr3"):
+                url = next((u for _, _, _, det, u in rows if det == d and f"/{rel}/" in u), None)
+                if url is None:
+                    continue
+                t = await sx.read_wave(rd, url)
+                tabs[rel] = t
+                (out / f"wave_{rel}_d{d}.json").write_text(json.dumps(dict(
+                    detector=d, release=rel.upper(), source=url, x=t["x"].tolist(), y=t["y"].tolist(),
+                    values_um=np.round(t["vals"], 6).tolist(),
+                    layout="values_um[y][x] = [wavelength, bandwidth]; x, y are 1-based FITS pixels")))
+            if len(tabs) == 2:
+                same[d] = bool(np.array_equal(tabs["dr1"]["vals"], tabs["qr3"]["vals"]))
     basic = json.loads((BASE / "index.json").read_text())
     (out / "index.json").write_text(json.dumps(dict(
-        format="planetes-exactindex/1", release="dr1qr3", recordBytes=RECORD.size,
+        format="planetes-exactindex/2", release="dr1qr3", recordBytes=RECORD.size,
+        recordStruct=RECORD.format, sipKind="forward",
         recordLayout=__doc__.split("Output:")[1].split("Plus")[0].strip(),
         sipTerms=SIP_TERMS, bandDeg=BAND_DEG, bins=[bins_in_band(k) for k in range(int(180 / BAND_DEG))],
         maxHalfDeg=basic["maxHalfDeg"], folders=basic["folders"], photos=n, failed=failed,
+        waveTables="wave_<release>_d<detector>.json", waveSameDr1Qr3=same,
         built=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())), separators=(",", ":")))
     print(json.dumps(dict(photos=n, failed=failed, tiles=len(tiles), seconds=round(time.time() - t0))), file=sys.stderr)
 

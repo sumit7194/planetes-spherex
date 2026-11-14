@@ -713,7 +713,7 @@ export interface Probe {
  * which must read NASA directly). VITE_PLANETES_HELPER sets another address, or 'off'.
  */
 export const DEFAULT_HELPER = 'https://planetes-edge.planetes.workers.dev';
-const HELPER_TIMEOUT_MS = { probe: 6_000, frame: 10_000 };
+const HELPER_TIMEOUT_MS = { probe: 6_000, frame: 10_000, gaia: 25_000 };
 const HELPER_PAUSE_MS = 60_000;
 let helperBase: string | null = (() => {
   if (typeof document === 'undefined') return null;
@@ -1060,8 +1060,79 @@ export interface LiveSpectrum {
   /** The pack pipeline's rule: ≥ 80% of photos usable and a median S/N ≥ 10. */
   status: 'measured' | 'binned only' | 'not measurable';
   reason: string;
-  /** The browser can't query Gaia here, so neighbours inside the aperture aren't checked. */
-  blendChecked: false;
+  /**
+   * Whether known stars inside the aperture were checked (Gaia DR3, through the cloud helper;
+   * the browser can't query Gaia itself). False when the helper is off or Gaia didn't answer.
+   */
+  blendChecked: boolean;
+  /** Gaia stars inside the aperture bright enough to add their light (empty when none or unchecked). */
+  neighbours: string[];
+}
+
+export interface GaiaStar {
+  id: string;
+  ra: number;
+  dec: number;
+  pmra: number;
+  pmdec: number;
+  g: number | null;
+}
+
+/**
+ * Gaia DR3 stars within `radiusArcsec` (positions at epoch 2016.0), through the cloud helper.
+ * Null when the helper is off or the query fails: callers then say "not checked".
+ */
+export async function gaiaNear(
+  at: SkyPosition,
+  radiusArcsec: number,
+  signal?: AbortSignal,
+): Promise<GaiaStar[] | null> {
+  // Not through tryHelper: a slow Gaia archive must not pause the helper for photos.
+  if (!helperActive()) return null;
+  try {
+    const r = await helperGet(
+      `${helperBase}/v1/gaia?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}`,
+      'gaia',
+      signal,
+    );
+    if (!r) return null;
+    const d = (await r.json()) as { stars: GaiaStar[] };
+    return d.stars.filter((x) => Number.isFinite(x.ra) && Number.isFinite(x.dec));
+  } catch (e) {
+    if (signal?.aborted) throw e;
+    return null;
+  }
+}
+
+/**
+ * The pack pipeline's blend rule (planetes_pack.write_spectrum): the target is the Gaia star
+ * within 2″ of the spot; a neighbour counts if it sits inside the aperture (2″ < sep ≤ aperture)
+ * and is within 3.3 mag of the target (5% of its light), or brighter than G 19.5 when the target
+ * isn't in Gaia. Positions moved to 2026.0 by proper motion.
+ */
+export function blendNeighbours(
+  at: SkyPosition,
+  stars: GaiaStar[],
+  apertureArcsec: number,
+): string[] {
+  const dt = 2026.0 - 2016.0;
+  const seps = stars.map((x) => {
+    const dec = x.dec + (x.pmdec * dt) / 3.6e6;
+    const ra = x.ra + (x.pmra * dt) / 3.6e6 / Math.max(1e-6, Math.cos(x.dec * RAD));
+    let dra = ra - at.ra;
+    if (dra > 180) dra -= 360;
+    if (dra < -180) dra += 360;
+    const sep = Math.hypot(dra * Math.cos(at.dec * RAD), dec - at.dec) * 3600;
+    return { sep, x };
+  });
+  const me = seps.filter((s) => s.sep <= 2).sort((a, b) => a.sep - b.sep)[0];
+  const limit = me?.x.g != null ? me.x.g + 3.3 : 19.5;
+  return seps
+    .filter((s) => s.sep > 2 && s.sep <= apertureArcsec && (s.x.g ?? 99) < limit)
+    .sort((a, b) => a.sep - b.sep)
+    .map(
+      (s) => `Gaia DR3 ${s.x.id} (G ${(s.x.g ?? NaN).toFixed(2)}) ${s.sep.toFixed(1)} arcsec away`,
+    );
 }
 
 /**
@@ -1080,6 +1151,12 @@ export async function liveSpectrum(
   } = {},
 ): Promise<LiveSpectrum> {
   const per = opts.perDetector ?? 10;
+  // Known neighbours, asked in parallel with the photos (the aperture is APER_PX grid pixels).
+  const apertureArcsec = APER_PX * 6.15;
+  const gaia = gaiaNear(at, Math.ceil(apertureArcsec) + 5, opts.signal).catch((e: unknown) => {
+    if (opts.signal?.aborted) throw e;
+    return null;
+  });
   const seasons = seasonsOf(photos);
   const withSeason = photos.map((p, i) => ({ p, s: seasons[i]! }));
   const chosen = [1, 2, 3, 4, 5, 6].flatMap((d) =>
@@ -1147,5 +1224,11 @@ export async function liveSpectrum(
     status = 'not measurable';
     reason = `nothing bright enough here: median S/N ${medSn.toFixed(1)} per photo`;
   }
-  return { points, flagged, status, reason, blendChecked: false };
+  const stars = await gaia;
+  const neighbours = stars ? blendNeighbours(at, stars, apertureArcsec) : [];
+  if (neighbours.length) {
+    status = 'not measurable';
+    reason = `blended: ${neighbours.join('; ')} lies inside the aperture, so its light would be counted`;
+  }
+  return { points, flagged, status, reason, blendChecked: stars !== null, neighbours };
 }
