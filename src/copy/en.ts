@@ -997,7 +997,7 @@ export const copy = {
       title: 'How faint and slow a mover can that search find?',
       what: 'Fake slow movers planted in 40 other fields, with false alarms counted on 200 more; the plan, the fields and the scores were fixed before any photo is read.',
       status:
-        'Planned and written down; the registration commit waits on two model spectra still downloading. Not run yet.',
+        'Registered before any photo is read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). Not run yet.',
     },
     twins: {
       title: 'Finding stars with the same colours',
