@@ -42,11 +42,17 @@ export function combobox(
     active: (o: ComboOption | null) => void;
     choose: (o: ComboOption | null) => void;
     status: (n: number) => string;
+    labels: { field: string; list: string };
   },
 ): Combobox {
   const listId = `search-list-${++uid}`;
-  const list = h('ul', { class: 'combo-list', id: listId, role: 'listbox' });
-  const footerEl = h('p', { class: 'combo-footer' });
+  const list = h('ul', {
+    class: 'combo-list',
+    id: listId,
+    role: 'listbox',
+    'aria-label': on.labels.list,
+  });
+  const footerEl = h('p', { class: 'combo-footer', id: `${listId}-hint` });
   const pop = h('div', { class: 'combo-pop', hidden: true }, list, footerEl);
   const live = h('p', { class: 'visually-hidden', role: 'status' });
   const el = h('div', { class: 'combo' }, input, pop, live);
@@ -54,6 +60,9 @@ export function combobox(
   input.setAttribute('aria-autocomplete', 'list');
   input.setAttribute('aria-expanded', 'false');
   input.setAttribute('aria-controls', listId);
+  // A short name; the long hint stays a description (Viewer: the title was its only name).
+  input.setAttribute('aria-label', on.labels.field);
+  input.setAttribute('aria-describedby', `${listId}-hint`);
 
   let options: ComboOption[] = [];
   let active = -1;

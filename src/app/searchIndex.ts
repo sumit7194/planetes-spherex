@@ -24,6 +24,8 @@ export interface Entry {
 export interface Match {
   entry: Entry;
   score: number;
+  /** How well the name itself matched: 1000 exact, ~800 prefix, 600 word starts, 400 inside, ≤200 one typo. */
+  base: number;
 }
 
 const GREEK: [string, string, string[]][] = [
@@ -107,7 +109,7 @@ function nameScore(name: string, q: string): number {
   let k = 0;
   for (const w of words) if (k < qw.length && w.startsWith(qw[k] ?? '')) k++;
   if (k === qw.length) return 600;
-  if (qc.length >= 3 && n.includes(qc)) return 400;
+  if (qc.length >= 4 && n.includes(qc)) return 400;
   // One typo, on a prefix of the same length (from 4 letters on: "barnrd", "betelguese").
   if (qc.length >= 4 && withinOne(n.slice(0, qc.length), qc)) return 200;
   if (qc.length >= 4 && withinOne(n.slice(0, qc.length + 1), qc)) return 190;
@@ -120,14 +122,21 @@ export function search(index: Entry[], query: string, limit = 6): Match[] {
   if (!q) return [];
   const best = new Map<string, Match>();
   for (const e of index) {
-    let s = 0;
-    for (const nm of e.names) s = Math.max(s, nameScore(normalise(nm), q));
-    if (!s) continue;
-    s += KIND_WEIGHT[e.kind] + (e.mag !== undefined ? Math.max(0, 6 - e.mag) * 2 : 0);
+    let base = 0;
+    for (const nm of e.names) base = Math.max(base, nameScore(normalise(nm), q));
+    if (!base) continue;
+    const s = base + KIND_WEIGHT[e.kind] + (e.mag !== undefined ? Math.max(0, 6 - e.mag) * 2 : 0);
     const had = best.get(e.id);
-    if (!had || had.score < s) best.set(e.id, { entry: e, score: s });
+    if (!had || had.score < s) best.set(e.id, { entry: e, score: s, base });
   }
-  return [...best.values()].sort((a, b) => b.score - a.score).slice(0, limit);
+  let out = [...best.values()].sort((a, b) => b.score - a.score);
+  // A typo guess is noise once something matches as typed ("vega" mustn't offer Vela).
+  if (out.some((m) => m.base >= 600)) out = out.filter((m) => m.base > 200);
+  // One object under two names (Mira: a surprise spot and an IAU star): keep the first.
+  const kept: Match[] = [];
+  for (const m of out)
+    if (!kept.some((k) => separationDeg(k.entry.at, m.entry.at) < 1 / 60)) kept.push(m);
+  return kept.slice(0, limit);
 }
 
 /** Known things near a position, nearest first (the five always win ties), within `radiusDeg`. */

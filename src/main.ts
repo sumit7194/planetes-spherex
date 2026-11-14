@@ -44,6 +44,7 @@ import {
   findPhotos,
   helperActive,
   liveSpectrum,
+  helperAddress,
   probePhoto,
   readPhoto,
   warmUp,
@@ -276,7 +277,6 @@ const search = h('input', {
   spellcheck: 'false',
   // Positions are ICRS (J2000): an old B1950 position is up to ~0.7° off by precession alone.
   title: copy.search.frame,
-  'aria-description': copy.search.frame,
 });
 /**
  * The wordmark is the way home: from a show it goes back to the sky (aimed at the light just
@@ -641,9 +641,25 @@ const searchKey = (s: string) =>
 
 /** What people call the five, so "Barnard's Star" or "eps Ind B" finds them like a position. */
 const WANDERER_NAMES: Record<TargetId, string[]> = {
-  barnard: ["Barnard's Star", 'Barnard', 'Barnards star', 'GJ 699', 'HIP 87937'],
-  w0855: ['WISE 0855', 'WISE 0855-0714', 'WISE J0855', 'WISE J085510.83-071442.5'],
-  'epsind-b': ['Epsilon Indi B', 'eps Ind B', 'ε Indi B', 'Epsilon Indi Ba', 'Epsilon Indi Bb'],
+  barnard: ["Barnard's Star", 'Barnard', 'Barnards star', 'GJ 699', 'HIP 87937', 'BD+04 3561a'],
+  w0855: [
+    'WISE 0855',
+    'W0855',
+    'WISE 0855-0714',
+    'WISE J0855',
+    'WISE J0855-0714',
+    'WISE J0855−0714',
+    'WISE J085510.83-071442.5',
+    'WISE J085510.83−071442.5',
+  ],
+  'epsind-b': [
+    'Epsilon Indi B',
+    'eps Ind B',
+    'eps Indi B',
+    'ε Indi B',
+    'Epsilon Indi Ba',
+    'Epsilon Indi Bb',
+  ],
   'rw-aur': ['RW Aurigae', 'RW Aur'],
   'r-dra': ['R Draconis', 'R Dra'],
 };
@@ -905,13 +921,12 @@ type Resolved = {
 const simbadCache = new Map<string, Resolved | 'failed'>();
 let simbadPending: { key: string; abort: AbortController; done: Promise<void> } | null = null;
 let simbadTimer = 0;
-const HELPER = 'https://planetes-edge.planetes.workers.dev';
 function lookUp(q: string): void {
   const key = normalise(q);
   if (simbadCache.has(key) || simbadPending?.key === key) return;
   simbadPending?.abort.abort();
   const abort = new AbortController();
-  const done = fetch(`${HELPER}/v1/resolve?name=${encodeURIComponent(q.trim())}&v=2`, {
+  const done = fetch(`${helperAddress()}/v1/resolve?name=${encodeURIComponent(q.trim())}&v=2`, {
     signal: AbortSignal.any([abort.signal, AbortSignal.timeout(6000)]),
   })
     .then((r) =>
@@ -1079,12 +1094,18 @@ function buildOptions(q: string): { opts: Opt[]; footer: string } {
       footer: '',
     };
   }
-  const local = searchNames(searchIndex, t, 6).map((m) => entryOpt(m.entry));
+  const matches = searchNames(searchIndex, t, 6);
+  const local = matches.map((m) => entryOpt(m.entry));
   const opts: Opt[] = [...local];
-  // Beyond our own names: SIMBAD, after 3 letters, when few local matches, debounced.
-  if (t.length >= 3 && local.length < 3) {
+  // Beyond our own names: SIMBAD, after 3 letters, when few local matches, debounced, and never
+  // when a local name already answers (exactly or as its start) or one of the five does: the
+  // typed text goes to CDS only for names the page doesn't know (Viewer; our credits say so).
+  const answered = matches.some((m) => m.base >= 700 || m.entry.kind === 'test');
+  if (t.length >= 3 && local.length < 3 && !answered) {
     const r = simbadCache.get(normalise(t));
-    if (r === undefined) {
+    if (!helperAddress())
+      opts.push({ id: 'note:nohelper', label: f.noHelper, note: true, go: () => undefined });
+    else if (r === undefined) {
       opts.push({ id: 'note:looking', label: f.looking(t), note: true, go: () => undefined });
       window.clearTimeout(simbadTimer);
       simbadTimer = window.setTimeout(() => lookUp(t), 300);
@@ -1104,7 +1125,12 @@ function buildOptions(q: string): { opts: Opt[]; footer: string } {
         id: `simbad:${normalise(r.name ?? t)}`,
         label: r.name ?? t,
         tag: f.tags.simbad,
-        meta: f.simbadMeta(r.type ?? null, moved),
+        meta: [
+          f.simbadMeta(r.type ? (f.types[r.type] ?? f.otherType) : f.otherType, moved),
+          ...WANDERERS.filter((w) => separationDeg(w.at, at) < 0.25).map((w) =>
+            f.nearFive(copy.wanderers[w.id].name, awayText(separationDeg(w.at, at))),
+          ),
+        ].join(' · '),
         at,
         title: r.name ?? t,
         go: () => {
@@ -1205,6 +1231,7 @@ const combo = combobox(search, {
     setTimeout(opt.go, 0);
   },
   status: copy.home.find.count,
+  labels: { field: copy.home.find.label, list: copy.home.find.results },
 });
 const searchBox = combo.el;
 

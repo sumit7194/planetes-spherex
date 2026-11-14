@@ -58,6 +58,7 @@ describe('search as you type', () => {
   });
   it('finds substrings from three letters', () => {
     expect(names('salha')).toEqual(['Rasalhague']);
+    expect(names('lla')).toEqual([]); // under four letters, only starts count
   });
   it('lists what is near a position, nearest first, the five winning ties', () => {
     const near = nearby(INDEX, { ra: 269.0, dec: 5.0 }, 10);

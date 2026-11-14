@@ -888,6 +888,11 @@ let helperBase: string | null = (() => {
 let helperFailures = 0;
 let helperPausedUntil = 0;
 
+/** The helper's address (null when it's off), for its other routes (e.g. /v1/resolve). */
+export function helperAddress(): string | null {
+  return helperBase;
+}
+
 /** Whether reads go through the helper right now (on, and not paused after failures). */
 export function helperActive(): boolean {
   return helperBase !== null && Date.now() >= helperPausedUntil;
