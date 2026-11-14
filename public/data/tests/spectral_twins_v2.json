@@ -1,0 +1,98 @@
+{
+ "cosine5": {
+  "bp_rp": {
+   "ratio": 0.252,
+   "ci95": [
+    0.121,
+    0.307
+   ],
+   "n": 36
+  },
+  "logg_resid": {
+   "ratio": 0.281,
+   "ci95": [
+    0.17,
+    1.007
+   ],
+   "n": 21
+  },
+  "w1w2_resid": {
+   "ratio": 1.142,
+   "ci95": [
+    0.687,
+    1.551
+   ],
+   "n": 26
+  },
+  "sameField": {
+   "observed": 0.611,
+   "expectedIfNoField": 0.283
+  },
+  "mutualPairs": 10
+ },
+ "euclid4": {
+  "bp_rp": {
+   "ratio": 0.147,
+   "ci95": [
+    0.077,
+    0.286
+   ],
+   "n": 36
+  },
+  "logg_resid": {
+   "ratio": 0.335,
+   "ci95": [
+    0.161,
+    1.13
+   ],
+   "n": 27
+  },
+  "w1w2_resid": {
+   "ratio": 1.213,
+   "ci95": [
+    0.35,
+    1.447
+   ],
+   "n": 23
+  },
+  "sameField": {
+   "observed": 0.556,
+   "expectedIfNoField": 0.283
+  },
+  "mutualPairs": 8
+ },
+ "heldOutBins": {
+  "bins_um": [
+   2.18,
+   2.36,
+   4.441,
+   4.806
+  ],
+  "medianErrTwin_dex": 0.0217,
+  "medianErrRandom_dex": 0.0597,
+  "ratio": 0.363,
+  "ci95": [
+   0.198,
+   0.595
+  ]
+ },
+ "flags": {
+  "anySaturatedPhoto": 36,
+  "gaiaVariable": 1,
+  "interpolatedBins": {
+   "0": 36,
+   "1": 0,
+   "2": 0,
+   "3": 0,
+   "4": 0
+  },
+  "byG": {
+   "<12": 2,
+   "12-14": 11,
+   "14-16": 23
+  },
+  "withLogg": 30,
+  "withW1W2": 29
+ },
+ "doc": "v2 (14 Nov 2026, after Neural's review of v1): descriptive, on the same 36 stars; v1's PASS stands\nbut is \"easy\" (PC1 is the continuum slope, i.e. temperature, so BP-RP agreement is nearly given).\n  - Twins by Euclidean distance in 4 PCs (amplitude kept), beside v1's cosine in 5.\n  - Residual tests (what BP-RP can't predict): Gaia DR3 logg_gspphot and CatWISE2020 W1-W2, each\n    with its linear trend on BP-RP removed; twin |residual difference| vs random pairs.\n  - Held-out bins: PCA fit on 20 bins; the 4 withheld (2 near 2.2-2.5 um, 2 at 4.2-5 um) predicted\n    by the twin's; error vs the error using a random star.\n  - Bootstrap 95% CIs over stars (2,000 draws, seed 20261114).\n  - Field leakage: share of twins in the star's own field vs the share expected from field sizes.\n  - Flags reported: stars with any saturated aperture photo, Gaia phot_variable_flag VARIABLE,\n    bins interpolated, results by G bin."
+}

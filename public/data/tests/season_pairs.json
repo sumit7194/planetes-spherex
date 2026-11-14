@@ -1,0 +1,1194 @@
+{
+ "barnard": [
+  {
+   "seasons": [
+    0,
+    1
+   ],
+   "years": 0.55,
+   "sources": 22,
+   "glareVetoed": 4,
+   "notSearchedFraction": 0.197,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.016,
+      -0.001
+     ],
+     "fromGaiaQuiet": true,
+     "n": 17
+    },
+    "2": {
+     "px": [
+      -0.038,
+      0.007
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "3": {
+     "px": [
+      -0.025,
+      -0.01
+     ],
+     "fromGaiaQuiet": true,
+     "n": 16
+    },
+    "4": {
+     "px": [
+      0.004,
+      0.014
+     ],
+     "fromGaiaQuiet": true,
+     "n": 17
+    },
+    "5": {
+     "px": [
+      -0.018,
+      0.016
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "6": {
+     "px": [
+      -0.038,
+      0.012
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    }
+   },
+   "measured": 18,
+   "steadyScatterPx": 0.031,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    0,
+    2
+   ],
+   "years": 0.99,
+   "sources": 22,
+   "glareVetoed": 4,
+   "notSearchedFraction": 0.197,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.009,
+      -0.004
+     ],
+     "fromGaiaQuiet": true,
+     "n": 17
+    },
+    "2": {
+     "px": [
+      0.005,
+      -0.006
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "3": {
+     "px": [
+      -0.012,
+      -0.003
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "4": {
+     "px": [
+      -0.006,
+      0.003
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "5": {
+     "px": [
+      -0.013,
+      0.007
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "6": {
+     "px": [
+      -0.01,
+      -0.008
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    }
+   },
+   "measured": 18,
+   "steadyScatterPx": 0.026,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    1,
+    2
+   ],
+   "years": 0.43,
+   "sources": 22,
+   "glareVetoed": 4,
+   "notSearchedFraction": 0.197,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.032,
+      0.013
+     ],
+     "fromGaiaQuiet": true,
+     "n": 16
+    },
+    "2": {
+     "px": [
+      0.028,
+      -0.01
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "3": {
+     "px": [
+      0.011,
+      0.014
+     ],
+     "fromGaiaQuiet": true,
+     "n": 16
+    },
+    "4": {
+     "px": [
+      -0.003,
+      -0.016
+     ],
+     "fromGaiaQuiet": true,
+     "n": 17
+    },
+    "5": {
+     "px": [
+      0.017,
+      -0.015
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    },
+    "6": {
+     "px": [
+      0.015,
+      -0.018
+     ],
+     "fromGaiaQuiet": true,
+     "n": 18
+    }
+   },
+   "measured": 18,
+   "steadyScatterPx": 0.025,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  }
+ ],
+ "epsind-b": [
+  {
+   "seasons": [
+    0,
+    1
+   ],
+   "years": 0.42,
+   "sources": 15,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.007,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.026,
+      -0.033
+     ],
+     "fromGaiaQuiet": true,
+     "n": 5
+    },
+    "2": {
+     "px": [
+      0.032,
+      -0.018
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "3": {
+     "px": [
+      0.026,
+      -0.026
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "4": {
+     "px": [
+      -0.035,
+      0.04
+     ],
+     "fromGaiaQuiet": true,
+     "n": 4
+    },
+    "5": {
+     "px": [
+      -0.014,
+      -0.025
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "6": {
+     "px": [
+      0.011,
+      0.001
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    }
+   },
+   "measured": 15,
+   "steadyScatterPx": 0.052,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    0,
+    2
+   ],
+   "years": 0.98,
+   "sources": 15,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.007,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.061,
+      0.012
+     ],
+     "fromGaiaQuiet": true,
+     "n": 5
+    },
+    "2": {
+     "px": [
+      -0.01,
+      -0.025
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "3": {
+     "px": [
+      -0.045,
+      -0.049
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "4": {
+     "px": [
+      -0.067,
+      0.041
+     ],
+     "fromGaiaQuiet": true,
+     "n": 4
+    },
+    "5": {
+     "px": [
+      -0.003,
+      0.008
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "6": {
+     "px": [
+      -0.028,
+      0.079
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    }
+   },
+   "measured": 15,
+   "steadyScatterPx": 0.094,
+   "candidates": [
+    {
+     "x": 32.0,
+     "y": 31.0,
+     "fromCentrePx": 0.7,
+     "shiftPx": 0.73,
+     "shiftEastNorth": [
+      3.82,
+      -2.3
+     ],
+     "arcsecPerYr": 4.55,
+     "detectors": 4,
+     "significance": 7.8,
+     "peak": 4.17
+    }
+   ],
+   "targetRank": 1,
+   "nCandidates": 1
+  },
+  {
+   "seasons": [
+    0,
+    3
+   ],
+   "years": 1.39,
+   "sources": 15,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.007,
+   "commonShiftRemoved": {
+    "2": {
+     "px": [
+      0.026,
+      -0.036
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "3": {
+     "px": [
+      0.026,
+      0.002
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "5": {
+     "px": [
+      0.011,
+      -0.03
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "6": {
+     "px": [
+      0.031,
+      -0.012
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    }
+   },
+   "measured": 15,
+   "steadyScatterPx": 0.039,
+   "candidates": [
+    {
+     "x": 32.0,
+     "y": 31.0,
+     "fromCentrePx": 0.7,
+     "shiftPx": 1.02,
+     "shiftEastNorth": [
+      5.07,
+      -3.69
+     ],
+     "arcsecPerYr": 4.53,
+     "detectors": 4,
+     "significance": 26.2,
+     "peak": 4.17
+    }
+   ],
+   "targetRank": 1,
+   "nCandidates": 1
+  },
+  {
+   "seasons": [
+    1,
+    2
+   ],
+   "years": 0.54,
+   "sources": 15,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.007,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.032,
+      -0.009
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "2": {
+     "px": [
+      -0.023,
+      -0.007
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "3": {
+     "px": [
+      -0.073,
+      -0.002
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "4": {
+     "px": [
+      0.004,
+      0.022
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "5": {
+     "px": [
+      -0.025,
+      0.068
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "6": {
+     "px": [
+      -0.053,
+      0.077
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    }
+   },
+   "measured": 15,
+   "steadyScatterPx": 0.065,
+   "candidates": [
+    {
+     "x": 32.0,
+     "y": 31.0,
+     "fromCentrePx": 0.7,
+     "shiftPx": 0.4,
+     "shiftEastNorth": [
+      2.3,
+      -0.91
+     ],
+     "arcsecPerYr": 4.61,
+     "detectors": 6,
+     "significance": 6.1,
+     "peak": 4.17
+    }
+   ],
+   "targetRank": 1,
+   "nCandidates": 1
+  },
+  {
+   "seasons": [
+    1,
+    3
+   ],
+   "years": 0.97,
+   "sources": 15,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.007,
+   "commonShiftRemoved": {
+    "2": {
+     "px": [
+      -0.008,
+      0.009
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "3": {
+     "px": [
+      -0.023,
+      0.026
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "5": {
+     "px": [
+      0.008,
+      0.0
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "6": {
+     "px": [
+      0.003,
+      -0.005
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    }
+   },
+   "measured": 15,
+   "steadyScatterPx": 0.078,
+   "candidates": [
+    {
+     "x": 32.0,
+     "y": 31.0,
+     "fromCentrePx": 0.7,
+     "shiftPx": 0.73,
+     "shiftEastNorth": [
+      3.79,
+      -2.37
+     ],
+     "arcsecPerYr": 4.61,
+     "detectors": 4,
+     "significance": 9.4,
+     "peak": 4.17
+    }
+   ],
+   "targetRank": 1,
+   "nCandidates": 1
+  },
+  {
+   "seasons": [
+    2,
+    3
+   ],
+   "years": 0.42,
+   "sources": 15,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.007,
+   "commonShiftRemoved": {
+    "2": {
+     "px": [
+      0.03,
+      0.013
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "3": {
+     "px": [
+      0.061,
+      0.049
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "5": {
+     "px": [
+      0.014,
+      -0.027
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    },
+    "6": {
+     "px": [
+      0.103,
+      -0.045
+     ],
+     "fromGaiaQuiet": true,
+     "n": 13
+    }
+   },
+   "measured": 15,
+   "steadyScatterPx": 0.086,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  }
+ ],
+ "w0855": [
+  {
+   "seasons": [
+    0,
+    1
+   ],
+   "years": 0.53,
+   "sources": 36,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.004,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.034,
+      -0.012
+     ],
+     "fromGaiaQuiet": true,
+     "n": 28
+    },
+    "2": {
+     "px": [
+      -0.02,
+      0.012
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "3": {
+     "px": [
+      -0.028,
+      0.026
+     ],
+     "fromGaiaQuiet": true,
+     "n": 22
+    },
+    "4": {
+     "px": [
+      -0.003,
+      -0.009
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "5": {
+     "px": [
+      -0.015,
+      -0.005
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "6": {
+     "px": [
+      0.127,
+      -0.05
+     ],
+     "fromGaiaQuiet": true,
+     "n": 28
+    }
+   },
+   "measured": 36,
+   "steadyScatterPx": 0.25,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    0,
+    2
+   ],
+   "years": 0.99,
+   "sources": 36,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.004,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.003,
+      0.002
+     ],
+     "fromGaiaQuiet": true,
+     "n": 29
+    },
+    "2": {
+     "px": [
+      -0.002,
+      -0.004
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "3": {
+     "px": [
+      -0.014,
+      0.063
+     ],
+     "fromGaiaQuiet": true,
+     "n": 22
+    },
+    "4": {
+     "px": [
+      -0.025,
+      -0.017
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "5": {
+     "px": [
+      0.007,
+      -0.006
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "6": {
+     "px": [
+      0.077,
+      -0.07
+     ],
+     "fromGaiaQuiet": true,
+     "n": 28
+    }
+   },
+   "measured": 36,
+   "steadyScatterPx": 0.247,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    1,
+    2
+   ],
+   "years": 0.47,
+   "sources": 36,
+   "glareVetoed": 0,
+   "notSearchedFraction": 0.004,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.035,
+      -0.001
+     ],
+     "fromGaiaQuiet": true,
+     "n": 29
+    },
+    "2": {
+     "px": [
+      0.032,
+      -0.014
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "3": {
+     "px": [
+      0.034,
+      0.027
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "4": {
+     "px": [
+      -0.007,
+      -0.015
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "5": {
+     "px": [
+      -0.002,
+      -0.017
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "6": {
+     "px": [
+      -0.013,
+      0.018
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    }
+   },
+   "measured": 36,
+   "steadyScatterPx": 0.125,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  }
+ ],
+ "rw-aur": [
+  {
+   "seasons": [
+    0,
+    1
+   ],
+   "years": 0.48,
+   "sources": 33,
+   "glareVetoed": 8,
+   "notSearchedFraction": 0.199,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.046,
+      -0.017
+     ],
+     "fromGaiaQuiet": true,
+     "n": 26
+    },
+    "2": {
+     "px": [
+      0.023,
+      -0.023
+     ],
+     "fromGaiaQuiet": true,
+     "n": 29
+    },
+    "3": {
+     "px": [
+      0.026,
+      -0.0
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    },
+    "4": {
+     "px": [
+      0.004,
+      -0.004
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "5": {
+     "px": [
+      0.011,
+      -0.028
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "6": {
+     "px": [
+      0.012,
+      0.0
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    }
+   },
+   "measured": 32,
+   "steadyScatterPx": 0.069,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    0,
+    2
+   ],
+   "years": 1.01,
+   "sources": 33,
+   "glareVetoed": 8,
+   "notSearchedFraction": 0.199,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.006,
+      0.002
+     ],
+     "fromGaiaQuiet": true,
+     "n": 27
+    },
+    "2": {
+     "px": [
+      0.004,
+      0.002
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    },
+    "3": {
+     "px": [
+      0.008,
+      -0.003
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    },
+    "4": {
+     "px": [
+      0.0,
+      -0.002
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    },
+    "5": {
+     "px": [
+      0.0,
+      0.004
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    },
+    "6": {
+     "px": [
+      0.0,
+      0.006
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    }
+   },
+   "measured": 32,
+   "steadyScatterPx": 0.068,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    1,
+    2
+   ],
+   "years": 0.53,
+   "sources": 33,
+   "glareVetoed": 8,
+   "notSearchedFraction": 0.199,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.032,
+      0.025
+     ],
+     "fromGaiaQuiet": true,
+     "n": 26
+    },
+    "2": {
+     "px": [
+      -0.019,
+      0.01
+     ],
+     "fromGaiaQuiet": true,
+     "n": 29
+    },
+    "3": {
+     "px": [
+      -0.016,
+      -0.006
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    },
+    "4": {
+     "px": [
+      -0.001,
+      0.003
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "5": {
+     "px": [
+      -0.015,
+      0.025
+     ],
+     "fromGaiaQuiet": true,
+     "n": 30
+    },
+    "6": {
+     "px": [
+      -0.05,
+      -0.003
+     ],
+     "fromGaiaQuiet": true,
+     "n": 31
+    }
+   },
+   "measured": 32,
+   "steadyScatterPx": 0.07,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  }
+ ],
+ "r-dra": [
+  {
+   "seasons": [
+    0,
+    1
+   ],
+   "years": 0.46,
+   "sources": 3,
+   "glareVetoed": 8,
+   "notSearchedFraction": 0.197,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.034,
+      -0.057
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "2": {
+     "px": [
+      -0.01,
+      -0.009
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "3": {
+     "px": [
+      -0.037,
+      -0.058
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "4": {
+     "px": [
+      -0.02,
+      -0.005
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "5": {
+     "px": [
+      -0.016,
+      -0.0
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "6": {
+     "px": [
+      0.005,
+      0.006
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    }
+   },
+   "measured": 3,
+   "steadyScatterPx": 0.052,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    0,
+    2
+   ],
+   "years": 1.01,
+   "sources": 3,
+   "glareVetoed": 8,
+   "notSearchedFraction": 0.197,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      -0.012,
+      -0.02
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "2": {
+     "px": [
+      0.025,
+      0.02
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "3": {
+     "px": [
+      -0.015,
+      -0.022
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "4": {
+     "px": [
+      0.002,
+      0.038
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "5": {
+     "px": [
+      -0.053,
+      -0.014
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "6": {
+     "px": [
+      0.013,
+      -0.018
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    }
+   },
+   "measured": 3,
+   "steadyScatterPx": 0.025,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  },
+  {
+   "seasons": [
+    1,
+    2
+   ],
+   "years": 0.54,
+   "sources": 3,
+   "glareVetoed": 8,
+   "notSearchedFraction": 0.197,
+   "commonShiftRemoved": {
+    "1": {
+     "px": [
+      0.002,
+      0.043
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "2": {
+     "px": [
+      0.023,
+      0.029
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "3": {
+     "px": [
+      0.022,
+      0.045
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "4": {
+     "px": [
+      0.017,
+      0.04
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "5": {
+     "px": [
+      -0.032,
+      -0.011
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    },
+    "6": {
+     "px": [
+      -0.001,
+      0.09
+     ],
+     "fromGaiaQuiet": true,
+     "n": 3
+    }
+   },
+   "measured": 3,
+   "steadyScatterPx": 0.023,
+   "candidates": [],
+   "targetRank": null,
+   "nCandidates": 0
+  }
+ ]
+}

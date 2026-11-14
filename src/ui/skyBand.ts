@@ -64,6 +64,8 @@ export type SkyBandInput = {
   onClose: () => void;
   /** In Look around, the week's band is often behind you: a way to the flat map (else null). */
   onFlat: (() => void) | null;
+  /** The way to the page about the challenge's five tests (under the rows' names). */
+  testsLink?: { href: string; text: string };
 };
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -237,7 +239,14 @@ export function skyBand(o: SkyBandInput): SkyBand {
     head,
     h('div', { class: 'sb-grid' }, names, track),
     weekControls,
-    h('div', { class: 'sb-axis-row' }, h('span'), axis),
+    h(
+      'div',
+      { class: 'sb-axis-row' },
+      o.testsLink
+        ? h('a', { class: 'sb-tests', href: o.testsLink.href }, o.testsLink.text)
+        : h('span'),
+      axis,
+    ),
   );
   band.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && shown !== null) {

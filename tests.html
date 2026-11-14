@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="How Planetes was tested: the challenge’s five objects, our own method tests, and the checks of our machinery."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <script>
+      /* Light or dark before first paint: the visitor's pick, else the system's (src/ui/scheme.ts). */
+      (function () {
+        var pick = 'system';
+        try {
+          pick = localStorage.getItem('planetes-scheme') || 'system';
+        } catch (e) {}
+        var light =
+          pick === 'light' ||
+          (pick === 'system' && matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.dataset.scheme = pick;
+        document.documentElement.dataset.ui = light ? 'light' : 'dark';
+      })();
+    </script>
+    <title>How we tested · Planetes</title>
+  </head>
+  <body>
+    <main id="tests"></main>
+    <script type="module" src="/src/tests.ts"></script>
+  </body>
+</html>

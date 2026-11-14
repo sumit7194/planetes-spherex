@@ -2423,6 +2423,7 @@ function legend(withKey = false): HTMLElement {
     h('ul', {}, ...copy.legend.layers.map((l) => h('li', {}, l))),
     // On the homepage the marks' key lives here, not in the band (Viewer, 14 Nov).
     withKey ? markKey('sky') : null,
+    withKey ? h('p', { class: 'hint' }, h('a', { href: 'tests.html' }, copy.tests.link)) : null,
   );
   // The words re-render on every state change; the legend stays as the viewer left it.
   d.addEventListener('toggle', () => (legendOpen = d.open));
@@ -3158,7 +3159,12 @@ function showWords(): Node[] {
       ),
     ),
   );
-  const facts: (Node | null)[] = [...factsTop, h('dl', { class: 'facts' }, ...rows)];
+  const facts: (Node | null)[] = [
+    ...factsTop,
+    h('dl', { class: 'facts' }, ...rows),
+    // This target is one of the challenge's tests: the page with every test's result.
+    h('p', { class: 'hint tests-link' }, h('a', { href: 'tests.html' }, copy.tests.link)),
+  ];
   if (show.kind === 'motion' && show.stillStar?.common != null && show.relative) {
     const cause = id === 'barnard' ? copy.cases.barnard.sharedShift : null;
     facts.push(
@@ -3350,7 +3356,11 @@ function lookWords(): HTMLElement[] {
           'span',
           { class: 'dates' },
           `${monthYear(plan.firstMjd)} → ${monthYear(plan.lastMjd)}`,
-          'seasons' in plan ? ` · ${copy.look.passes(plan.seasons)}` : '',
+          // Passes by Physics' rule, as the homepage band counts them (the plan's own "seasons"
+          // cut deep fields into quarter-year steps for blinking, so they'd say 6 at R Draconis).
+          'seasons' in plan
+            ? ` · ${copy.look.passes(live?.photos.length ? passCount(live.photos.map((p) => p.mjd)) : plan.seasons)}`
+            : '',
         ),
       ),
     ),
@@ -4670,6 +4680,7 @@ function homeBand(): SkyBand | null {
     },
     onClose: closeWeek,
     onFlat: state.entry === 'inside' ? () => switchEntry('flat') : null,
+    testsLink: { href: 'tests.html', text: copy.tests.linkShort },
   });
 }
 

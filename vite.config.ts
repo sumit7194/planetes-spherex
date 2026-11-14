@@ -39,6 +39,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
         credits: resolve(import.meta.dirname, 'credits.html'),
+        tests: resolve(import.meta.dirname, 'tests.html'),
       },
     },
   },

@@ -81,6 +81,7 @@ root.append(
     { class: 'prior' },
     h('a', { href: c.priorWork.link, rel: 'noopener' }, c.priorWork.label),
   ),
+  h('p', { class: 'prior' }, h('a', { href: 'tests.html' }, copy.tests.link)),
   h(
     'section',
     { class: 'acks' },

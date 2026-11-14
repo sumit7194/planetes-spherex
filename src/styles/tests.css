@@ -1,0 +1,162 @@
+/* "How we tested": the credits page's frame, with test rows (facts in three columns). */
+#tests {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+#tests .credits-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--starlight);
+  font: 600 17px var(--serif);
+  text-decoration: none;
+}
+#tests h1 {
+  font: 400 clamp(30px, 4vw, 42px) / 1.15 var(--serif);
+  margin: 36px 0 6px;
+}
+#tests h2 {
+  font: 600 13px var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin: 40px 0 12px;
+}
+#tests a {
+  color: var(--look);
+  text-decoration-color: color-mix(in srgb, var(--look) 40%, transparent);
+  text-underline-offset: 3px;
+}
+#tests p {
+  color: var(--mist);
+  max-width: 62ch;
+}
+.challenge {
+  margin: 0 0 8px;
+  padding: 12px 16px;
+  border-left: 2px solid var(--dusk-line);
+}
+.challenge blockquote {
+  margin: 0;
+  font: italic 16px / 1.5 var(--serif);
+  color: var(--starlight);
+}
+.challenge figcaption {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+/* The five: name | seen | measured | limit; the check folded underneath. */
+.test-head,
+.test-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.1fr) 1fr 1.4fr 1.4fr;
+  gap: 16px;
+}
+.test-head {
+  font: 600 12px var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--dusk-line);
+}
+.test {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--dusk-line);
+  font-size: 14px;
+}
+.test h3 {
+  font: 600 16px var(--sans);
+  color: var(--starlight);
+  margin: 0 0 4px;
+}
+.test-name q {
+  font: italic 13px var(--serif);
+  color: var(--quiet);
+}
+.test .cell {
+  color: var(--mist);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.test .cell .line {
+  display: block;
+}
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--quiet);
+  border-style: dotted;
+}
+.dot.measured {
+  background: var(--measured);
+  border: 1.5px solid var(--measured);
+}
+.test details {
+  margin-top: 8px;
+}
+.test summary {
+  color: var(--quiet);
+  font-size: 13px;
+  cursor: pointer;
+}
+.test details p {
+  margin: 8px 0 0;
+}
+.test .links {
+  display: flex;
+  gap: 18px;
+}
+.test.added h3 {
+  margin-bottom: 6px;
+}
+.test .result {
+  color: var(--starlight);
+}
+.test .reg,
+.note {
+  font-size: 13px;
+  color: var(--quiet) !important;
+}
+.after {
+  color: var(--mist);
+  font-size: 14px;
+  max-width: 62ch;
+  padding-left: 18px;
+}
+.after li {
+  margin: 6px 0;
+}
+#tests footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: var(--quiet);
+}
+
+/* Phones: each test is a stacked block; each fact keeps its column name. */
+@media (max-width: 720px) {
+  .test-head {
+    display: none;
+  }
+  .test-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .test .cell {
+    flex-wrap: wrap;
+  }
+  .test .cell::before {
+    content: attr(data-label);
+    flex: 0 0 100%;
+    font: 600 11px var(--sans);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--quiet);
+  }
+}

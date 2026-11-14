@@ -828,6 +828,149 @@ export const copy = {
    * folded (the records are the owners' own words, CONSENSUS §1.7), the acknowledgements the
    * archives ask for printed verbatim in small type, and the dates as a footer line.
    */
+  /**
+   * "How we tested" (tests.html): the challenge's five as a benchmark, our own method tests and
+   * our machinery checks, as facts in columns (Viewer, 14 Nov). Only the challenge quotes, the
+   * "what makes it hard" lines, the limits and the after-seeing list are written by hand; every
+   * number comes from the packs or the committed run outputs.
+   */
+  tests: {
+    title: 'How we tested',
+    back: 'Planetes',
+    lede: 'The challenge asks for a tool that shows how any patch of sky changes, and names five objects to test it on. Here is what our tool does with each, what it measured, and what it can’t do, followed by the tests we added ourselves.',
+    challengeLabel: 'The challenge, on its five tests:',
+    challengeQuote:
+      'Test your tool on Barnard’s Star, Epsilon Indi B (a pair of brown dwarfs orbiting a star), WISE 0855 (a fast-moving brown dwarf Right Ascension 08h55m10.831s, declination -7d14m42.53s), and variable stars RW Aurigae and R Draconis.',
+    challengeSource: 'NASA Space Apps Challenge 2026, “Planet X and SPHEREx”',
+    challengeLink: 'https://www.spaceappschallenge.org/2026/challenges/planet-x-and-spherex/',
+    groups: {
+      five: 'The challenge’s five',
+      method: 'Tests of our method we added',
+      machinery: 'Checks of our own machinery',
+    },
+    columns: { seen: 'Seen in the photos', measured: 'Measured', limit: 'Limit' },
+    hardLabel: 'What makes it hard',
+    liveLabel: 'The live tool at the challenge’s position',
+    checkLabel: 'The check behind it',
+    open: 'Open its page',
+    tryLive: 'Try the live tool there',
+    seen: {
+      'seen-with-ring': 'Yes: the move is visible by eye (Physics’ eye test).',
+      faint: 'Faint: hard to spot by eye (Physics’ eye test).',
+      unseen: 'No: not visible by eye (Physics’ eye test).',
+      untested: 'Not tested by eye: a brightness change, not a move.',
+    } as Record<string, string>,
+    movedMeasured: (arcsec: string, err: string, dir: string, from: string, to: string) =>
+      `Moved ${arcsec}″ ± ${err}″ ${dir}, ${from} to ${to}.`,
+    predicted: (arcsec: string, source: string) => `Predicted ${arcsec}″ (${source}).`,
+    stillStars: (px: string) => `Still stars in the same photos: ${px} px median shift.`,
+    brightness: (word: string, ratio: string, err: string) =>
+      `${word}: ${ratio} ± ${err} of its brightness, last pass over first.`,
+    notMeasured: (why: string) => `No: ${why}`,
+    five: {
+      barnard: {
+        quote: 'Barnard’s Star',
+        hard: 'The fastest-moving star in the sky (about 10″ a year), and bright enough to saturate SPHEREx’s detectors.',
+        limit:
+          'Its centre is saturated, so its place comes from its image as a whole; its brightness isn’t measured.',
+        live: 'Opens 361 photos in 3 passes, compared at 0.86 µm.',
+      },
+      'epsind-b': {
+        quote: 'Epsilon Indi B (a pair of brown dwarfs orbiting a star)',
+        hard: 'Two brown dwarfs 0.7″ apart, about 7′ from their bright star, ε Indi A.',
+        limit:
+          'SPHEREx’s pixels are 6.15″ wide, so the pair is one dot: the move is of the pair together.',
+        live: 'Opens 467 photos in 4 passes, compared at 0.75 µm, where brown dwarfs are faint.',
+      },
+      w0855: {
+        quote:
+          'WISE 0855 (a fast-moving brown dwarf Right Ascension 08h55m10.831s, declination -7d14m42.53s)',
+        hard: 'One of the coldest brown dwarfs known: almost invisible at SPHEREx’s shorter wavelengths. And the position given is its 2010 place, 2.1′ from where it is now.',
+        limit:
+          'Its first pass (May 2025) has too few usable photos, so only the half-year pair gives a number.',
+        live: 'At the challenge’s exact position: 258 photos in 3 passes, compared at 1.02 µm, where WISE 0855 is too faint to see, and the star now sits 2.1′ off-centre, at the edge of the 4′ close-up. The live tool alone doesn’t show it there; its page (and Enter in the search, which says so) uses 3–5 µm and its present place.',
+      },
+      'rw-aur': {
+        quote: 'variable stars RW Aurigae and R Draconis',
+        hard: 'A young star whose brightness flickers, and bright enough to saturate SPHEREx.',
+        limit:
+          'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light.',
+        live: 'Opens 335 photos in 3 passes, compared at 1.62 µm. A live look shows the photos; it doesn’t measure brightness.',
+      },
+      'r-dra': {
+        quote: 'variable stars RW Aurigae and R Draconis',
+        hard: 'A giant star that brightens and fades over about eight months, bright enough to saturate SPHEREx, in one of the fields SPHEREx photographs most often.',
+        limit:
+          'Not measured: its glare reaches the comparison stars in its field. A re-check with comparison stars farther out is running.',
+        live: 'Opens 2,500 photos in 3 passes (a deep field; the look picks a few), compared at 0.82 µm. A live look doesn’t measure brightness.',
+      },
+    } as Record<string, { quote: string; hard: string; limit: string; live: string }>,
+    liveNote:
+      'Checked by hand on 14 November 2026 at the challenge’s position (WISE 0855) or the catalogue position (the others).',
+    seasonPairs: {
+      title: 'A search for slow movers between passes',
+      what: 'Compares each star’s place between two passes, without being told where the target is; a “candidate” moves consistently in at least two detectors by more than 5 times what still stars do.',
+      result: (found: number, of: number, falseAlarms: number, pairs: number) =>
+        `ε Indi B was the only candidate in ${found} of its ${of} pass pairs (missed in ${of - found}); no other candidate in any of the ${pairs} pass pairs of the five fields (${falseAlarms} false alarms).`,
+      rate: (lo: string, hi: string) =>
+        `Its rate: ${lo} to ${hi}″ a year; the catalogue says 4.68.`,
+      limit:
+        'Developed on these five fields, so it isn’t a blind test of them. WISE 0855 is too faint for it and Barnard’s Star too bright. Its real test is the yardstick below, on 240 other fields.',
+      registered: 'Not registered beforehand: a prototype.',
+      output: 'Run output',
+    },
+    yardstick: {
+      title: 'How faint and slow a mover can that search find?',
+      what: 'Fake slow movers planted in 40 other fields, with false alarms counted on 200 more; the plan, the fields and the scores were fixed before any photo is read.',
+      status:
+        'Planned and written down; the registration commit waits on two model spectra still downloading. Not run yet.',
+    },
+    twins: {
+      title: 'Finding stars with the same colours',
+      what: 'Gives every star a spectrum from SPHEREx’s own photos and finds its closest match by shape, with nothing learned.',
+      v1: (ratio: string, rho: string) =>
+        `A star’s closest match differs from it in Gaia’s colour ${ratio} times as much as a random star does; the main shape tracks Gaia’s colour (rank correlation ${rho}). Passed its rule, but an easy test: that pattern is just temperature.`,
+      v2: (sameField: string, expect: string, w12: string) =>
+        `Harder tests: no sign of agreement beyond colour at 3–5 µm (ratio ${w12}, where 1 means no better than random), and ${sameField} of matches come from the star’s own field against ${expect} by chance: the spectra still carry each field’s systematics.`,
+      registered:
+        'v1’s rule was written in the script before running, but committed together with its result. v3, the real test (60 fields, 12 locked), was committed before any of its photos are read: commit 5aad43f.',
+    },
+    outlier: {
+      title: 'NASA’s “outlier” flag as a mover finder',
+      what: 'Could the pipeline’s own OUTLIER flag find moving objects cheaply? Tested by Physics on two test patches, against known asteroids.',
+      result:
+        'Ruled out: it catches known asteroids only to about magnitude 19, with hundreds of false clusters for every real one; skipping catalogued sources makes it worse.',
+    },
+    machinery: [
+      {
+        title: 'Where each photo looks',
+        result:
+          'Our sky index places a photo’s pixels within 0.00009 pixels of astropy’s full solution, on every photo checked (a 9 × 9 grid of points on each).',
+      },
+      {
+        title: 'The cloud helper',
+        result:
+          'Frames cut out by our helper on Cloudflare match the browser’s own reading of the same NASA files (correlation 0.999996); both use the same reader code.',
+      },
+    ],
+    afterTitle: 'Choices made after seeing these fields',
+    afterLede:
+      'General methods only, but some choices were made after seeing data from these five fields. Each is listed here and next to the number it affects.',
+    after: [
+      'Brightness from a saturated star’s edges: the steady-star tolerance (1.00 ± 0.06) was chosen after seeing Barnard’s Star’s results (said in RW Aurigae’s “how”).',
+      'The slow-mover search: a sloped background was added after a false alarm in Barnard’s Star’s field, and the glare rule was changed after it hid ε Indi B itself.',
+      'The “what changed” film: its brightness-scale fit leaves the target out and was narrowed after over-fitting was seen.',
+      'The “it was here in 2010” note: its tolerances were set with WISE 0855’s challenge position in mind.',
+      'Which stars in a pack count as the target: a matching motion is required, after the target flags were re-checked on these fields.',
+      'Spot the mover: offered only where Physics’ eye test on these fields says the move can be seen.',
+    ],
+    afterPending: 'Physics is confirming this list.',
+    footer:
+      'Every number above is read from the same data files as the tool itself, or from the run outputs linked.',
+    /** The way in, from the band, a target's Facts tab, the legend and the credits page. */
+    link: 'The challenge’s five tests: how we tested',
+    linkShort: 'How we tested →',
+  },
   credits: {
     title: 'Credits',
     back: 'Planetes',
