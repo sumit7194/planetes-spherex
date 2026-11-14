@@ -3561,3 +3561,10 @@ span[data-fit='1'] {
     border: 1px solid CanvasText;
   }
 }
+
+/* The homepage's tests link: starlight and underlined, as every link (blue means a live look). */
+.home-tests a {
+  color: var(--starlight);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
