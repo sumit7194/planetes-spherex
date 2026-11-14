@@ -329,6 +329,16 @@ export const copy = {
     hold: 'Hold to compare',
     holdHint: 'Or press and hold the space bar. There is nothing to get wrong.',
     holdNotYet: 'Both looks are still coming in.',
+    /** Colour by date (E3, Viewer's design): the shown pair as one blue/orange picture. */
+    byDate: 'Colour by date',
+    byDateLabel: (early: string, late: string) => `Colour by date: ${early} blue, ${late} orange`,
+    byDateKey: {
+      white: "white: didn't move",
+      brightness: 'A star that changed brightness also comes out tinted (RW Aurigae does).',
+      fringes:
+        'Thin coloured fringes on steady stars come from the blur changing between the two looks, not from motion.',
+      masked: 'Hatched: masked or saturated in either look, so no colour is shown.',
+    },
     diffButton: 'Show the difference',
     diffLabel: (later: number, earlier: number) => `Look ${later} minus look ${earlier}`,
     diffFainter: (limit: number) => `fainter later, −${limit}σ`,

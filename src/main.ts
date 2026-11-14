@@ -106,6 +106,7 @@ import {
 import { differenceFilm, type DifferenceFrame, type FilmInput } from './data/live/film';
 import { targetPlaceAt, type PassPlaces } from './app/targetPlace';
 import { NEAR_DEG, SkyView, type CatalogueStar, type Figure, type Lantern } from './render/sky';
+import { renderTimeColour, TIME_EARLY, TIME_LATE } from './render/timeColour';
 import { sharedStretch, type Stretch } from './render/stretch';
 import { parseGlow } from './render/milkyway';
 import { canRun3D, watchQuality } from './render/quality';
@@ -158,6 +159,8 @@ const packs = new Map<TargetId, LoadedPack>();
 let current: { pack: LoadedPack; show: Show; pair: [Tile, Tile] } | null = null;
 let showing: 0 | 1 | null = null;
 /** The difference of the pair on screen, while the visitor has it on (noise in MJy/sr). */
+/** Colour by date (E3): the shown pair as one blue/orange picture in the lens. */
+let colouring = false;
 let differencing: {
   sigma: number;
   masked: number;
@@ -3024,6 +3027,7 @@ function photoTile(pack: LoadedPack, f: Frame): Promise<Tile> {
  */
 async function showDifference(): Promise<void> {
   if (!takeLens() || !current) return;
+  if (colouring) endTimeColour(false);
   endSpot(false);
   const shown = current;
   const req = ++diffRequest;
@@ -3099,6 +3103,7 @@ function endDifference(redraw = true): void {
 
 /** Forgets the difference, and any still loading, when something else takes the lens. */
 function dropDifference(): void {
+  colouring = false;
   const had = differencing !== null || diffBusy;
   diffRequest++;
   differencing = null;
@@ -3261,6 +3266,7 @@ function spotSection(name: string): HTMLElement | null {
 
 /** Puts the pair back on the lens first, for actions that draw on top of it. */
 function leaveDifference(): void {
+  if (colouring) endTimeColour(false);
   if (differencing) endDifference(false);
   dropDifference();
   endSpot(false);
@@ -3304,6 +3310,65 @@ function differenceKey(): HTMLElement | null {
           copy.show.diffMasked,
         )
       : null,
+  );
+}
+
+/** Shows the pair as one picture: the earlier look blue, the later orange, white = didn't move. */
+function showTimeColour(): void {
+  if (!takeLens() || !current) return;
+  if (differencing) endDifference(false);
+  dropDifference();
+  endSpot(false);
+  const [a, b] = current.pair;
+  if (!a || !b) return;
+  colouring = true;
+  lens.setRendered([
+    { tile: b, image: renderTimeColour(a, b, sharedStretch([a.pixels, b.pixels])) },
+  ]);
+  // No arrows over it: the colours are the comparison (as with the difference).
+  lens.setOverlay({ measured: undefined, predicted: undefined, arrowProgress: 0 });
+  lensLabel.replaceChildren(
+    h('span', { class: 'look-pill diff-pill' }, copy.show.byDateLabel(lookMonth(0), lookMonth(1))),
+  );
+  render();
+}
+
+function endTimeColour(redraw = true): void {
+  if (!colouring || !current) return;
+  colouring = false;
+  lens.setTiles(current.pair, sharedStretch(current.pair.map((t) => t.pixels)));
+  showRevealStill(lens);
+  showing = 1;
+  setLensLabel(1, 8);
+  if (redraw) render();
+}
+
+/** Under the actions while colouring: which date is which colour, and what else tints. */
+function timeColourKey(): HTMLElement | null {
+  if (!colouring) return null;
+  const k = copy.show.byDateKey;
+  const swatch = (rgb: readonly number[]) =>
+    h('i', {
+      class: 'date-swatch',
+      style: `background: rgb(${rgb.join(' ')})`,
+      'aria-hidden': 'true',
+    });
+  return h(
+    'div',
+    { class: 'diff-key date-key' },
+    h(
+      'p',
+      { class: 'date-scale' },
+      swatch(TIME_EARLY),
+      h('span', {}, lookMonth(0)),
+      swatch(TIME_LATE),
+      h('span', {}, lookMonth(1)),
+      swatch([255, 255, 255]),
+      h('span', {}, k.white),
+    ),
+    h('p', { class: 'hint' }, k.brightness),
+    h('p', { class: 'hint' }, k.fringes),
+    h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
   );
 }
 
@@ -4052,12 +4117,20 @@ function showWords(): Node[] {
     copy.show.diffButton,
   );
   diff.addEventListener('click', () => (differencing ? endDifference() : void showDifference()));
-  actions.append(diff, replay);
+  // Colour by date (E3, Viewer's design): the same pair as one blue/orange picture; exclusive
+  // with the difference, since both take the lens.
+  const byDate = h(
+    'button',
+    { type: 'button', 'aria-pressed': String(colouring), class: 'diff-toggle' },
+    copy.show.byDate,
+  );
+  byDate.addEventListener('click', () => (colouring ? endTimeColour() : showTimeColour()));
+  actions.append(diff, byDate, replay);
   out.push(actions);
   // Only while the pack is still arriving; during the reveal, holding simply ends it.
   if (canHold && !ready && place.kind !== 'reveal')
     out.push(h('p', { class: 'hint' }, copy.show.holdNotYet));
-  const key = differenceKey();
+  const key = differenceKey() ?? timeColourKey();
   if (key) out.push(key);
   out.push(spotSection(w.name));
   if (!touchOnly) out.push(h('p', { class: 'hint keys-hint' }, copy.keys.hint));

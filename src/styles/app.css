@@ -3285,3 +3285,24 @@ span[data-fit='1'] {
 .past-path .pp-sphx-label {
   fill: var(--look);
 }
+
+/* Colour by date's key: three swatches with their dates (blue, orange, white). */
+.date-scale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 6px 0 4px;
+  font-size: 13px;
+  color: var(--starlight);
+}
+.date-scale span {
+  margin-right: 8px;
+}
+.date-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--dusk-line);
+}
