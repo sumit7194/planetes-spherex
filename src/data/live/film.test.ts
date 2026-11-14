@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { FlagMask } from '../pack/types';
-import { differenceFilm, type FilmInput } from './difference';
+import { differenceFilm, type FilmInput } from './film';
 
 const SIZE = 24;
 
