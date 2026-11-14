@@ -2765,7 +2765,8 @@ export class SkyView {
       ctx.font = small;
       width = Math.max(width, ctx.measureText(story).width);
     }
-    const margin = 8 * u;
+    // The same 12 px edge margin as star names (Viewer, 15 Nov: ε Indi B's label sat at 8 px).
+    const margin = 12 * u;
     // Its side: the right unless it would run off the canvas or onto the chip stack.
     const chips = this.#edges.map((e) => e.box);
     const hitsChips = (r: boolean) => {
