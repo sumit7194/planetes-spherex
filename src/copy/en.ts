@@ -104,6 +104,8 @@ export const copy = {
     sunToday: 'The Sun today, on its yearly path',
     /** The Sun on the day SPHEREx last photographed the spot looked at (Sumit, 14 Nov: say why). */
     sunOn: 'The Sun on {date}, when SPHEREx last photographed this spot',
+    /** Under the aim's readout while the zoomed-in sky shows Gaia's fainter stars. */
+    gaiaNote: 'Fainter stars: Gaia DR3 (ESA), not SPHEREx',
     /** A star the mouse rests on (Viewer, 14 Nov): honest and short. */
     starTip: {
       unnamed: (hip: number) => `A star · HIP ${hip}`,
@@ -1115,6 +1117,12 @@ export const copy = {
         what: 'Background stars',
         source: 'Hipparcos main catalogue (ESA, 1997), via the ESA Gaia archive',
         terms: 'Labelled as catalogue, not SPHEREx',
+      },
+      {
+        what: 'Fainter stars when zoomed in',
+        source:
+          "Gaia DR3 (ESA), fetched one sky patch at a time through our helper from ESA's Gaia archive and kept near you for next time; only the patch's number is sent",
+        terms: 'Labelled as Gaia, not SPHEREx',
       },
       {
         what: 'Star names',

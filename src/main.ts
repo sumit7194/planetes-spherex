@@ -64,6 +64,7 @@ import {
   search as searchNames,
   type Entry as SearchEntry,
 } from './app/searchIndex';
+import { DEEP_MAX_FOV, deepMark, patchesForView, type Patch } from './app/deepStars';
 import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
@@ -731,6 +732,102 @@ void fetch(`${import.meta.env.BASE_URL}catalog/star-names-iau.json`)
 /* ---------- names in the search box: the five by any common name, and the IAU-named stars ---------- */
 
 let catalogueStars: CatalogueStar[] = [];
+
+/* ---------- fainter stars when zoomed in: Gaia DR3 by sky patch (src/app/deepStars.ts) ---------- */
+type DeepMark = [number, number, number, number | null];
+const deepPatches = new Map<string, DeepMark[] | 'pending' | 'failed'>();
+let deepQueue: Patch[] = [];
+let deepRunning = 0;
+let deepWanted: Patch[] = [];
+let deepViewKey = '';
+/** Hipparcos stars by 18″ cell, so a Gaia star already drawn isn't drawn twice. */
+let hipCells: Map<string, [number, number][]> | null = null;
+const cellOf = (ra: number, dec: number) => `${Math.round(ra * 200)},${Math.round(dec * 200)}`;
+
+function isHipparcosStar(ra: number, dec: number): boolean {
+  if (!hipCells) {
+    hipCells = new Map();
+    for (const [sra, sdec] of catalogueStars) {
+      const k = cellOf(sra, sdec);
+      const list = hipCells.get(k) ?? [];
+      list.push([sra, sdec]);
+      hipCells.set(k, list);
+    }
+  }
+  const [cr, cd] = [Math.round(ra * 200), Math.round(dec * 200)];
+  for (let i = -1; i <= 1; i++)
+    for (let j = -1; j <= 1; j++)
+      for (const [sra, sdec] of hipCells.get(`${cr + i},${cd + j}`) ?? [])
+        if (separationDeg({ ra, dec }, { ra: sra, dec: sdec }) < 4 / 3600) return true;
+  return false;
+}
+
+function deepKey(p: Patch): string {
+  return `${p.tier.order}/${p.pix}`;
+}
+
+function pumpDeep(): void {
+  const base = helperAddress();
+  if (!base) return;
+  while (deepRunning < 6 && deepQueue.length) {
+    const p = deepQueue.shift();
+    if (!p) break;
+    const key = deepKey(p);
+    if (deepPatches.has(key)) continue;
+    deepPatches.set(key, 'pending');
+    deepRunning++;
+    fetch(`${base}/v1/gaiapatch?order=${p.tier.order}&pix=${p.pix}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d: { stars: [number, number, number, number | null, number, number][] }) => {
+        const marks = d.stars
+          .map((row) => deepMark(row, NOW_YEAR))
+          // Only the brightest tier can repeat a Hipparcos star (V ≤ 8).
+          .filter((m) => m[2] >= 10 || !isHipparcosStar(m[0], m[1]));
+        deepPatches.set(key, marks);
+      })
+      // ESA's archive is slow at times: a patch that fails is simply not drawn, and asked again
+      // on a later view (Viewer: fail quietly).
+      .catch(() => deepPatches.set(key, 'failed'))
+      .finally(() => {
+        deepRunning--;
+        showDeep();
+        pumpDeep();
+      });
+  }
+}
+
+function showDeep(): void {
+  const out: DeepMark[] = [];
+  for (const p of deepWanted) {
+    const got = deepPatches.get(deepKey(p));
+    if (Array.isArray(got)) for (const m of got) out.push(m);
+  }
+  sky.setDeepStars(out);
+}
+
+/** Every half second: the patches this view needs, fetched in view order, six at a time. */
+function followDeep(): void {
+  const v = sky.viewNow();
+  const step = Math.max(0.01, v.fov / 10);
+  const key =
+    v.inside && v.fov <= DEEP_MAX_FOV
+      ? `${Math.round(v.centre.ra / step)},${Math.round(v.centre.dec / step)},${Math.round(Math.log(v.fov) * 20)}`
+      : 'off';
+  if (key === deepViewKey) return;
+  deepViewKey = key;
+  deepWanted = patchesForView(v);
+  // A failed patch is tried again when it's wanted again; keep the cache to ~800 patches.
+  for (const p of deepWanted)
+    if (deepPatches.get(deepKey(p)) === 'failed') deepPatches.delete(deepKey(p));
+  if (deepPatches.size > 800)
+    for (const k of [...deepPatches.keys()].slice(0, deepPatches.size - 800)) deepPatches.delete(k);
+  // Coarse tiers first (they hold the brighter stars and are few), then the rest.
+  deepQueue = deepWanted.filter((p) => !deepPatches.has(deepKey(p)));
+  showDeep();
+  pumpDeep();
+}
+sky.deepNote = copy.sky.gaiaNote;
+window.setInterval(followDeep, 500);
 let starNames = new Map<number, string>();
 /** Search key (lower case, no accents or punctuation) → catalogue position (epoch J1991.25). */
 const namedStars = new Map<string, SkyPosition>();

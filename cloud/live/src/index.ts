@@ -19,6 +19,10 @@
  *   GET /v1/gaia?ra=&dec=&r=         -> JSON {stars: [{id, ra, dec, pmra, pmdec, g}], epoch: 2016}:
  *                                       Gaia DR3 within r arcsec (<= 120), G < 21, from ESA's
  *                                       archive (browsers can't query it: no CORS). Cached 30 days.
+ *   GET /v1/gaiapatch?order=&pix=    -> JSON {order, pix, gLo, gHi, epoch: 2016, stars: [[ra, dec, g,
+ *                                       bp_rp|null, pmra, pmdec], ...]}: Gaia DR3 in one HEALPix
+ *                                       NESTED patch, in that order's G range (src/data/gaiaTiers),
+ *                                       brightest first, at most GAIA_PATCH_MAX. Cached 30 days.
  *   GET /v1/resolve?name=            -> JSON {found, name, type, ra, dec, epoch: 2000, pmra, pmdec,
  *                                       plx, spType}: SIMBAD via CDS Sesame (the search box's names
  *                                       beyond its own index; browsers get no CORS through CDS's
@@ -30,6 +34,7 @@
  * Answers are cached (Cache API, one year): SPHEREx files are immutable; a reprocessing gets
  * a new file name and so a new cache key. Positions are rounded to 1e-6 deg in the key.
  */
+import { GAIA_PATCH_MAX, GAIA_TIERS, sourceIdRange, tierOf } from '../../../src/data/gaiaTiers';
 import {
   probePhoto,
   READER_VERSION,
@@ -162,6 +167,95 @@ function encodeNative(b: NonNullable<Awaited<ReturnType<typeof readNative>>>): U
 }
 
 const GAIA_TAP = 'https://gea.esac.esa.int/tap-server/tap/sync';
+
+/**
+ * Gaia DR3 in one sky patch, for the sky's fainter stars when zoomed in (src/data/gaiaTiers.ts).
+ * A source_id range (Gaia's ids carry their HEALPix level-12 cell), so ESA answers from its
+ * primary key; the order fixes the G range, so the URL alone names the answer.
+ */
+async function gaiaPatch(url: URL, ctx: ExecutionContext): Promise<Response> {
+  const order = Number(url.searchParams.get('order'));
+  const pix = Number(url.searchParams.get('pix'));
+  const tier = tierOf(order);
+  if (!tier) return bad(`order must be one of ${GAIA_TIERS.map((t) => t.order).join(', ')}`);
+  if (!(Number.isInteger(pix) && pix >= 0 && pix < 12 * 4 ** order)) return bad('pix out of range');
+  const cacheKey = new Request(
+    `https://cache.planetes/${VERSION}/v1/gaiapatch?order=${order}&pix=${pix}`,
+  );
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    const h = new Headers(hit.headers);
+    h.set('x-planetes-cache', 'hit');
+    return new Response(hit.body, { status: hit.status, headers: h });
+  }
+  const [lo, hi] = sourceIdRange(order, pix);
+  const adql =
+    `SELECT TOP ${GAIA_PATCH_MAX} ra, dec, phot_g_mean_mag, bp_rp, pmra, pmdec FROM gaiadr3.gaia_source ` +
+    `WHERE source_id BETWEEN ${lo} AND ${hi} ` +
+    `AND phot_g_mean_mag >= ${tier.gLo} AND phot_g_mean_mag < ${tier.gHi} ORDER BY phot_g_mean_mag`;
+  const q = new URLSearchParams({ REQUEST: 'doQuery', LANG: 'ADQL', FORMAT: 'csv', QUERY: adql });
+  const t0 = Date.now();
+  let text = '';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${GAIA_TAP}?${q}`, {
+        headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
+        signal: AbortSignal.timeout(20_000),
+      });
+    } catch (e) {
+      if (attempt === 1) return bad(`Gaia query failed: ${(e as Error).message}`, 502);
+      continue;
+    }
+    if (res.ok) {
+      text = await res.text();
+      break;
+    }
+    if (res.status < 500 || attempt === 1) return bad(`Gaia archive HTTP ${res.status}`, 502);
+  }
+  const lines = text.trim().split(/\r?\n/);
+  const head = (lines.shift() ?? '').split(',');
+  const names = ['ra', 'dec', 'phot_g_mean_mag', 'bp_rp', 'pmra', 'pmdec'];
+  const at = names.map((n) => head.indexOf(n));
+  if (at.some((c) => c < 0)) return bad('Gaia answer had unexpected columns', 502);
+  const rows = lines.filter((l) => l.length);
+  if (rows.some((l) => l.split(',').length !== head.length))
+    return bad('Gaia answer was incomplete', 502);
+  const round = (v: string | undefined, d: number) =>
+    v === undefined || v === '' ? null : Number(Number(v).toFixed(d));
+  const stars = rows.map((l) => {
+    const f = l.split(',');
+    const [ra, dec, g, bprp, pmra, pmdec] = at.map((c) => f[c]);
+    return [
+      round(ra, 6),
+      round(dec, 6),
+      round(g, 2),
+      round(bprp, 2),
+      round(pmra, 1) ?? 0,
+      round(pmdec, 1) ?? 0,
+    ];
+  });
+  const body = JSON.stringify({
+    catalog: 'Gaia DR3',
+    epoch: 2016.0,
+    order,
+    pix,
+    gLo: tier.gLo,
+    gHi: tier.gHi,
+    capped: rows.length >= GAIA_PATCH_MAX,
+    stars,
+  });
+  const h = new Headers({
+    ...CORS,
+    'content-type': 'application/json',
+    'cache-control': 'public, max-age=2592000',
+    'x-planetes-ms': String(Date.now() - t0),
+  });
+  ctx.waitUntil(cache.put(cacheKey, new Response(body, { headers: h })));
+  h.set('x-planetes-cache', 'miss');
+  return new Response(body, { headers: h });
+}
 
 /** Gaia DR3 stars near a position (positions at epoch 2016.0, motions in mas/yr). */
 async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
@@ -396,6 +490,7 @@ export default {
       );
     }
     if (route === '/v1/gaia') return gaia(url, ctx);
+    if (route === '/v1/gaiapatch') return gaiaPatch(url, ctx);
     if (route === '/v1/resolve') return resolve(url, ctx);
     if (route === '/v1/psf') return psf(url, ctx);
     if (route !== '/v1/frame' && route !== '/v1/probe' && route !== '/v1/native')

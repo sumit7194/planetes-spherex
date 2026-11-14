@@ -22,6 +22,7 @@ export default {
       '/v1/frame',
       '/v1/probe',
       '/v1/gaia',
+      '/v1/gaiapatch',
       '/v1/native',
       '/v1/resolve',
       '/v1/psf',

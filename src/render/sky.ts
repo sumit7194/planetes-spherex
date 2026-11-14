@@ -108,7 +108,9 @@ const COLOURS = {
 };
 
 /** Field of view of the inside view, degrees across the ring (or the canvas, without one). */
-const FOV = { min: 8, max: 70, start: 60 };
+// min 2° (was 8°, 14 Nov night): zoomed in, the sky fills with Gaia's fainter stars to about
+// magnitude 13 (src/app/deepStars.ts) before the handover to SPHEREx's own photos.
+const FOV = { min: 2, max: 70, start: 60 };
 /** The field at which stars are drawn at their base brightness; narrower brightens them. */
 const BASE_FOV = 40;
 /** The snapshot outline and the aim appear once the view is this narrow: detail follows zoom. */
@@ -573,6 +575,29 @@ export class SkyView {
     });
   }
 
+  /**
+   * Fainter stars from Gaia DR3 for the current view, when zoomed in (the page fetches them by
+   * sky patch; src/data/gaiaTiers.ts): [ra°, dec°, G, B−V or null], already at today's place.
+   * Drawn in the inside view only, to the zoom's natural depth, and labelled as Gaia's.
+   */
+  #deep: [number, number, number, number | null][] = [];
+  setDeepStars(stars: [number, number, number, number | null][]): void {
+    this.#deep = stars;
+    this.draw();
+  }
+  /** The view the page needs to choose patches: the inside view's aim, field and scale. */
+  viewNow(): { inside: boolean; centre: SkyPosition; fov: number; cssPxPerDeg: number } {
+    return {
+      inside: this.#entry === 'inside' && !this.steppedOut,
+      centre: { ...this.#centre },
+      fov: this.#fov,
+      cssPxPerDeg: this.#cssPxPerDeg(),
+    };
+  }
+  /** Shown under the aim's readout while Gaia stars are drawn. */
+  deepNote = '';
+  #deepDrawn = 0;
+
   setStars(stars: CatalogueStar[]): void {
     this.#stars = stars;
     this.draw();
@@ -999,7 +1024,9 @@ export class SkyView {
     this.#drawGlow();
     const inside = this.#entry === 'inside';
     // Zooming in brightens and widens the stars a little, as a real camera would.
-    const zoom = inside ? Math.sqrt(BASE_FOV / this.#fov) : 1;
+    // Capped at the old 8° floor's 2.2×: below it the sky fills with fainter Gaia stars, and
+    // growing every dot further would turn them into polka dots.
+    const zoom = inside ? Math.sqrt(BASE_FOV / Math.max(8, this.#fov)) : 1;
     this.#grid(u);
     // On the flat map the grid's labels are its scale: they go first and names give way to them.
     if (!inside) this.#gridLabels(u);
@@ -1042,6 +1069,33 @@ export class SkyView {
       if (inside && v <= namedLimit(this.#fov) && hip !== undefined) {
         const name = this.#names.get(hip);
         if (name) named.push({ name, p });
+      }
+    }
+    // Gaia's fainter stars, when zoomed in: the same marks, to the zoom's own depth (the
+    // Hipparcos stars above stop at magnitude 8).
+    this.#deepDrawn = 0;
+    if (inside && this.#deep.length) {
+      const deepLimit =
+        3.5 + Math.log2(Math.max(0.5, this.#cssPxPerDeg())) - (this.#quality >= 1 ? 0 : 0.5);
+      for (const [ra, dec, g, bv] of this.#deep) {
+        if (g > deepLimit) continue;
+        const p = this.project({ ra, dec });
+        if (!p) continue;
+        ctx.fillStyle = starColour(bv);
+        const fade = Math.min(1, (deepLimit - g + 0.2) / 1.2);
+        // Relative to the limit, so the faintest drawn stay faint at any zoom.
+        const rel = g - (deepLimit - 8);
+        ctx.globalAlpha = fade * limbFade(p.depth) * Math.max(0.35, Math.min(1, 1.25 - rel / 8));
+        ctx.beginPath();
+        ctx.arc(
+          p.x,
+          p.y,
+          u * zoom * Math.max(0.7, 2.1 - rel * 0.22) * (0.5 + 0.5 * p.depth),
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        this.#deepDrawn++;
       }
     }
     ctx.globalAlpha = 1;
@@ -1679,6 +1733,13 @@ export class SkyView {
     ctx.fillText(text, a.x, y);
     const tw = ctx.measureText(text).width;
     this.#reserve({ x: a.x - tw / 2, y: y - 12 * u, w: tw, h: 16 * u });
+    if (this.#deepDrawn && this.deepNote) {
+      ctx.font = `${10.5 * u}px ${this.#fontSans}`;
+      ctx.fillStyle = rgba(this.#t.mist, 0.5);
+      ctx.fillText(this.deepNote, a.x, y + 15 * u);
+      const nw = ctx.measureText(this.deepNote).width;
+      this.#reserve({ x: a.x - nw / 2, y: y + 3 * u, w: nw, h: 15 * u });
+    }
     ctx.textAlign = 'left';
   }
 
@@ -2702,6 +2763,13 @@ export class SkyView {
     const ctx = this.#ctx;
     const x0 = a.x - pw / 2;
     const y0 = a.y - ph / 2;
+    // Zoomed in past one photo's size (below ~4°), its outline no longer fits the view: only the
+    // lens field is shown, and the caption sits just under the aim.
+    if (ph > 0.8 * h) {
+      this.#outlineBottom = a.y + 24 * u;
+      this.#lensField(u, a, pxPerDeg);
+      return;
+    }
     // Corner brackets, a quarter of a side long, in the look's blue.
     const arm = pw * 0.18;
     ctx.strokeStyle = rgba(this.#t.look, 0.75);
@@ -2741,15 +2809,20 @@ export class SkyView {
     ctx.font = `${11 * u}px ${this.#fontSans}`;
     ctx.fillText(this.labels.photoDetail, x0, y0 - 8 * u);
     this.#outlineBottom = Math.min(y0 + ph, h);
-    // Narrow enough, the lens field appears inside the photo: what the lens will show.
-    if (this.#fov <= 15) {
-      const s = Math.max(8 * u, LENS_FIELD_DEG * pxPerDeg);
-      ctx.strokeStyle = this.#t.starlight;
-      ctx.lineWidth = u;
-      ctx.strokeRect(a.x - s / 2, a.y - s / 2, s, s);
-      ctx.fillStyle = rgba(this.#t.starlight, 0.8);
-      ctx.fillText(this.labels.lens, a.x + s / 2 + 8 * u, a.y - s / 2 - 4 * u);
-    }
+    this.#lensField(u, a, pxPerDeg);
+  }
+
+  /** Narrow enough, the lens field appears inside the photo: what the lens will show. */
+  #lensField(u: number, a: { x: number; y: number }, pxPerDeg: number): void {
+    if (this.#fov > 15) return;
+    const ctx = this.#ctx;
+    const s = Math.max(8 * u, LENS_FIELD_DEG * pxPerDeg);
+    ctx.strokeStyle = this.#t.starlight;
+    ctx.lineWidth = u;
+    ctx.strokeRect(a.x - s / 2, a.y - s / 2, s, s);
+    ctx.fillStyle = rgba(this.#t.starlight, 0.8);
+    ctx.font = `${11 * u}px ${this.#fontSans}`;
+    ctx.fillText(this.labels.lens, a.x + s / 2 + 8 * u, a.y - s / 2 - 4 * u);
   }
 
   #outlineBottom = 0;
