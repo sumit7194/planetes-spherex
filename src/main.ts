@@ -2422,7 +2422,7 @@ async function chooseColour(
   plan: Extract<LookPlan<LivePhoto>, { kind: 'pair' }>,
   wanted: Detector | undefined,
   checked: Set<Detector> = new Set(),
-  // Scores from the first choice, kept for the look's life (Viewer, 15 Nov).
+  // Scores from the first choice, kept for the look's life (Viewer, 14 Nov).
   scored: Map<Detector, number | null> = new Map(),
 ): Promise<LookPlan<LivePhoto>> {
   const probed = look.probed;
@@ -2441,7 +2441,7 @@ async function chooseColour(
   } else if (helperActive()) {
     look.choosingColour = true;
     render();
-    // "Strongest" must mean of all six (Viewer, 15 Nov): a colour without a fair pair in the
+    // "Most clearly" must mean of all six (Viewer, 14 Nov): a colour without a fair pair in the
     // first sample is checked photo by photo first (cheap through the helper).
     for (const d of [1, 2, 3, 4, 5, 6] as Detector[]) {
       if (pairs.includes(d) || fully.has(d)) continue;
@@ -5854,7 +5854,7 @@ function render(): void {
   words.replaceChildren(...renderWords());
   // The colour row keeps the keyboard: it's rebuilt on every render (each photo arriving), so
   // focus returns to the shown colour whenever it was in the row, and after a switch once the
-  // new colour is on screen (Viewer, 15 Nov).
+  // new colour is on screen (Viewer, 14 Nov).
   if (colourHadFocus || refocusColour) {
     const b = words.querySelector<HTMLElement>('.colour-row [aria-checked="true"]');
     if (b && (!refocusColour || Number(b.dataset['det']) === refocusColour)) {
