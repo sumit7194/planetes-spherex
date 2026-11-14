@@ -20,6 +20,7 @@ import {
   pastPlace,
 } from './app/targets';
 import {
+  blendingNeighbour,
   clearestDetector,
   pairDetectors,
   planCandidates,
@@ -49,6 +50,7 @@ import {
 } from './data/coords';
 import {
   apertureFlux,
+  gaiaNear,
   findPhotos,
   helperActive,
   liveSpectrum,
@@ -2306,7 +2308,12 @@ async function openLook(
   named: SurpriseSpot | null = null,
   opts: {
     detector?: Detector;
-    reuse?: { photos: LivePhoto[]; probed: LookProbed; checked: Set<Detector> };
+    reuse?: {
+      photos: LivePhoto[];
+      probed: LookProbed;
+      checked: Set<Detector>;
+      sn: Map<Detector, number | null>;
+    };
   } = {},
 ): Promise<void> {
   surprise = named;
@@ -2365,7 +2372,7 @@ async function openLook(
   }
   if (live !== look) return;
   if (plan.kind === 'pair' && look.probed)
-    plan = await chooseColour(look, plan, opts.detector, opts.reuse?.checked);
+    plan = await chooseColour(look, plan, opts.detector, opts.reuse?.checked, opts.reuse?.sn);
   if (live !== look) return;
   look.plan = plan;
   writeUrl();
@@ -2399,6 +2406,8 @@ interface LookColour {
   fullyChecked: Set<Detector>;
   /** The colour being checked photo by photo just now (its button says so). */
   checking: Detector | null;
+  /** Physics' blend check: the nearest Gaia star (G < 19) within 2 px; undefined until Gaia answers. */
+  blend?: { g: number; sepArcsec: number } | null | undefined;
 }
 
 /**
@@ -2413,19 +2422,33 @@ async function chooseColour(
   plan: Extract<LookPlan<LivePhoto>, { kind: 'pair' }>,
   wanted: Detector | undefined,
   checked: Set<Detector> = new Set(),
+  // Scores from the first choice, kept for the look's life (Viewer, 15 Nov).
+  scored: Map<Detector, number | null> = new Map(),
 ): Promise<LookPlan<LivePhoto>> {
   const probed = look.probed;
   if (!probed) return plan;
-  const pairs = pairDetectors(probed.candidates, probed.meta);
-  const sn = new Map<Detector, number | null>();
+  let pairs = pairDetectors(probed.candidates, probed.meta);
+  const sn = new Map<Detector, number | null>(scored);
+  const fully = new Set(checked);
+  // Known stars near the spot (Physics' blend check): asked now, answered whenever; it changes
+  // only the words, never the colour shown.
+  const gaia = gaiaNear(look.at, 15, look.abort.signal).catch(() => null);
   let chosen: Detector | null = null;
   let why: LookColour['why'] = 'shortest';
   if (wanted && pairs.includes(wanted)) {
     chosen = wanted;
     why = 'chosen';
-  } else if (helperActive() && pairs.length > 1) {
+  } else if (helperActive()) {
     look.choosingColour = true;
     render();
+    // "Strongest" must mean of all six (Viewer, 15 Nov): a colour without a fair pair in the
+    // first sample is checked photo by photo first (cheap through the helper).
+    for (const d of [1, 2, 3, 4, 5, 6] as Detector[]) {
+      if (pairs.includes(d) || fully.has(d)) continue;
+      if (await checkColourFully(look, d)) fully.add(d);
+    }
+    if (live !== look) return plan;
+    pairs = pairDetectors(probed.candidates, probed.meta);
     const grid = lookGrid();
     await Promise.all(
       pairs.map(async (d) => {
@@ -2458,9 +2481,16 @@ async function chooseColour(
     sn,
     pairs,
     unavailable: wanted && !pairs.includes(wanted) ? wanted : null,
-    fullyChecked: new Set(checked),
+    fullyChecked: fully,
     checking: null,
   };
+  const colour = look.colour;
+  const year = 2000 + ((shown.pair.a.mjd + shown.pair.b.mjd) / 2 - 51544.5) / 365.25;
+  void gaia.then((stars) => {
+    if (live !== look || look.colour !== colour) return;
+    colour.blend = stars ? blendingNeighbour(stars, look.at, year) : undefined;
+    if (stars) render();
+  });
   return shown;
 }
 
@@ -2468,16 +2498,23 @@ async function chooseColour(
  * Checks the colour of every photo of one colour range at the spot (the first plan samples a few
  * per pass), so "no fair pair" there is final, not a sampling gap (Viewer's third state).
  */
-async function checkColourFully(look: LiveLook, d: Detector): Promise<void> {
+async function checkColourFully(look: LiveLook, d: Detector): Promise<boolean> {
   const probed = look.probed;
-  if (!probed) return;
+  if (!probed) return false;
+  let failed = 0;
   const have = new Set(probed.candidates.map((c) => c.id));
   const pass = passesOf(look.photos);
   const todo = look.photos
     .map((photo, i) => ({ photo, i }))
     .filter(({ photo }) => photo.det === d && !have.has(photo.key));
   await eachLimited(todo, probesAtOnce(), async ({ photo, i }) => {
-    const pr = await probePhoto(photo, look.at, look.abort.signal).catch(() => null);
+    let pr: Awaited<ReturnType<typeof probePhoto>> = null;
+    try {
+      pr = await probePhoto(photo, look.at, look.abort.signal);
+    } catch {
+      failed++;
+      return;
+    }
     if (!pr || live !== look) return;
     probed.candidates.push({
       id: photo.key,
@@ -2489,7 +2526,13 @@ async function checkColourFully(look: LiveLook, d: Detector): Promise<void> {
       hit: photo,
     });
   });
+  // "Every photo checked" only if every check answered: a busy helper mustn't make "no fair
+  // pair" look final.
+  return failed === 0 && live === look;
 }
+
+/** The colour the keyboard should land on once the row is rebuilt (0: none). */
+let refocusColour = 0;
 
 /**
  * Shows the same spot in another colour: no new probing, a fresh read of that colour's photos.
@@ -2503,10 +2546,10 @@ async function switchColour(look: LiveLook, d: Detector): Promise<void> {
   if (!c.pairs.includes(d) && !c.fullyChecked.has(d)) {
     c.checking = d;
     render();
-    await checkColourFully(look, d);
+    const complete = await checkColourFully(look, d);
     if (live !== look) return;
     c.checking = null;
-    c.fullyChecked.add(d);
+    if (complete) c.fullyChecked.add(d);
     c.pairs = pairDetectors(probed.candidates, probed.meta);
     if (!c.pairs.includes(d)) {
       c.unavailable = d;
@@ -2514,9 +2557,10 @@ async function switchColour(look: LiveLook, d: Detector): Promise<void> {
       return;
     }
   }
+  if (document.activeElement?.closest('.colour-row')) refocusColour = d;
   void openLook(look.at, surprise, {
     detector: d,
-    reuse: { photos: look.photos, probed, checked: new Set(c.fullyChecked) },
+    reuse: { photos: look.photos, probed, checked: new Set(c.fullyChecked), sn: c.sn },
   });
 }
 
@@ -2544,6 +2588,7 @@ function colourRow(look: LiveLook): HTMLElement | null {
       {
         type: 'button',
         role: 'radio',
+        'data-det': String(d),
         class: on ? 'on' : '',
         'aria-checked': String(on),
         tabindex: on ? '0' : '-1',
@@ -2597,6 +2642,9 @@ function colourRow(look: LiveLook): HTMLElement | null {
       c.unavailable ? ` ${t.unavailable(rangeText(c.unavailable))}` : '',
       c.checking ? ` ${t.checking(rangeText(c.checking))}` : '',
     ),
+    c.blend
+      ? h('p', { class: 'hint colour-blend' }, t.blended(c.blend.g, c.blend.sepArcsec))
+      : null,
     c.chosen <= 3 ? h('p', { class: 'hint' }, t.cold) : null,
   );
 }
@@ -5802,7 +5850,18 @@ function render(): void {
   const tabHadFocus = !!(document.activeElement as HTMLElement | null)?.closest?.('.panel-tabs');
   const searchHadFocus = document.activeElement === search;
   const caret = [search.selectionStart, search.selectionEnd] as const;
+  const colourHadFocus = !!(document.activeElement as HTMLElement | null)?.closest?.('.colour-row');
   words.replaceChildren(...renderWords());
+  // The colour row keeps the keyboard: it's rebuilt on every render (each photo arriving), so
+  // focus returns to the shown colour whenever it was in the row, and after a switch once the
+  // new colour is on screen (Viewer, 15 Nov).
+  if (colourHadFocus || refocusColour) {
+    const b = words.querySelector<HTMLElement>('.colour-row [aria-checked="true"]');
+    if (b && (!refocusColour || Number(b.dataset['det']) === refocusColour)) {
+      b.focus({ preventScroll: true });
+      refocusColour = 0;
+    }
+  }
   // The search input lives in the homepage column, and in the header everywhere else.
   if (!words.contains(searchBox)) searchAnchor.after(searchBox);
   if (searchHadFocus && document.activeElement !== search) {

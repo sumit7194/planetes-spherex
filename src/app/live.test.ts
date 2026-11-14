@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Detector } from '../data/colour/cwave';
 import {
+  blendingNeighbour,
   clearestDetector,
   pairDetectors,
   planCandidates,
@@ -121,5 +122,33 @@ describe('choosing the colour', () => {
       ),
     ).toBe(6);
     expect(clearestDetector(s([]))).toBeNull();
+  });
+});
+
+describe('the blend check (Physics, 14 Nov)', () => {
+  const at = { ra: 133.76005, dec: -7.2426 };
+  const star = (dRaArcsec: number, dDecArcsec: number, g: number | null, pmdec = 0) => ({
+    ra: at.ra + dRaArcsec / 3600 / Math.cos((at.dec * Math.PI) / 180),
+    dec: at.dec + dDecArcsec / 3600,
+    pmra: 0,
+    pmdec,
+    g,
+  });
+  it("names WISE 0855's G 16.3 neighbour 8.5″ away", () => {
+    const b = blendingNeighbour([star(8.5, 0, 16.3)], at, 2025.8);
+    expect(b?.g).toBe(16.3);
+    expect(b?.sepArcsec).toBeCloseTo(8.5, 1);
+  });
+  it('ignores the object itself (within 1″), faint stars, and stars beyond 2 px', () => {
+    expect(blendingNeighbour([star(0.5, 0, 12)], at, 2025.8)).toBeNull();
+    expect(blendingNeighbour([star(5, 0, 19.2)], at, 2025.8)).toBeNull();
+    expect(blendingNeighbour([star(13, 0, 10)], at, 2025.8)).toBeNull();
+    expect(blendingNeighbour([star(5, 0, null)], at, 2025.8)).toBeNull();
+  });
+  it('moves stars by proper motion to the photos\u2019 date, and takes the nearest', () => {
+    // 2016 → 2026 at −1000 mas/yr in Dec: 10″ south, from 3″ north to 7″ south.
+    const b = blendingNeighbour([star(0, 3, 15, -1000), star(11, 0, 14)], at, 2026.0);
+    expect(b?.sepArcsec).toBeCloseTo(7, 1);
+    expect(b?.g).toBe(15);
   });
 });

@@ -469,16 +469,19 @@ export const copy = {
       range: (lo: number, hi: number) => `${lo}–${hi} µm`,
       option: (lo: number, hi: number, has: boolean, sn: number | null) =>
         has
-          ? `${lo} to ${hi} microns${sn !== null ? `, the source at your spot at signal-to-noise ${Math.round(sn)}` : ''}`
+          ? `${lo} to ${hi} microns${sn !== null ? `, the light at your spot at signal-to-noise ${Math.round(sn)}` : ''}`
           : `${lo} to ${hi} microns: no fair pair here`,
       choosing: 'Finding the colour where your spot shows clearest…',
       whyClearest: (range: string) =>
-        `Shown at ${range}, where the source at your spot is clearest.`,
+        `Shown at ${range}, where the light at your spot is strongest.`,
       whyShortest: (range: string) =>
-        `Shown at ${range}: nothing clear sits at your spot, so this is the shortest colour with a fair pair. Pick another above.`,
+        `Shown at ${range}: nothing clear sits at your spot, so this is the shortest colour with a fair pair. Pick another colour to look.`,
       whyChosen: (range: string) => `Shown at ${range}, as chosen.`,
       unavailable: (range: string) => `There's no fair pair at ${range} here.`,
       cold: 'Cold objects such as brown dwarfs show best at 3–5 µm.',
+      /** Physics' blend line (14 Nov): text only, never changes the colour picked. */
+      blended: (g: number, sep: number) =>
+        `Blended: a Gaia star (G ${g.toFixed(1)}) ${sep.toFixed(1)}″ away sits inside the aperture. The strongest colour may show that star, not your object.`,
       unchecked: (lo: number, hi: number) =>
         `${lo} to ${hi} microns: not every photo checked yet; choosing it checks them`,
       checking: (range: string) => `Checking every photo at ${range}…`,

@@ -6,6 +6,8 @@
  * (DR1 + QR3: the colour at the spot comes from probing each photo's own file; see main.ts.)
  */
 
+import { separationDeg, type SkyPosition } from '../data/coords';
+import { placeAt } from './searchIndex';
 import {
   halfResolutionUm,
   pickSameColourPair,
@@ -171,4 +173,32 @@ export function clearestDetector(scores: Map<Detector, number | null>): Detector
     }
   }
   return best !== null && bestSn >= CLEAR_SN ? best : null;
+}
+
+/** Physics' blend check (14 Nov), fixed before looking at other spots: G < 19 within 2 px. */
+export const BLEND_G_MAX = 19;
+export const BLEND_RADIUS_ARCSEC = 2 * 6.15;
+/** Closer than this, a Gaia star is the object at the spot itself, not a neighbour. */
+export const BLEND_SELF_ARCSEC = 1;
+
+/**
+ * The nearest Gaia star that could dominate the look's aperture (Physics, 14 Nov): positions at
+ * Gaia's 2016.0 moved by proper motion to `year`; anything within 1″ of the spot is the object
+ * itself; a neighbour counts if G < 19 within 2 px (12.3″). It changes the words, never which
+ * colour is shown. Null when there's none.
+ */
+export function blendingNeighbour(
+  stars: { ra: number; dec: number; pmra: number; pmdec: number; g: number | null }[],
+  at: SkyPosition,
+  year: number,
+): { g: number; sepArcsec: number } | null {
+  let best: { g: number; sepArcsec: number } | null = null;
+  for (const s of stars) {
+    if (s.g === null || !(s.g < BLEND_G_MAX)) continue;
+    const p = placeAt({ ra: s.ra, dec: s.dec }, s.pmra || 0, s.pmdec || 0, 2016.0, year);
+    const sep = separationDeg(p, at) * 3600;
+    if (sep <= BLEND_SELF_ARCSEC || sep > BLEND_RADIUS_ARCSEC) continue;
+    if (!best || sep < best.sepArcsec) best = { g: s.g, sepArcsec: sep };
+  }
+  return best;
 }
