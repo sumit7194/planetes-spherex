@@ -31,6 +31,8 @@ The project idea is Sumit's own. Before the event, he prepared for this challeng
 - The DR1 + QR3 sky index (`pipeline/build_index.py`, from a full listing of the S3 bucket) and the browser's live reader (`src/data/live/dr1qr3.ts`: TAN-SIP WCS from each photo's header, a RICE decoder for the FLAGS tables, WCS-WAVE wavelengths), with tests against astropy.
 - The pointing files for the "riding with SPHEREx" view (`pipeline/build_pointing.py`).
 - A first viewer written that morning (now in `src-event-v0/`): blink, difference, stack and every-photo modes, six colour ranges, spectra on the fly, Aladin Lite with the SPHEREx HiPS cube. Its features are being carried into the practice front end (below).
+- A review of today's measurements by the team's Physics session during the event (14 Nov, ~13:35 IST), and its eye test of today's packs ("seen-with-ring" / "faint"), run with its pre-event rendering script on today's packs. The results are written into `pipeline/eye_tests.json`. Following that review, the wing photometry for saturated variables is gated by a steady-star test on Barnard's Star (`pipeline/validate_wings.py`, `wing_validation.json`), and errors on motions include a bootstrap over photos.
+- `public/data/surprise.json`: famous fast-moving stars and two long-period variables, checked against Gaia DR3 during the event (`pipeline/build_surprise.py`).
 - All measurements shown in the app are computed during the event, by this project's own pipeline, from DR1 + QR3 data.
 
 ## The viewer: the practice front end, brought in on 14 November

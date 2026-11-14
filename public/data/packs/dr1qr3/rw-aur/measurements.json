@@ -4,11 +4,15 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
   "basis": [
+   "not reliable: the two rings disagree by more than 10%; the change (1.05) is within 3 errors of no change",
    "20 photo pairs matched in wavelength (within lambda/80), detector 1, passes 1 and 2",
-   "ring 3-6 px: 1.054; ring 5-9 px: 2.255",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.054; ring 5-9 px: 2.255 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 0.99, s0s2 0.96, s1s2 0.96 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -17,38 +21,46 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
   "basis": [
+   "not reliable: fails the steady-star test; the two rings disagree by more than 10%",
    "18 photo pairs matched in wavelength (within lambda/80), detector 2, passes 1 and 2",
-   "ring 3-6 px: 1.387; ring 5-9 px: 1.636",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.387; ring 5-9 px: 1.636 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.99, s0s2 1.18, s1s2 1.24, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
  {
   "key": "brightness-ratio-detector-3-s0s1",
-  "value": 1.2618,
+  "value": null,
   "unit": "ratio",
-  "status": "MEASURED",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
   "basis": [
+   "not reliable: fails the steady-star test",
    "24 photo pairs matched in wavelength (within lambda/80), detector 3, passes 1 and 2",
-   "ring 3-6 px: 1.262; ring 5-9 px: 1.164",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.262; ring 5-9 px: 1.164 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.91, s0s2 1.05, s1s2 1.19, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
-  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.0665
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
  {
   "key": "brightness-ratio-detector-4-s0s1",
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
   "basis": [
+   "not reliable: fails the steady-star test; the change (0.92) is within 3 errors of no change",
    "20 photo pairs matched in wavelength (within lambda/80), detector 4, passes 1 and 2",
-   "ring 3-6 px: 0.922; ring 5-9 px: 0.906",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.922; ring 5-9 px: 0.906 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.96, s0s2 0.92, s1s2 1.03, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -57,11 +69,15 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
   "basis": [
+   "not reliable: the change (0.84) is within 3 errors of no change",
    "54 photo pairs matched in wavelength (within lambda/80), detector 5, passes 1 and 2",
-   "ring 3-6 px: 0.835; ring 5-9 px: 0.830",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.835; ring 5-9 px: 0.830 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -70,11 +86,14 @@
   "value": 0.709,
   "unit": "ratio",
   "status": "MEASURED",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 1)",
   "basis": [
    "70 photo pairs matched in wavelength (within lambda/80), detector 6, passes 1 and 2",
-   "ring 3-6 px: 0.709; ring 5-9 px: 0.703",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.709; ring 5-9 px: 0.703 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 0.99, s1s2 1.01 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0603
@@ -84,11 +103,15 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
   "basis": [
+   "not reliable: the two rings disagree by more than 10%",
    "19 photo pairs matched in wavelength (within lambda/80), detector 1, passes 1 and 3",
-   "ring 3-6 px: 1.568; ring 5-9 px: 2.154",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.568; ring 5-9 px: 2.154 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 0.99, s0s2 0.96, s1s2 0.96 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -97,11 +120,14 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
   "basis": [
+   "not reliable: fails the steady-star test; the two rings disagree by more than 10%; the change (1.38) is within 3 errors of no change",
    "17 photo pairs matched in wavelength (within lambda/80), detector 2, passes 1 and 3",
-   "ring 3-6 px: 1.375; ring 5-9 px: 1.757",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.375; ring 5-9 px: 1.757 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.99, s0s2 1.18, s1s2 1.24, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -110,11 +136,14 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
   "basis": [
+   "not reliable: fails the steady-star test; the change (1.08) is within 3 errors of no change",
    "18 photo pairs matched in wavelength (within lambda/80), detector 3, passes 1 and 3",
-   "ring 3-6 px: 1.084; ring 5-9 px: 1.025",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.084; ring 5-9 px: 1.025 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.91, s0s2 1.05, s1s2 1.19, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -123,11 +152,14 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
   "basis": [
+   "not reliable: fails the steady-star test; the change (0.76) is within 3 errors of no change",
    "19 photo pairs matched in wavelength (within lambda/80), detector 4, passes 1 and 3",
-   "ring 3-6 px: 0.756; ring 5-9 px: 0.745",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.756; ring 5-9 px: 0.745 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.96, s0s2 0.92, s1s2 1.03, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -136,11 +168,14 @@
   "value": 0.5207,
   "unit": "ratio",
   "status": "MEASURED",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
   "basis": [
    "52 photo pairs matched in wavelength (within lambda/80), detector 5, passes 1 and 3",
-   "ring 3-6 px: 0.521; ring 5-9 px: 0.508",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.521; ring 5-9 px: 0.508 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0597
@@ -150,11 +185,14 @@
   "value": 0.5175,
   "unit": "ratio",
   "status": "MEASURED",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 0 -> 2)",
   "basis": [
    "72 photo pairs matched in wavelength (within lambda/80), detector 6, passes 1 and 3",
-   "ring 3-6 px: 0.518; ring 5-9 px: 0.543",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.518; ring 5-9 px: 0.543 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 0.99, s1s2 1.01 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0596
@@ -164,11 +202,15 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
   "basis": [
+   "not reliable: the two rings disagree by more than 10%",
    "18 photo pairs matched in wavelength (within lambda/80), detector 1, passes 2 and 3",
-   "ring 3-6 px: 1.378; ring 5-9 px: 1.661",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 1.378; ring 5-9 px: 1.661 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 0.99, s0s2 0.96, s1s2 0.96 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -177,11 +219,14 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
   "basis": [
+   "not reliable: fails the steady-star test; the change (0.99) is within 3 errors of no change",
    "19 photo pairs matched in wavelength (within lambda/80), detector 2, passes 2 and 3",
-   "ring 3-6 px: 0.989; ring 5-9 px: 1.017",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.989; ring 5-9 px: 1.017 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.99, s0s2 1.18, s1s2 1.24, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -190,11 +235,14 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
   "basis": [
+   "not reliable: fails the steady-star test; the change (0.98) is within 3 errors of no change",
    "19 photo pairs matched in wavelength (within lambda/80), detector 3, passes 2 and 3",
-   "ring 3-6 px: 0.978; ring 5-9 px: 0.903",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.978; ring 5-9 px: 0.903 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.91, s0s2 1.05, s1s2 1.19, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -203,11 +251,14 @@
   "value": null,
   "unit": "ratio",
   "status": "NOT_RELIABLE",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
   "basis": [
+   "not reliable: fails the steady-star test; the two rings disagree by more than 10%; the change (0.78) is within 3 errors of no change",
    "18 photo pairs matched in wavelength (within lambda/80), detector 4, passes 2 and 3",
-   "ring 3-6 px: 0.780; ring 5-9 px: 0.863",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.780; ring 5-9 px: 0.863 (disagree by more than 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test failed: on Barnard's Star, saturated but steady, this detector gives s0s1 0.96, s0s2 0.92, s1s2 1.03, so its wing ratios are not trusted",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
  },
@@ -216,11 +267,14 @@
   "value": 0.6537,
   "unit": "ratio",
   "status": "MEASURED",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
   "basis": [
    "55 photo pairs matched in wavelength (within lambda/80), detector 5, passes 2 and 3",
-   "ring 3-6 px: 0.654; ring 5-9 px: 0.641",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.654; ring 5-9 px: 0.641 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0594
@@ -230,11 +284,14 @@
   "value": 0.7287,
   "unit": "ratio",
   "status": "MEASURED",
-  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season 1 -> 2)",
   "basis": [
    "56 photo pairs matched in wavelength (within lambda/80), detector 6, passes 2 and 3",
-   "ring 3-6 px: 0.729; ring 5-9 px: 0.789",
-   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+   "ring 3-6 px: 0.729; ring 5-9 px: 0.789 (agree within 10%; a partial check that the result doesn't depend on which part of the wing is measured, which matters because a dimmer star's saturated core is smaller)",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)",
+   "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 0.99, s1s2 1.01 in this detector",
+   "the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0594
@@ -244,10 +301,11 @@
   "value": 0.5191,
   "unit": "ratio",
   "status": "MEASURED",
-  "method": "median over the detectors that pass, of the wing-brightness ratio, last pass / first pass; it differs by wavelength",
+  "method": "median over the detectors that pass, of the wing-brightness ratio, last pass / first pass; it differs by wavelength (season 0 -> 2)",
   "basis": [
    "D5 0.52, D6 0.52",
-   "passes 1 -> 3"
+   "passes 1 -> 3",
+   "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0596

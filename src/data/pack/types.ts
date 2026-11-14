@@ -37,6 +37,8 @@ export interface PackManifest {
     ra: number;
     dec: number;
     epoch: number;
+    /** Detectors where the target shows well enough to follow (event packs, 14 Nov). */
+    motionDetectors?: number[];
   };
   grid: {
     /** Tile edge in pixels; tiles are square. */
@@ -46,7 +48,8 @@ export interface PackManifest {
     centre: { ra: number; dec: number };
     orientation: 'north-up-east-left';
   };
-  eye: { status: EyeStatus; testedUtc: string | null };
+  /** Physics' eye test; `method` names the passes it used, e.g. "… season 0 -> 2)". */
+  eye: { status: EyeStatus; testedUtc: string | null; method?: string };
   frames: Frame[];
   stacks: Stack[];
   /** Relative path of the measurements file. */

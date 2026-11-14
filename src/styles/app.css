@@ -396,7 +396,7 @@ canvas.sky.backdrop {
   display: grid;
   justify-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 12.5px;
   line-height: 1.3;
   color: var(--quiet);
   text-align: center;
@@ -687,7 +687,7 @@ canvas.sky.backdrop {
   align-items: center;
   gap: 6px;
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--quiet);
 }
 .wobble-swatch {
@@ -867,7 +867,7 @@ canvas.sky.backdrop {
   position: relative;
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--quiet);
 }
 .ribbon-labels .gap {
@@ -1502,7 +1502,7 @@ canvas.sky.backdrop {
   margin: 0;
 }
 .words .looks figcaption {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--quiet);
   margin-top: 4px;
 }
@@ -1516,7 +1516,7 @@ canvas.sky.backdrop {
   margin: 0 0 10px;
 }
 .words .pairs-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--quiet);
   margin-right: 2px;
 }
@@ -1543,7 +1543,7 @@ canvas.sky.backdrop {
   height: 7px;
 }
 .words .release-line {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--quiet);
   margin: 8px 0 0;
 }
@@ -1567,7 +1567,7 @@ canvas.sky.backdrop {
   display: grid;
   margin: 0;
   max-width: 7.5em;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.25;
   color: var(--quiet);
 }
@@ -1588,7 +1588,7 @@ canvas.sky.backdrop {
   flex-direction: column;
   justify-content: space-between;
   padding: 2px 0 14px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--quiet);
   text-align: right;
 }
@@ -1616,7 +1616,7 @@ canvas.sky.backdrop {
   display: grid;
   grid-template-columns: repeat(2, max-content);
   gap: 3px 14px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--quiet);
 }
 .mark-key li {
@@ -1755,7 +1755,7 @@ canvas.sky.backdrop {
   color: var(--starlight);
 }
 .fc-label .chip {
-  font-size: 11.5px;
+  font-size: 12.5px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--mist);
@@ -1823,7 +1823,7 @@ canvas.sky.backdrop {
   text-align: center;
 }
 .look-strip figcaption {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--quiet);
 }
 .field button small {
@@ -2120,4 +2120,51 @@ span[data-fit='1'] {
 .actions .diff-toggle[aria-busy='true'] {
   opacity: 0.6;
   cursor: progress;
+}
+/* A small text button inside a hint line (e.g. the difference's colour choice). */
+.link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  /* Text colour, underlined: blue already means "a live look". */
+  color: var(--starlight);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* The keys dialog (?): a plain panel on the night palette, readable in either scheme. */
+.keys-dialog {
+  max-width: 440px;
+  padding: 20px 24px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--starlight);
+}
+.keys-dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+.keys-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+.keys-dialog dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+}
+.keys-dialog dd {
+  margin: 0;
+  color: var(--mist);
+}
+.keys-dialog kbd {
+  font: inherit;
+  font-size: 13px;
+  padding: 1px 7px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 6px;
+  white-space: nowrap;
 }

@@ -309,6 +309,11 @@ export interface BrightnessRatio {
   status: Status;
   /** The comparison stars' systematic error, as a fraction (e.g. 0.059), if the basis says. */
   systematic: number | null;
+  /**
+   * The same method on Barnard's Star (saturated but steady): passed or failed in this
+   * detector, with the ratios it gave there (1 = no change); null if the pack doesn't say.
+   */
+  steady: { passed: boolean; ratios: number[] } | null;
 }
 
 /** The headline pair of the brightness keys, from brightness-change's basis ("passes 1 -> 3"). */
@@ -326,13 +331,23 @@ export function brightnessRatios(pack: LoadedPack, pair: [number, number]): Brig
   for (let d = 1; d <= 6; d++) {
     const m = find(pack, `brightness-ratio-detector-${d}${suffix}`);
     if (!m) continue;
-    const sys = m.basis.join(' ').match(/systematic error (\d*\.?\d+)/);
+    const text = m.basis.join(' ');
+    const sys = text.match(/systematic error (\d*\.?\d+)/);
+    const test = text.match(
+      /steady-star test (passed|failed)[^;]*?gives ([^,;]*(?:, s\d+s\d+ [\d.]+)*)/,
+    );
     out.push({
       detector: d,
       ratio: m.status === 'MEASURED' ? m.value : null,
       error: m.status === 'MEASURED' ? (m.error ?? null) : null,
       status: m.status,
       systematic: sys ? Number(sys[1]) : null,
+      steady: test
+        ? {
+            passed: test[1] === 'passed',
+            ratios: [...(test[2] ?? '').matchAll(/s\d+s\d+ ([\d.]+)/g)].map((x) => Number(x[1])),
+          }
+        : null,
     });
   }
   return out;

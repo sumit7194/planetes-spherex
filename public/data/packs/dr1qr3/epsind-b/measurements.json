@@ -15,11 +15,13 @@
   "value": 0.1994,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 1)",
   "basis": [
    "one-detector stacks, passes 1 and 2, detectors 1, 2, 3, 4, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 0: 118 exposures",
+   "season 1: 146 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -33,7 +35,7 @@
   "value": 1.226,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-east-px-s0s1 x 6.15 arcsec per pixel",
+  "method": "shift-east-px-s0s1 x 6.15 arcsec per pixel (season 0 -> 1)",
   "basis": [
    "shift-east-px-s0s1"
   ],
@@ -49,11 +51,13 @@
   "value": -0.1973,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 1)",
   "basis": [
    "one-detector stacks, passes 1 and 2, detectors 1, 2, 3, 4, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 0: 118 exposures",
+   "season 1: 146 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0767,
@@ -67,7 +71,7 @@
   "value": -1.2134,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-north-px-s0s1 x 6.15 arcsec per pixel",
+  "method": "shift-north-px-s0s1 x 6.15 arcsec per pixel (season 0 -> 1)",
   "basis": [
    "shift-north-px-s0s1"
   ],
@@ -83,7 +87,7 @@
   "value": 159.2487,
   "unit": "days",
   "status": "MEASURED",
-  "method": "difference of the passes' median photo times",
+  "method": "difference of the passes' median photo times (season 0 -> 1)",
   "basis": [
    "one-detector stacks, passes 1 and 2, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -94,7 +98,7 @@
   "value": 0.1782,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 0 -> 1)",
   "basis": [
    "one-detector stacks, passes 1 and 2, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -105,7 +109,7 @@
   "value": -0.2244,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 0 -> 1)",
   "basis": [
    "one-detector stacks, passes 1 and 2, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -116,7 +120,7 @@
   "value": 0.0526,
   "unit": "px",
   "status": "MEASURED",
-  "method": "median distance of still stars from their common shift",
+  "method": "median distance of still stars from their common shift (season 0 -> 1)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -127,7 +131,7 @@
   "value": 0.0998,
   "unit": "px",
   "status": "MEASURED",
-  "method": "90th percentile distance of still stars from their common shift",
+  "method": "90th percentile distance of still stars from their common shift (season 0 -> 1)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -138,11 +142,13 @@
   "value": 0.583,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 2)",
   "basis": [
    "one-detector stacks, passes 1 and 3, detectors 1, 2, 3, 4, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 0: 118 exposures",
+   "season 2: 74 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -156,7 +162,7 @@
   "value": 3.5854,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-east-px-s0s2 x 6.15 arcsec per pixel",
+  "method": "shift-east-px-s0s2 x 6.15 arcsec per pixel (season 0 -> 2)",
   "basis": [
    "shift-east-px-s0s2"
   ],
@@ -172,11 +178,13 @@
   "value": -0.3899,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 2)",
   "basis": [
    "one-detector stacks, passes 1 and 3, detectors 1, 2, 3, 4, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 0: 118 exposures",
+   "season 2: 74 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0979,
@@ -190,7 +198,7 @@
   "value": -2.3981,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-north-px-s0s2 x 6.15 arcsec per pixel",
+  "method": "shift-north-px-s0s2 x 6.15 arcsec per pixel (season 0 -> 2)",
   "basis": [
    "shift-north-px-s0s2"
   ],
@@ -206,7 +214,7 @@
   "value": 360.0072,
   "unit": "days",
   "status": "MEASURED",
-  "method": "difference of the passes' median photo times",
+  "method": "difference of the passes' median photo times (season 0 -> 2)",
   "basis": [
    "one-detector stacks, passes 1 and 3, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -217,7 +225,7 @@
   "value": 0.6158,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 0 -> 2)",
   "basis": [
    "one-detector stacks, passes 1 and 3, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -228,7 +236,7 @@
   "value": -0.3564,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 0 -> 2)",
   "basis": [
    "one-detector stacks, passes 1 and 3, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -239,7 +247,7 @@
   "value": 0.069,
   "unit": "px",
   "status": "MEASURED",
-  "method": "median distance of still stars from their common shift",
+  "method": "median distance of still stars from their common shift (season 0 -> 2)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -250,7 +258,7 @@
   "value": 0.1405,
   "unit": "px",
   "status": "MEASURED",
-  "method": "90th percentile distance of still stars from their common shift",
+  "method": "90th percentile distance of still stars from their common shift (season 0 -> 2)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -261,11 +269,13 @@
   "value": 0.8222,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 3)",
   "basis": [
    "one-detector stacks, passes 1 and 4, detectors 2, 3, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 0: 111 exposures",
+   "season 3: 120 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -279,7 +289,7 @@
   "value": 5.0562,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-east-px x 6.15 arcsec per pixel",
+  "method": "shift-east-px x 6.15 arcsec per pixel (season 0 -> 3)",
   "basis": [
    "shift-east-px"
   ],
@@ -295,11 +305,13 @@
   "value": -0.6355,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 3)",
   "basis": [
    "one-detector stacks, passes 1 and 4, detectors 2, 3, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 0: 111 exposures",
+   "season 3: 120 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -313,7 +325,7 @@
   "value": -3.9084,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-north-px x 6.15 arcsec per pixel",
+  "method": "shift-north-px x 6.15 arcsec per pixel (season 0 -> 3)",
   "basis": [
    "shift-north-px"
   ],
@@ -329,7 +341,7 @@
   "value": 515.6414,
   "unit": "days",
   "status": "MEASURED",
-  "method": "difference of the passes' median photo times",
+  "method": "difference of the passes' median photo times (season 0 -> 3)",
   "basis": [
    "one-detector stacks, passes 1 and 4, detectors 2, 3, 5, 6"
   ],
@@ -340,7 +352,7 @@
   "value": 0.805,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 0 -> 3)",
   "basis": [
    "one-detector stacks, passes 1 and 4, detectors 2, 3, 5, 6"
   ],
@@ -351,7 +363,7 @@
   "value": -0.6253,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 0 -> 3)",
   "basis": [
    "one-detector stacks, passes 1 and 4, detectors 2, 3, 5, 6"
   ],
@@ -362,7 +374,7 @@
   "value": 0.0424,
   "unit": "px",
   "status": "MEASURED",
-  "method": "median distance of still stars from their common shift",
+  "method": "median distance of still stars from their common shift (season 0 -> 3)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -373,7 +385,7 @@
   "value": 0.0956,
   "unit": "px",
   "status": "MEASURED",
-  "method": "90th percentile distance of still stars from their common shift",
+  "method": "90th percentile distance of still stars from their common shift (season 0 -> 3)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -384,11 +396,13 @@
   "value": 0.4061,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 1 -> 2)",
   "basis": [
    "one-detector stacks, passes 2 and 3, detectors 1, 2, 3, 4, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 1: 146 exposures",
+   "season 2: 74 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0513,
@@ -402,7 +416,7 @@
   "value": 2.4977,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-east-px-s1s2 x 6.15 arcsec per pixel",
+  "method": "shift-east-px-s1s2 x 6.15 arcsec per pixel (season 1 -> 2)",
   "basis": [
    "shift-east-px-s1s2"
   ],
@@ -418,11 +432,13 @@
   "value": -0.1755,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 1 -> 2)",
   "basis": [
    "one-detector stacks, passes 2 and 3, detectors 1, 2, 3, 4, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 1: 146 exposures",
+   "season 2: 74 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -436,7 +452,7 @@
   "value": -1.0795,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-north-px-s1s2 x 6.15 arcsec per pixel",
+  "method": "shift-north-px-s1s2 x 6.15 arcsec per pixel (season 1 -> 2)",
   "basis": [
    "shift-north-px-s1s2"
   ],
@@ -452,7 +468,7 @@
   "value": 200.7584,
   "unit": "days",
   "status": "MEASURED",
-  "method": "difference of the passes' median photo times",
+  "method": "difference of the passes' median photo times (season 1 -> 2)",
   "basis": [
    "one-detector stacks, passes 2 and 3, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -463,7 +479,7 @@
   "value": 0.4462,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 1 -> 2)",
   "basis": [
    "one-detector stacks, passes 2 and 3, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -474,7 +490,7 @@
   "value": -0.1319,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 1 -> 2)",
   "basis": [
    "one-detector stacks, passes 2 and 3, detectors 1, 2, 3, 4, 5, 6"
   ],
@@ -485,7 +501,7 @@
   "value": 0.0598,
   "unit": "px",
   "status": "MEASURED",
-  "method": "median distance of still stars from their common shift",
+  "method": "median distance of still stars from their common shift (season 1 -> 2)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -496,7 +512,7 @@
   "value": 0.1225,
   "unit": "px",
   "status": "MEASURED",
-  "method": "90th percentile distance of still stars from their common shift",
+  "method": "90th percentile distance of still stars from their common shift (season 1 -> 2)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -507,11 +523,13 @@
   "value": 0.631,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 1 -> 3)",
   "basis": [
    "one-detector stacks, passes 2 and 4, detectors 2, 3, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 1: 99 exposures",
+   "season 3: 120 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -525,7 +543,7 @@
   "value": 3.881,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-east-px-s1s3 x 6.15 arcsec per pixel",
+  "method": "shift-east-px-s1s3 x 6.15 arcsec per pixel (season 1 -> 3)",
   "basis": [
    "shift-east-px-s1s3"
   ],
@@ -541,11 +559,13 @@
   "value": -0.3918,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 1 -> 3)",
   "basis": [
    "one-detector stacks, passes 2 and 4, detectors 2, 3, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 1: 99 exposures",
+   "season 3: 120 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -559,7 +579,7 @@
   "value": -2.4097,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-north-px-s1s3 x 6.15 arcsec per pixel",
+  "method": "shift-north-px-s1s3 x 6.15 arcsec per pixel (season 1 -> 3)",
   "basis": [
    "shift-north-px-s1s3"
   ],
@@ -575,7 +595,7 @@
   "value": 356.3926,
   "unit": "days",
   "status": "MEASURED",
-  "method": "difference of the passes' median photo times",
+  "method": "difference of the passes' median photo times (season 1 -> 3)",
   "basis": [
    "one-detector stacks, passes 2 and 4, detectors 2, 3, 5, 6"
   ],
@@ -586,7 +606,7 @@
   "value": 0.6156,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 1 -> 3)",
   "basis": [
    "one-detector stacks, passes 2 and 4, detectors 2, 3, 5, 6"
   ],
@@ -597,7 +617,7 @@
   "value": -0.3774,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 1 -> 3)",
   "basis": [
    "one-detector stacks, passes 2 and 4, detectors 2, 3, 5, 6"
   ],
@@ -608,7 +628,7 @@
   "value": 0.0455,
   "unit": "px",
   "status": "MEASURED",
-  "method": "median distance of still stars from their common shift",
+  "method": "median distance of still stars from their common shift (season 1 -> 3)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -619,7 +639,7 @@
   "value": 0.1118,
   "unit": "px",
   "status": "MEASURED",
-  "method": "90th percentile distance of still stars from their common shift",
+  "method": "90th percentile distance of still stars from their common shift (season 1 -> 3)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -630,11 +650,13 @@
   "value": 0.1826,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 2 -> 3)",
   "basis": [
    "one-detector stacks, passes 3 and 4, detectors 2, 3, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 2: 36 exposures",
+   "season 3: 120 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.05,
@@ -648,7 +670,7 @@
   "value": 1.1229,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-east-px-s2s3 x 6.15 arcsec per pixel",
+  "method": "shift-east-px-s2s3 x 6.15 arcsec per pixel (season 2 -> 3)",
   "basis": [
    "shift-east-px-s2s3"
   ],
@@ -664,11 +686,13 @@
   "value": -0.2185,
   "unit": "px",
   "status": "MEASURED",
-  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 2 -> 3)",
   "basis": [
    "one-detector stacks, passes 3 and 4, detectors 2, 3, 5, 6",
    "9 Gaia DR3 still stars in the field",
-   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+   "flags masked: saturated and artefact pixels (OUTLIER kept)",
+   "season 2: 36 exposures",
+   "season 3: 120 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
   "error": 0.0597,
@@ -682,7 +706,7 @@
   "value": -1.3436,
   "unit": "arcsec",
   "status": "MEASURED",
-  "method": "shift-north-px-s2s3 x 6.15 arcsec per pixel",
+  "method": "shift-north-px-s2s3 x 6.15 arcsec per pixel (season 2 -> 3)",
   "basis": [
    "shift-north-px-s2s3"
   ],
@@ -698,7 +722,7 @@
   "value": 155.6342,
   "unit": "days",
   "status": "MEASURED",
-  "method": "difference of the passes' median photo times",
+  "method": "difference of the passes' median photo times (season 2 -> 3)",
   "basis": [
    "one-detector stacks, passes 3 and 4, detectors 2, 3, 5, 6"
   ],
@@ -709,7 +733,7 @@
   "value": 0.1587,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 2 -> 3)",
   "basis": [
    "one-detector stacks, passes 3 and 4, detectors 2, 3, 5, 6"
   ],
@@ -720,7 +744,7 @@
   "value": -0.2516,
   "unit": "px",
   "status": "MEASURED",
-  "method": "fitted shift before the still-star correction",
+  "method": "fitted shift before the still-star correction (season 2 -> 3)",
   "basis": [
    "one-detector stacks, passes 3 and 4, detectors 2, 3, 5, 6"
   ],
@@ -731,7 +755,7 @@
   "value": 0.0762,
   "unit": "px",
   "status": "MEASURED",
-  "method": "median distance of still stars from their common shift",
+  "method": "median distance of still stars from their common shift (season 2 -> 3)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],
@@ -742,7 +766,7 @@
   "value": 0.1305,
   "unit": "px",
   "status": "MEASURED",
-  "method": "90th percentile distance of still stars from their common shift",
+  "method": "90th percentile distance of still stars from their common shift (season 2 -> 3)",
   "basis": [
    "9 Gaia DR3 still stars in the field"
   ],

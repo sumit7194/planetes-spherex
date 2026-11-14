@@ -78,7 +78,8 @@
       "pmdec": 0.0,
       "pmSource": "negligible over 1.5 years",
       "det": 3,
-      "motionDets": null
+      "motionDets": null,
+      "blendNote": "RW Aurigae A and B are about 1.4 arcsec apart, inside one SPHEREx pixel, so the ratio is their combined light"
     },
     {
       "slug": "r-dra",

@@ -1,0 +1,6 @@
+{
+  "note": "Eye tests of today's packs by Physics (SphereXVision runs/eye_test_14nov/, eye_render.py): the headline pair's two season stacks, one shared asinh stretch, 25x25 px crop, a fixed ring at season a's centroid, masked pixels grey. seen-with-ring: the blob visibly sits elsewhere relative to the ring without prompting; faint: visible in a blink only if you know where to look; unseen: not visible.",
+  "barnard": {"status": "seen-with-ring", "testedUtc": "2026-11-14T08:05:15Z", "method": "Physics eye test, 14 Nov 2026 (D5 and all-colour, season 0 -> 2)"},
+  "w0855": {"status": "faint", "testedUtc": "2026-11-14T08:05:15Z", "method": "Physics eye test, 14 Nov 2026 (D6, season 1 -> 2)"},
+  "epsind-b": {"status": "faint", "testedUtc": "2026-11-14T08:05:15Z", "method": "Physics eye test, 14 Nov 2026 (season 0 -> 3)"}
+}

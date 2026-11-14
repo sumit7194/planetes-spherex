@@ -11,7 +11,7 @@
  */
 
 /** "1, 5 and 6". */
-const list = (xs: string[]): string =>
+export const list = (xs: string[]): string =>
   xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
 
 /** How much brighter or fainter, in words: see copy.brightness.phrase. */
@@ -179,6 +179,10 @@ export const copy = {
     /** Both looks are rebuilt from the same detectors, so they mix colours alike, but not exactly. */
     diffColours: (detectors: number) =>
       `Each look is rebuilt from its own photos in the ${detectors} colour ranges both have, leaving out pixels flagged as saturated or bad. Something that moved shows as a dark and bright pair, but bright stars that didn't move can too, because each look blends photos with different blur and colours. A pair alone isn't proof of motion; the measured move, where there is one, is in the ring.`,
+    diffScope: (range: string, narrowed: boolean) =>
+      narrowed ? `Colours used: ${range}, where it shows.` : `Colours used: all, ${range}.`,
+    diffAll: 'Use every colour',
+    diffNarrow: 'Only where it shows',
     diffMasked:
       'Hatched: not compared. Saturated or bad in either look, or too few usable photos there.',
     diffTrouble:
@@ -209,7 +213,7 @@ export const copy = {
       const fig = (r: number, e: number) => `${r.toFixed(2)} ± ${e.toFixed(2)}`;
       const how = 'from the unsaturated edges of its image, compared at matching colours';
       const check = sys
-        ? ` Comparison stars in the same photos stay within ${Math.round(sys * 100)}%.`
+        ? ` Comparison stars in the same photos scatter by about ${Math.round(sys * 100)}%.`
         : '';
       const [one] = parts;
       if (parts.length === 1 && one)
@@ -217,6 +221,8 @@ export const copy = {
       const clauses = parts.map((p) => `at ${p.range} ${copyPhrase(p.r)} (${fig(p.r, p.err)})`);
       return `${name} in ${to}, against ${from}: ${clauses.join('; ')}; ${how}.${check}`;
     },
+    combined: '(A and B together: they sit inside one SPHEREx pixel)',
+    combinedSentence: 'That is A and B together: they sit inside one SPHEREx pixel.',
     row: (
       later: number,
       earlier: number,
@@ -227,8 +233,12 @@ export const copy = {
     noneForPair: (a: number, b: number) =>
       `no colour range passes the checks between looks ${a} and ${b}`,
     howHeading: 'How was this measured?',
-    how: (sys: number | null) =>
-      `SPHEREx's detector saturates at the star's centre, so the centre is left out. The edges of its image, which aren't saturated, are compared between the two looks, in photos paired at matching colours. A colour range gets a number only if two rings at different distances from the centre agree within 10%, the change is more than 3 times its total error, and at least 10 photo pairs exist.${sys ? ` Comparison stars measured the same way in the same photos set the systematic error: ${Math.round(sys * 100)}%.` : ''} Another range shows as not reliable, without a number.`,
+    how: (
+      sys: number | null,
+      steady: { lo: string; hi: string } | null,
+      notes: { toleranceAfter: boolean; combined: boolean },
+    ) =>
+      `SPHEREx's detector saturates at the star's centre, so the centre is left out. The edges of its image, which aren't saturated, are compared between the two looks, in photos paired at matching colours. A colour range gets a number only if two rings at different distances from the centre agree within 10% (a partial check that dimming doesn't change which part of the edge is measured), the change is more than 3 times its total error, and at least 10 photo pairs exist.${sys ? ` Comparison stars measured the same way in the same photos set the systematic error: ${Math.round(sys * 100)}%.` : ''}${steady ? ` The method was also tried on Barnard's Star, which saturates too but holds steady: in the colour ranges given a number here it gives ${steady.lo === steady.hi ? steady.lo : `${steady.lo} to ${steady.hi}`} for it, where 1 means no change; a range that fails this test isn't trusted.${notes.toleranceAfter ? " That test's tolerance was chosen after seeing its results." : ''}` : ''}${notes.combined ? ' RW Aurigae A and B sit inside one SPHEREx pixel, so this is their combined light.' : ''} Another range shows as not reliable, without a number.`,
   },
   /** The context map: IRSA's SPHEREx DR1 all-sky HiPS cube in CDS Aladin Lite (14 Nov). */
   context: {
@@ -240,6 +250,51 @@ export const copy = {
     wavelength: (um: string, blank: boolean) =>
       blank ? `${um} µm: blank in this map` : `${um} µm`,
     failed: "The map didn't load: it comes from CDS and IRSA over the web.",
+  },
+  /** "Spot the mover": only where the eye test says it can be seen (Barnard's Star). */
+  spot: {
+    button: 'Spot the mover',
+    heading: 'Which way did it go?',
+    what: 'Try finding it yourself before the arrow tells you.',
+    prompt: (name: string) =>
+      `${name} hops between the two looks, numbered under the lens. Tap the lens on the side it moved to.`,
+    nudge: "That's the ring's centre: tap a little way out, on the side it moved to.",
+    showMe: 'Show me',
+    look: (n: number) => `Look ${n}`,
+    keys: 'Or use the arrow keys: ↑ north, ↓ south, ← east, → west (east is on the left, as on the sky).',
+    yes: (dir: string) => `Yes: it moved ${dir}, the way the arrow points.`,
+    close: (dir: string) =>
+      `Not quite: it moved ${dir}, the way the arrow points. Your tap is the cross.`,
+    shown: (dir: string) => `It moved ${dir}, the way the arrow points.`,
+    again: 'Try again',
+  },
+  /** Keyboard help (the ? key). */
+  keys: {
+    title: 'Keys',
+    hint: 'Keys: Space to compare, ← → for each look, D for the difference, ? for all.',
+    close: 'Close',
+    list: [
+      ['Space', 'Hold to compare the two looks, in one colour'],
+      ['← →', 'The first or second look; in Watch or a look at any spot, the photos one by one'],
+      ['D', 'Show or hide the difference'],
+      ['/', 'Find a star or a position'],
+      ['+ −', 'Zoom the sky'],
+      ['↑ ↓ ← →', 'Turn the sky (on the sky)'],
+      ['Esc', 'Back to the sky'],
+      ['?', 'This list'],
+    ] as [string, string][],
+  },
+  /** "Surprise me": famous fast stars and variables (public/data/surprise.json, Gaia DR3). */
+  surprise: {
+    button: 'Surprise me: a famous fast star',
+    /** Before the looks are chosen: Gaia's motion only. */
+    mover: (pm: string) =>
+      `Gaia measures it crossing the sky at ${pm} arcseconds a year. This is a look at SPHEREx's photos, not our measurement.`,
+    /** With the two looks shown: how far that motion alone carries it between them. */
+    moverShift: (pm: string, arcsec: string, px: string, under: boolean) =>
+      `Gaia measures it crossing the sky at ${pm} arcseconds a year: about ${arcsec} arcseconds, or ${px} SPHEREx pixels, between the two looks shown${under ? ', under one pixel, so it may not show' : ''}. This is a look at SPHEREx's photos, not our measurement.`,
+    variable:
+      "Other telescopes see it brighten and fade over months. This is a look at SPHEREx's photos, not a measurement of its brightness.",
   },
   look: {
     /** Known asteroids in a live look's photos (SkyBoT, IMCCE), 14 Nov. */
@@ -505,6 +560,9 @@ export const copy = {
     checked: (of: number) => `checked for colour, of ${of.toLocaleString('en-GB')}`,
   },
   watch: {
+    pickHeading: 'Watch every photo of one of the five',
+    pickHint:
+      'Pick one to play all its photos, one colour range at a time, or click a light on the sky.',
     windowsHeading: 'Colours SPHEREx saw here',
     window: (n: number) => (n === 1 ? '1 photo' : `${n} photos`),
     range: (lo: number, hi: number) => `${lo} to ${hi} microns`,

@@ -856,7 +856,7 @@ export class SkyView {
       ctx.fill();
       // The brightest stars carry a soft glow of their own colour.
       if (v < 1.6 && this.#quality >= 1) {
-        const glowR = u * zoom * (9 - v * 3.5) * (0.5 + 0.5 * p.depth);
+        const glowR = Math.max(0, u * zoom * (9 - v * 3.5) * (0.5 + 0.5 * p.depth));
         const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
         glow.addColorStop(0, starColour(bv).replace('rgb(', 'rgba(').replace(')', ' / 0.35)'));
         glow.addColorStop(1, 'rgba(255 255 255 / 0)');
@@ -972,6 +972,8 @@ export class SkyView {
     const z = this.#flat.zoom;
     const rx = (mw * z) / 2;
     const ry = (mh * z) / 2;
+    // A canvas laid out at no size yet (leaving a show for the flat map) has no ellipse to trim.
+    if (!(rx > 0 && ry > 0)) return;
     const f = Math.min(70 * (this.canvas.width / 1120), mw * 0.1);
     // The map is the Hammer ellipse: keep what's inside it, fading out over its last `f` px.
     ctx.save();
@@ -1795,10 +1797,28 @@ export class SkyView {
           (this.#ridePoint?.gap ? this.labels.ridingGap : '')
         : this.labels.riding;
     if (text) {
-      const ty = Math.min(this.canvas.height - 12 * u, y);
-      ctx.fillText(text, a.x, ty);
-      const tw = ctx.measureText(text).width;
-      this.#reserve({ x: a.x - tw / 2, y: ty - 12 * u, w: tw, h: 16 * u });
+      // On a narrow screen the caption wraps at its " · " breaks instead of running off the edge.
+      const maxW = this.canvas.width - 24 * u;
+      const lines: string[] = [];
+      for (const part of text.split(' · ')) {
+        const last = lines[lines.length - 1];
+        if (last !== undefined && ctx.measureText(`${last} · ${part}`).width <= maxW)
+          lines[lines.length - 1] = `${last} · ${part}`;
+        else lines.push(part);
+      }
+      const lh = 14 * u;
+      const ty = Math.min(this.canvas.height - 12 * u - lh * (lines.length - 1), y);
+      let tw = 0;
+      lines.forEach((line, i) => {
+        ctx.fillText(line, a.x, ty + i * lh);
+        tw = Math.max(tw, ctx.measureText(line).width);
+      });
+      this.#reserve({
+        x: a.x - tw / 2,
+        y: ty - 12 * u,
+        w: tw,
+        h: 16 * u + lh * (lines.length - 1),
+      });
     }
     ctx.textAlign = 'left';
   }

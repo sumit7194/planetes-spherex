@@ -43,7 +43,12 @@ export interface LensOverlay {
    * drawn in the predicted colour): offset from the grid centre in pack pixels, the direction
    * they move (any length; drawn as a short tick), and a name.
    */
-  movers?: { east: number; north: number; dEast: number; dNorth: number; name: string }[][] | null;
+  movers?:
+    | { east: number; north: number; dEast: number; dNorth: number; name: string }[][]
+    | null
+    | undefined;
+  /** "Spot the mover": where the visitor tapped (pack pixels), drawn as a small cross. */
+  guess?: Shift | null | undefined;
   /** Ember ring for a measured move, mist for a show with nothing measured, blue for a look. */
   contract: 'show' | 'status' | 'look';
 }
@@ -98,9 +103,24 @@ export class LensView {
     this.draw();
   }
 
+  /** The overlay as it is now (a copy), so a view can put it back after hiding parts. */
+  get overlay(): LensOverlay {
+    return { ...this.#overlay };
+  }
+
   setOverlay(patch: Partial<LensOverlay>): void {
     this.#overlay = { ...this.#overlay, ...patch };
     this.draw();
+  }
+
+  /** A click on the canvas, in pack pixels from the centre (east and north positive). */
+  shiftAt(clientX: number, clientY: number): Shift {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = ((clientX - rect.left) * this.canvas.width) / Math.max(1, rect.width);
+    const y = ((clientY - rect.top) * this.canvas.height) / Math.max(1, rect.height);
+    const k = this.scale;
+    const c = this.canvas.width / 2;
+    return { east: (c - x) / k, north: (c - y) / k };
   }
 
   /** Screen pixels per pack pixel. */
@@ -158,6 +178,22 @@ export class LensView {
 
     const movers = o.movers?.[this.#current];
     if (movers?.length) drawMovers(ctx, c, k, movers, t.predicted, t.night);
+
+    if (o.guess) {
+      // The visitor's tap: a cross in the text colour (theirs, not a measurement).
+      const gx = c - o.guess.east * k;
+      const gy = c - o.guess.north * k;
+      const r = Math.max(5, k * 0.6);
+      ctx.setLineDash([]);
+      ctx.strokeStyle = t.starlight;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(gx - r, gy - r);
+      ctx.lineTo(gx + r, gy + r);
+      ctx.moveTo(gx + r, gy - r);
+      ctx.lineTo(gx - r, gy + r);
+      ctx.stroke();
+    }
 
     if (o.predicted) drawArrow(ctx, c, o.predicted, k * o.arrowScale, 1, t.predicted, true);
     if (o.measured) {

@@ -308,7 +308,10 @@ describe('brightness from the edges of a saturated star', () => {
         value: 0.52,
         error: 0.06,
         unit: 'ratio',
-        basis: basis('passes 1 and 3'),
+        basis: [
+          ...basis('passes 1 and 3'),
+          "steady-star test passed: Barnard's Star, saturated but steady, gives s0s1 1.00, s0s2 1.03, s1s2 1.03 in this detector",
+        ],
       },
       {
         key: 'brightness-ratio-detector-1',
@@ -334,8 +337,22 @@ describe('brightness from the edges of a saturated star', () => {
 
   it('reads plain keys for the headline pair and suffixed keys for others', () => {
     expect(brightnessRatios(p, [0, 2])).toEqual([
-      { detector: 1, ratio: null, error: null, status: 'NOT_RELIABLE', systematic: 0.059 },
-      { detector: 5, ratio: 0.52, error: 0.06, status: 'MEASURED', systematic: 0.059 },
+      {
+        detector: 1,
+        ratio: null,
+        error: null,
+        status: 'NOT_RELIABLE',
+        systematic: 0.059,
+        steady: null,
+      },
+      {
+        detector: 5,
+        ratio: 0.52,
+        error: 0.06,
+        status: 'MEASURED',
+        systematic: 0.059,
+        steady: { passed: true, ratios: [1, 1.03, 1.03] },
+      },
     ]);
     expect(brightnessRatios(p, [0, 1]).map((r) => [r.detector, r.ratio])).toEqual([[6, 0.71]]);
     expect(brightnessRatios(p, [1, 2])).toEqual([]);

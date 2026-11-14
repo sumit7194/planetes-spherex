@@ -224,12 +224,15 @@ async def main_async(slug: str, size: int, conc: int):
             ids = [f["id"] for f in frames if f["season"] == s and f["detector"] == d]
             if not ids:
                 continue
-            ims = np.stack([arrays[i][0] for i in ids])
             fls = np.stack([arrays[i][1] for i in ids])
+            # Each photo's artefact pixels are left out of the stack; saturated ones stay (they are
+            # outlined in the viewer, never hidden).
+            ims = np.stack([np.where((arrays[i][1] & REJ) != 0, np.nan, arrays[i][0]) for i in ids])
             med = np.nanmedian(ims, 0).astype("<f4")
-            # A stack pixel is flagged when most of its photos are.
+            # A stack pixel is flagged when most of its photos are. SOURCE marks nearly every pixel
+            # near stars in every photo, so it carries nothing at stack level and is not set.
             stack_fl = np.zeros((size, size), np.uint8)
-            for bit in (SAT, REJ, SRC, OUTL):
+            for bit in (SAT, REJ, OUTL):
                 stack_fl[((fls & bit) != 0).mean(0) >= 0.5] |= bit
             sid = f"one-detector_s{s}_D{d}"
             (out / "frames" / f"{sid}.f32").write_bytes(med.tobytes())
@@ -241,7 +244,11 @@ async def main_async(slug: str, size: int, conc: int):
             per_det[d] = (med / max(sig, 1e-9), stack_fl, ids)
         if per_det:
             allc = np.nanmean(np.stack([v[0] for v in per_det.values()]), 0).astype("<f4")
-            allf = np.bitwise_or.reduce(np.stack([v[1] for v in per_det.values()]), 0).astype(np.uint8)
+            # All colours: a pixel is flagged when most detectors' stacks flag it (not when any one does).
+            dets_fl = np.stack([v[1] for v in per_det.values()])
+            allf = np.zeros((size, size), np.uint8)
+            for bit in (SAT, REJ, OUTL):
+                allf[((dets_fl & bit) != 0).mean(0) >= 0.5] |= bit
             sid = f"all-colour_s{s}"
             (out / "frames" / f"{sid}.f32").write_bytes(allc.tobytes())
             (out / "frames" / f"{sid}.u8").write_bytes(allf.tobytes())
@@ -270,9 +277,11 @@ async def main_async(slug: str, size: int, conc: int):
         format="planetes-pack/1", release="dr1qr3", pipelineVersions=pipeline_versions,
         generator=dict(name="SpaceAppChallenge pipeline/planetes_pack.py (event build, 14 Nov 2026)", commit=git_commit(),
                        createdUtc=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")),
-        target=dict(id=slug, name=t["name"], ra=ra, dec=dec, epoch=t.get("epoch", 2026.0)),
+        target=dict(id=slug, name=t["name"], ra=ra, dec=dec, epoch=t.get("epoch", 2026.0),
+                    # Detectors where the target itself is seen (others are its neighbours' light).
+                    motionDetectors=t.get("motionDets") or [1, 2, 3, 4, 5, 6]),
         grid=dict(size=size, pixelScaleArcsec=bp.PIX, centre=dict(ra=ra, dec=dec), orientation="north-up-east-left"),
-        eye=dict(status="untested", testedUtc=None),
+        eye=json.loads((HERE / "eye_tests.json").read_text()).get(slug, dict(status="untested", testedUtc=None)),
         frames=frames, stacks=stacks, measurements="measurements.json", layers=[],
     )
     (out / "manifest.json").write_text(json.dumps(manifest, separators=(",", ":")))

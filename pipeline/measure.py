@@ -160,13 +160,16 @@ def pair_result(a, b, dets_ok, fits_t, fits_s, still, gw, mid, src):
 def measure_mover(t, frames, arrays, size, gw, catalog):
     seasons = sorted({f["season"] for f in frames})
     dets_ok = t.get("motionDets") or [1, 2, 3, 4, 5, 6]
-    mid = {s: float(np.median([f["mjd"] for f in frames if f["season"] == s])) for s in seasons}
-    stacks = {}
+    # Each pass's time: the median time of the photos actually fitted (the motion detectors only).
+    mid = {s: float(np.median([f["mjd"] for f in frames if f["season"] == s and f["detector"] in dets_ok]
+                              or [f["mjd"] for f in frames if f["season"] == s])) for s in seasons}
+    stacks, ids_of = {}, {}
     for s in seasons:
         for d in dets_ok:
             ids = [f["id"] for f in frames if f["season"] == s and f["detector"] == d]
             if len(ids) >= 3:
                 stacks[(s, d)] = (masked_stack(arrays, ids), len(ids))
+                ids_of[(s, d)] = ids
     src = dict(ra=t["ra"], dec=t["dec"], pmra=t.get("pmra", 0), pmdec=t.get("pmdec", 0), epoch=t.get("epoch", 2026.0), plx=t.get("plx"))
     # Still stars: unsaturated-looking, isolated, slow Gaia stars, away from the target and the edges.
     tx, ty = grid_xy(gw, *apparent(src, mid[seasons[0]]))
@@ -186,6 +189,7 @@ def measure_mover(t, frames, arrays, size, gw, catalog):
             continue
         still.append(s_)
     fits_t, fits_s = {}, {}
+    fit_setup = {}  # (s, d) -> (predicted x, y, fixed neighbour positions), reused by the bootstrap
     neigh_used = set()
     for (s, d), (img, _n) in stacks.items():
         px, py = grid_xy(gw, *apparent(src, mid[s]))
@@ -195,6 +199,7 @@ def measure_mover(t, frames, arrays, size, gw, catalog):
         near_t = [(o, p) for o, p in others if 0.5 < math.hypot(p[0] - px, p[1] - py) < 5]
         neigh_used |= {o["id"] for o, _ in near_t if math.hypot(_[0] - px, _[1] - py) < 5}
         fits_t[(s, d)] = fit_centre(img, px, py, fixed=[p for _, p in near_t])
+        fit_setup[(s, d)] = (px, py, [p for _, p in near_t])
         if fits_t[(s, d)] is None:
             nn = img.shape[0]
             yy_, xx_ = np.mgrid[0:nn, 0:nn]
@@ -220,6 +225,39 @@ def measure_mover(t, frames, arrays, size, gw, catalog):
             print(f"  pair {p_}: fits in {len(r_['dxs'])} detectors, still-star-corrected in {r_['used']}, still stars {len(still)}, p90 {p90_}")
         else:
             print(f"  pair {p_}: no fits")
+    def bootstrap(a, b, r, n_boot=30):
+        """Spread of the still-star-corrected shift when each stack's photos are resampled with
+        replacement (the still stars' common shift is held at its fitted value)."""
+        rng = np.random.default_rng(20261114)
+        fitted = [d for d in dets_ok if fits_t.get((a, d)) and fits_t.get((b, d))]
+        common = {}
+        k = 0
+        for d in fitted:
+            if d in r["used"]:
+                i = r["used"].index(d)
+                common[d] = ((fits_t[(b, d)][0] - fits_t[(a, d)][0]) - r["rel_x"][i],
+                             (fits_t[(b, d)][1] - fits_t[(a, d)][1]) - r["rel_y"][i])
+            k += 1
+        es, ns = [], []
+        for _ in range(n_boot):
+            xs, ys = [], []
+            for d, (cx, cy) in common.items():
+                got = []
+                for s_ in (a, b):
+                    ids = ids_of[(s_, d)]
+                    img = masked_stack(arrays, list(rng.choice(ids, len(ids))))
+                    px, py, fixed = fit_setup[(s_, d)]
+                    got.append(fit_centre(img, px, py, fixed=fixed))
+                if got[0] and got[1]:
+                    xs.append(got[1][0] - got[0][0] - cx)
+                    ys.append(got[1][1] - got[0][1] - cy)
+            if xs:
+                es.append(-float(np.median(xs)))
+                ns.append(float(np.median(ys)))
+        if len(es) < 10:
+            return None, None
+        return float(np.std(es, ddof=1)), float(np.std(ns, ddof=1))
+
     good = [p for p in pairs if results[p] and results[p]["reliable"]]
     headline = max(good, key=lambda p: mid[p[1]] - mid[p[0]]) if good else (first, last)
     for a, b in pairs:
@@ -246,11 +284,20 @@ def measure_mover(t, frames, arrays, size, gw, catalog):
                  *([f"fitted together with {len(neigh_used)} catalogued neighbour(s) within 5 px"] if neigh_used else []),
                  f"{len(still)} Gaia DR3 still stars in the field",
                  "flags masked: saturated and artefact pixels (OUTLIER kept)"]
-        method = "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors"
+        method = (f"2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; "
+                  f"median over detectors (season {a} -> {b})")
+        n_a = sum(stacks[(a, d)][1] for d in (used or dets_ok) if (a, d) in stacks)
+        n_b = sum(stacks[(b, d)][1] for d in (used or dets_ok) if (b, d) in stacks)
+        basis = basis + [f"season {a}: {n_a} exposures", f"season {b}: {n_b} exposures"]
         pred_src = f"{t.get('pmSource', 'catalogue')} proper motion" + (" plus parallax" if src.get("plx") else "")
         if reliable:
             e_val, n_val = -med(rel_x), med(rel_y)
-            ex, ny = err(rel_x), err(rel_y)
+            be, bn = bootstrap(a, b, r)
+            # The larger of: the scatter between detectors (with the still-star floor), and the
+            # spread when each stack's photos are resampled.
+            ex = max(err(rel_x), be or 0.0)
+            ny = max(err(rel_y), bn or 0.0)
+            method = method.replace(" (season", "; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season")
             st = "MEASURED"
         else:
             e_val = n_val = None
@@ -259,17 +306,17 @@ def measure_mover(t, frames, arrays, size, gw, catalog):
         for key, val, er, pr in (("shift-east-px", e_val, ex, pred_e), ("shift-north-px", n_val, ny, pred_n)):
             out.append(m_entry(key + suffix, val, "px", st, method, basis, er, dict(value=round(pr, 4), source=pred_src)))
             out.append(m_entry(key.replace("-px", "-arcsec") + suffix, None if val is None else val * PIX, "arcsec", st,
-                               f"{key + suffix} x {PIX} arcsec per pixel", [key + suffix], None if er is None else er * PIX,
+                               f"{key + suffix} x {PIX} arcsec per pixel (season {a} -> {b})", [key + suffix], None if er is None else er * PIX,
                                dict(value=round(pr * PIX, 3), source=pred_src)))
-        out.append(m_entry("season-span-days" + suffix, span, "days", "MEASURED", "difference of the passes' median photo times", basis[:1]))
+        out.append(m_entry("season-span-days" + suffix, span, "days", "MEASURED", f"difference of the passes' median photo times (season {a} -> {b})", basis[:1]))
         # Raw (uncorrected) shift and the still stars' behaviour, for the "how sure" line.
-        out.append(m_entry("shift-east-px-raw" + suffix, -med(dxs), "px", "MEASURED", "fitted shift before the still-star correction", basis[:1]))
-        out.append(m_entry("shift-north-px-raw" + suffix, med(dys), "px", "MEASURED", "fitted shift before the still-star correction", basis[:1]))
+        out.append(m_entry("shift-east-px-raw" + suffix, -med(dxs), "px", "MEASURED", f"fitted shift before the still-star correction (season {a} -> {b})", basis[:1]))
+        out.append(m_entry("shift-north-px-raw" + suffix, med(dys), "px", "MEASURED", f"fitted shift before the still-star correction (season {a} -> {b})", basis[:1]))
         if still_res:
             out.append(m_entry("still-star-shift-px" + suffix, float(np.median(still_res)), "px", "MEASURED",
-                               "median distance of still stars from their common shift", basis[1:2]))
+                               f"median distance of still stars from their common shift (season {a} -> {b})", basis[1:2]))
             out.append(m_entry("still-star-shift-p90-px" + suffix, p90, "px", "MEASURED",
-                               "90th percentile distance of still stars from their common shift", basis[1:2]))
+                               f"90th percentile distance of still stars from their common shift (season {a} -> {b})", basis[1:2]))
     return out
 
 
@@ -359,16 +406,43 @@ def measure_wings(t, exps, catalog):
         return out
     first, last = passes[0], passes[-1]
     measured_any = []
+    import json as _json
+    from pathlib import Path as _Path
+    vpath = _Path(__file__).parent / "wing_validation.json"
+    valid = _json.loads(vpath.read_text()) if vpath.exists() else None
     for (a, b, d), (m, e_stat, n) in sorted(inner.items()):
         o = outer.get((a, b, d))
         suffix = "" if (a, b) == (first, last) else f"-s{a}s{b}"
         agree = o is not None and abs(o[0] - m) <= 0.1 * m
         err = math.hypot(e_stat, sys_err or 0)
-        ok = sys_err is not None and n_ctrl >= 2 and n >= 10 and agree and abs(m - 1) > 3 * err
+        steady = valid is not None and valid["detectors"][str(d)]["passes"]
+        ok = steady and sys_err is not None and n_ctrl >= 2 and n >= 10 and agree and abs(m - 1) > 3 * err
         basis = [f"{n} photo pairs matched in wavelength (within lambda/80), detector {d}, passes {a + 1} and {b + 1}",
-                 f"ring {ring_txt[0]}: {m:.3f}; ring {ring_txt[1]}: {o[0]:.3f}" if o else "outer ring: too few photos",
-                 f"comparison stars: {n_ctrl} Gaia stars; systematic error {sys_err:.3f} (their scatter beyond their own noise, at least 0.05)" if sys_err is not None else "comparison stars: too few"]
-        method = "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths"
+                 (f"ring {ring_txt[0]}: {m:.3f}; ring {ring_txt[1]}: {o[0]:.3f} ("
+                  + ("agree within 10%" if agree else "disagree by more than 10%")
+                  + "; a partial check that the result doesn't depend on which part of the wing is measured, "
+                  "which matters because a dimmer star's saturated core is smaller)") if o else "outer ring: too few photos",
+                 f"comparison stars: {n_ctrl} Gaia stars; systematic error {sys_err:.3f} (their scatter beyond their own noise, at least 0.05)" if sys_err is not None else "comparison stars: too few",
+                 (("steady-star test passed: Barnard's Star, saturated but steady, gives "
+                   + ", ".join(f"{k} {v[0]:.2f}" for k, v in valid["detectors"][str(d)]["ratios"].items()) + " in this detector")
+                  if steady else
+                  ("steady-star test failed: on Barnard's Star, saturated but steady, this detector gives "
+                   + ", ".join(f"{k} {v[0]:.2f}" for k, v in valid["detectors"][str(d)]["ratios"].items()) + ", so its wing ratios are not trusted"))
+                 if valid else "steady-star test not run"]
+        if valid and steady:
+            basis.append("the steady-star tolerance (1.00 +/- 0.06) was chosen after seeing that test's results")
+        if t.get("blendNote"):
+            basis.append(t["blendNote"])
+        method = f"ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths (season {a} -> {b})"
+        if not ok:
+            failed = [why for cond, why in (
+                (steady, "fails the steady-star test"),
+                (sys_err is not None and n_ctrl >= 2, "too few comparison stars"),
+                (n >= 10, f"only {n} matched photo pairs (10 needed)"),
+                (agree, "the two rings disagree by more than 10%"),
+                (abs(m - 1) > 3 * err, f"the change ({m:.2f}) is within 3 errors of no change"),
+            ) if not cond]
+            basis.insert(0, "not reliable: " + "; ".join(failed))
         out.append(m_entry(f"brightness-ratio-detector-{d}{suffix}", m if ok else None, "ratio",
                            "MEASURED" if ok else "NOT_RELIABLE", method, basis, err if ok else None))
         if ok and suffix == "":
@@ -377,8 +451,8 @@ def measure_wings(t, exps, catalog):
         ds = ", ".join(f"D{d} {m:.2f}" for d, m, _ in measured_any)
         med = float(np.median([m for _, m, _ in measured_any]))
         out.append(m_entry("brightness-change", med, "ratio", "MEASURED",
-                           "median over the detectors that pass, of the wing-brightness ratio, last pass / first pass; it differs by wavelength",
-                           [ds, f"passes {first + 1} -> {last + 1}"],
+                           f"median over the detectors that pass, of the wing-brightness ratio, last pass / first pass; it differs by wavelength (season {first} -> {last})",
+                           [ds, f"passes {first + 1} -> {last + 1}"] + ([t["blendNote"]] if t.get("blendNote") else []),
                            float(np.median([e for _, _, e in measured_any]))))
     else:
         why = [f"{n_in} wing measurements of the star (ring {ring_txt[0]})"]

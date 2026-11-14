@@ -3,7 +3,7 @@ import './styles/base.css';
 import './styles/app.css';
 import './styles/mark.css';
 import './styles/glass.css';
-import { copy } from './copy/en';
+import { copy, list } from './copy/en';
 import {
   type Entry,
   initialState,
@@ -25,6 +25,7 @@ import {
   primaryPair,
   brightnessPair,
   brightnessRatios,
+  type BrightnessRatio,
   scatterTest,
   seasonsIn,
   showFor,
@@ -59,7 +60,7 @@ import { knownMoversAt } from './data/live/skybot';
 import { fieldRadiusDeg, marksAt, type MoverMark } from './app/movers';
 import type { Detector } from './data/colour/cwave';
 import { FlagMask, type Frame, type TargetId } from './data/pack/types';
-import { LensView, type LensOverlay } from './render/lens';
+import { LensView, type LensOverlay, type Shift } from './render/lens';
 import {
   DIFF_LIMIT,
   diffGradient,
@@ -117,10 +118,41 @@ const packs = new Map<TargetId, LoadedPack>();
 let current: { pack: LoadedPack; show: Show; pair: [Tile, Tile] } | null = null;
 let showing: 0 | 1 | null = null;
 /** The difference of the pair on screen, while the visitor has it on (noise in MJy/sr). */
-let differencing: { sigma: number; masked: number; detectors: number } | null = null;
+let differencing: {
+  sigma: number;
+  masked: number;
+  detectors: number;
+  /** The colours used, e.g. "3.8–5 µm", and whether they are narrowed to the target's own. */
+  range: string;
+  narrowed: boolean;
+  canNarrow: boolean;
+} | null = null;
+/**
+ * "Spot the mover" (Zooniverse-style known answer): the lens blinks the two looks without the
+ * arrow; the visitor taps where the target is in the later look, then sees the measured answer.
+ * Only where Physics' eye test says the hop can be seen with the ring (Barnard's Star today).
+ */
+let spot: {
+  state: 'playing' | 'done';
+  hit: boolean | null;
+  timer: number;
+  /** The last tap was on the ring's centre: ask for a side. */
+  nudge?: boolean;
+  /** Overlays hidden while playing (they hint at the answer), put back afterwards. */
+  saved: {
+    predicted: LensOverlay['predicted'];
+    catalogue: LensOverlay['catalogue'];
+    movers: LensOverlay['movers'] | null;
+  };
+} | null = null;
+/** One live region for the game, kept across renders so screen readers announce changes. */
+const spotStatus = h('p', { class: 'spot-status', role: 'status' });
+
 /** Bumped whenever something else takes the lens, so a difference still loading is dropped. */
 let diffRequest = 0;
 let diffBusy = false;
+/** The visitor asked for every shared colour, not just those where the target shows. */
+let diffAllColours = false;
 let diffTrouble = false;
 /** The season pair a visitor picked per target; the pack's measured pair otherwise. */
 const chosenPair = new Map<TargetId, [number, number]>();
@@ -688,6 +720,7 @@ function leaveShow(): void {
   stopLook();
   current = null;
   dropDifference();
+  endSpot(false);
   dispatch({ type: 'backToSky' });
   // A ride from here starts at the moment SPHEREx photographed this target.
   if (target) void rideTimeline(target);
@@ -775,7 +808,79 @@ search.addEventListener('keydown', (e) => {
     render();
   } else void openLook(parsed.position);
 });
+/** The keys, in a native dialog (Esc closes it; focus returns to where it was). */
+const keysDialog = h('dialog', { class: 'keys-dialog', 'aria-labelledby': 'keys-title' });
+function openKeys(): void {
+  if (keysDialog.open) {
+    keysDialog.close();
+    return;
+  }
+  const k = copy.keys;
+  const close = h('button', { type: 'button' }, k.close);
+  close.addEventListener('click', () => keysDialog.close());
+  keysDialog.replaceChildren(
+    h('h2', { id: 'keys-title' }, k.title),
+    h(
+      'dl',
+      {},
+      ...k.list.flatMap(([key, what]) => [h('dt', {}, h('kbd', {}, key)), h('dd', {}, what)]),
+    ),
+    h('div', { class: 'actions' }, close),
+  );
+  if (!keysDialog.isConnected) document.body.append(keysDialog);
+  keysDialog.showModal();
+}
+
+/** The show's pair on the lens as it rests after the reveal: arrows full, look 2, its label. */
+function restingPair(): void {
+  if (!current) return;
+  lens.setTiles(current.pair, sharedStretch(current.pair.map((t) => t.pixels)));
+  lens.setOverlay({
+    measured: current.show.kind === 'motion' ? current.show.measured : undefined,
+    predicted: current.show.kind === 'motion' ? (current.show.predicted ?? undefined) : undefined,
+  });
+  showRevealStill(lens);
+  showing = 1;
+  setLensLabel(1, 8);
+}
+
+/**
+ * Before an action takes the lens: finish the reveal (arrow at its full enlargement, not where
+ * the animation was), and stop Watch's colour play, so no timer keeps drawing on top. True when
+ * the show is ready for the action.
+ */
+function takeLens(): boolean {
+  if (!current) return false;
+  if (state.place.kind === 'reveal') {
+    stopReveal?.();
+    dispatch({ type: 'revealDone' });
+    restingPair();
+  }
+  if (watching !== null || series) {
+    stopReveal?.();
+    watching = null;
+    series = null;
+    drawSeriesBar();
+    restingPair();
+  }
+  return state.place.kind === 'ready';
+}
+
+/** ← → in a show: the first or second look on the lens (ending the reveal or a difference). */
+function stepLook(index: 0 | 1): void {
+  if (!takeLens() || !current) return;
+  if (differencing) endDifference(false);
+  // From a co-add picture (one tile) or the hold pair: the show's own pair first.
+  restingPair();
+  lens.show(index);
+  showing = index;
+  setLensLabel(index, 8);
+  renderBand();
+}
+let liveShown = 0;
+
 document.addEventListener('keydown', (e) => {
+  if (keysDialog.open) return;
   if (e.key === '/' && document.activeElement !== search) {
     e.preventDefault();
     search.focus();
@@ -791,6 +896,52 @@ document.addEventListener('keydown', (e) => {
   // In a show, ← → step the series being watched.
   if (series && watching !== null && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
     series.step(e.key === 'ArrowLeft' ? -1 : 1);
+    e.preventDefault();
+    return;
+  }
+  if (e.key === '?') {
+    openKeys();
+    e.preventDefault();
+    return;
+  }
+  // Arrows and letters mean nothing to a button, so they work after a click; only while typing
+  // (a text field, a list, a slider) are they left alone.
+  const free = !document.activeElement?.matches(
+    'input, select, textarea, [contenteditable], [role="slider"]',
+  );
+  // While playing "Spot the mover", the arrows are the guesses: ↑ north, ← east (east is left).
+  const guess: Record<string, Shift> = {
+    ArrowUp: { east: 0, north: 2 },
+    ArrowDown: { east: 0, north: -2 },
+    ArrowLeft: { east: 2, north: 0 },
+    ArrowRight: { east: -2, north: 0 },
+  };
+  if (free && spot?.state === 'playing' && guess[e.key]) {
+    answerSpot(guess[e.key] ?? null);
+    e.preventDefault();
+    return;
+  }
+  if (free && current && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    stepLook(e.key === 'ArrowLeft' ? 0 : 1);
+    e.preventDefault();
+    return;
+  }
+  if (free && current && !e.repeat && (e.key === 'd' || e.key === 'D')) {
+    if (differencing) endDifference();
+    else void showDifference();
+    e.preventDefault();
+    return;
+  }
+  // A live look: ← → step through its photos.
+  if (
+    free &&
+    live?.done &&
+    live.tiles.length &&
+    (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
+  ) {
+    stopReveal?.();
+    const n = live.tiles.length;
+    showLivePhoto((liveShown + (e.key === 'ArrowLeft' ? -1 : 1) + n) % n);
     e.preventDefault();
     return;
   }
@@ -827,6 +978,8 @@ async function openWanderer(id: TargetId): Promise<void> {
   series = null;
   stopLook();
   dropDifference();
+  endSpot(false);
+  diffAllColours = false;
   lens.setOverlay({ contract: 'show', catalogue: null });
   dispatch({ type: 'tapLantern', target: id });
   writeUrl();
@@ -1040,9 +1193,63 @@ function stopLook(): void {
  * them. Nothing flips until both looks have a photo in; Stop keeps what has landed.
  * No arrow, no verdict: a look, not a search.
  */
-async function openLook(at: SkyPosition): Promise<void> {
+/** A famous spot from public/data/surprise.json (Gaia DR3 position at 2026.0, checked 14 Nov). */
+interface SurpriseSpot {
+  name: string;
+  kind: 'mover' | 'variable';
+  note: string;
+  ra: number;
+  dec: number;
+  pmArcsecYr: number;
+  source: string;
+}
+let surprises: Promise<SurpriseSpot[]> | null = null;
+function loadSurprises(): Promise<SurpriseSpot[]> {
+  surprises ??= fetch(`${import.meta.env.BASE_URL}data/surprise.json`)
+    .then((r) => (r.ok ? (r.json() as Promise<{ spots: SurpriseSpot[] }>) : { spots: [] }))
+    .then((d) => d.spots)
+    .catch(() => {
+      surprises = null;
+      return [];
+    });
+  return surprises;
+}
+/** The surprise on screen, if the look came from one (for its name, line and link). */
+let surprise: SurpriseSpot | null = null;
+const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+/**
+ * How far the star's catalogue motion carries it between the two looks on screen (motion only,
+ * parallax left out), in arcseconds and SPHEREx pixels; before the looks are chosen, the rate.
+ */
+function surpriseShiftLine(s: SurpriseSpot): string {
+  const plan = live?.plan;
+  if (plan?.kind !== 'pair') return copy.surprise.mover(s.pmArcsecYr.toFixed(1));
+  const years = Math.abs(plan.pair.b.mjd - plan.pair.a.mjd) / 365.25;
+  const arcsec = s.pmArcsecYr * years;
+  const px = arcsec / SCALE_ARCSEC;
+  return copy.surprise.moverShift(
+    s.pmArcsecYr.toFixed(1),
+    arcsec.toFixed(1),
+    px.toFixed(px < 1 ? 2 : 1),
+    px < 1,
+  );
+}
+
+/** A live look at a famous fast star or variable, a different one from the last. */
+async function surpriseMe(): Promise<void> {
+  const spots = await loadSurprises();
+  const others = spots.filter((x) => x.name !== surprise?.name);
+  const pick = others[Math.floor(Math.random() * others.length)];
+  if (!pick) return;
+  await openLook({ ra: pick.ra, dec: pick.dec }, pick);
+}
+
+async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Promise<void> {
+  surprise = named;
   stopReveal?.();
   stopLook();
+  endSpot(false);
   current = null;
   dropDifference();
   const look: NonNullable<typeof live> = {
@@ -1260,6 +1467,7 @@ function livePhotoName(i: number): string {
 }
 
 function showLivePhoto(i: number): void {
+  liveShown = i;
   lens.show(i);
   lensLabel.replaceChildren(h('span', {}, livePhotoName(i)));
   for (const [k, t] of words.querySelectorAll('.look-strip .thumb').entries()) {
@@ -1322,7 +1530,8 @@ function drawTrueScale(show: Show): void {
 /* ---------- hold to compare: spring-loaded, one detector, position only ---------- */
 
 function holdStart(): void {
-  if (state.place.kind !== 'ready' || !current) return;
+  // Holding during the reveal ends it: the visitor has seen enough to want to compare.
+  if (!takeLens() || !current) return;
   const pair = stackPair(current.pack, 'one-detector', current.show.seasons);
   if (!pair) return;
   leaveDifference();
@@ -1367,12 +1576,8 @@ function photoTile(pack: LoadedPack, f: Frame): Promise<Tile> {
  * the strict mask, from the detectors both looks have, then compared on a fixed ±5σ scale.
  */
 async function showDifference(): Promise<void> {
-  if (!current) return;
-  if (state.place.kind === 'reveal') {
-    stopReveal?.();
-    dispatch({ type: 'revealDone' });
-  }
-  if (state.place.kind !== 'ready') return;
+  if (!takeLens() || !current) return;
+  endSpot(false);
   const shown = current;
   const req = ++diffRequest;
   diffBusy = true;
@@ -1404,7 +1609,12 @@ async function showDifference(): Promise<void> {
       .filter((p) => p.frame.season === season)
       .map((p) => ({ detector: p.frame.detector, tile: p.tile }));
   const has = (season: number) => new Set(inLook(season).map((p) => p.detector));
-  const both = [...has(early)].filter((d) => has(late).has(d)).sort();
+  const shared = [...has(early)].filter((d) => has(late).has(d)).sort();
+  // By default only the colours where the target shows (W0855: 3.8–5 µm); elsewhere it is
+  // noise and hatching. The visitor can ask for all.
+  const motion = shown.pack.manifest.target.motionDetectors ?? [];
+  const inMotion = shared.filter((d) => motion.includes(d));
+  const both = !diffAllColours && inMotion.length ? inMotion : shared;
   const a = strictLook(`look${early}`, inLook(early), both);
   const b = strictLook(`look${late}`, inLook(late), both);
   const d = a && b ? difference(a, b) : null;
@@ -1412,7 +1622,14 @@ async function showDifference(): Promise<void> {
     fail();
     return;
   }
-  differencing = { sigma: d.sigma, masked: d.masked, detectors: both.length };
+  differencing = {
+    sigma: d.sigma,
+    masked: d.masked,
+    detectors: both.length,
+    range: detectorRange(both),
+    narrowed: both.length < shared.length,
+    canNarrow: inMotion.length > 0 && inMotion.length < shared.length,
+  };
   lens.setRendered([{ tile: d.tile, image: renderDifference(d.tile) }]);
   lens.setOverlay({ arrowProgress: 1 });
   lensLabel.replaceChildren(
@@ -1443,10 +1660,177 @@ function dropDifference(): void {
   if (had) writeUrl();
 }
 
+/** The passes Physics' eye test used ("… season 0 -> 2)"), if the pack says. */
+function eyePair(): [number, number] | null {
+  const hit = current?.pack.manifest.eye.method?.match(/season (\d+)\s*->\s*(\d+)/);
+  return hit ? [Number(hit[1]), Number(hit[2])] : null;
+}
+
+/** Only where the eye test says the hop can be seen with the ring, on the pair it tested. */
+function canSpot(): boolean {
+  const tested = eyePair();
+  return (
+    !!current &&
+    current.show.kind === 'motion' &&
+    current.pack.manifest.eye.status === 'seen-with-ring' &&
+    !!tested &&
+    tested[0] === current.show.seasons[0] &&
+    tested[1] === current.show.seasons[1]
+  );
+}
+
+/** Starts the game: blink the two looks, no arrow, wait for a tap. */
+function startSpot(): void {
+  if (!current || !canSpot()) return;
+  leaveDifference();
+  if (!takeLens()) return;
+  endSpot(false);
+  restingPair();
+  const before = lens.overlay;
+  // No arrows, catalogue marks or asteroid marks while playing: each hints at the answer.
+  lens.setOverlay({
+    arrowProgress: 0,
+    guess: null,
+    predicted: undefined,
+    catalogue: null,
+    movers: null,
+  });
+  let index = 1;
+  lens.show(index);
+  // 700 ms per look: well under 3 changes a second; still, under reduced motion, no blinking.
+  const timer = prefersReducedMotion()
+    ? 0
+    : globalThis.setInterval(() => {
+        index = 1 - index;
+        lens.show(index);
+        setLensLabel(index as 0 | 1, 8);
+      }, 700);
+  spot = {
+    state: 'playing',
+    hit: null,
+    timer,
+    saved: {
+      predicted: before.predicted,
+      catalogue: before.catalogue,
+      movers: before.movers ?? null,
+    },
+  };
+  setLensLabel(1, 8);
+  render();
+  // Focus on "Show me", so Space can't start a hold and silently end the game.
+  requestAnimationFrame(() => words.querySelector<HTMLElement>('.spot-show')?.focus());
+}
+
+/** Shows one look while playing (stops the blinking): for reduced motion and keyboards. */
+function spotLook(index: 0 | 1): void {
+  if (spot?.state !== 'playing') return;
+  globalThis.clearInterval(spot.timer);
+  spot.timer = 0;
+  lens.show(index);
+  setLensLabel(index, 8);
+}
+
+/** The answer: the measured arrow, and whether the tap was on it. */
+function answerSpot(guess: Shift | null): void {
+  if (!current || !spot || spot.state !== 'playing' || current.show.kind !== 'motion') return;
+  const m = current.show.measured;
+  // The hop (under 2 pixels for Barnard's Star) is smaller than a fair tap target, so the
+  // question is its direction: a tap counts if it lies within 45° of the measured move, seen
+  // from the ring's centre. A tap on the centre itself asks again.
+  if (guess && Math.hypot(guess.east, guess.north) < 0.5) {
+    spot.nudge = true;
+    render();
+    return;
+  }
+  const cos = guess
+    ? (guess.east * m.east + guess.north * m.north) /
+      (Math.hypot(guess.east, guess.north) * Math.hypot(m.east, m.north) || 1)
+    : 0;
+  const hit = guess ? cos >= Math.SQRT1_2 : null;
+  globalThis.clearInterval(spot.timer);
+  spot = { state: 'done', hit, timer: 0, saved: spot.saved };
+  showRevealStill(lens);
+  lens.setOverlay({ guess, ...spot.saved });
+  lens.show(1);
+  showing = 1;
+  setLensLabel(1, 8);
+  render();
+}
+
+function endSpot(redraw = true): void {
+  if (!spot) return;
+  const was = spot;
+  globalThis.clearInterval(spot.timer);
+  spot = null;
+  lens.setOverlay({ guess: null, ...was.saved });
+  // Mid-game, the lens was blinking without its arrow: put the resting view back.
+  if (was.state === 'playing' && current) restingPair();
+  if (redraw) render();
+}
+
+lensCanvas.addEventListener('click', (e) => {
+  if (spot?.state !== 'playing') return;
+  answerSpot(lens.shiftAt(e.clientX, e.clientY));
+});
+
+/** The game's place in the words column: invite, prompt, or the answer. */
+function spotSection(name: string): HTMLElement | null {
+  if (!canSpot() || current?.show.kind !== 'motion') return null;
+  const c = copy.spot;
+  const direction = current.show.direction;
+  if (!spot) {
+    const b = h('button', { type: 'button' }, c.button);
+    b.addEventListener('click', startSpot);
+    return h(
+      'div',
+      { class: 'spot' },
+      h('p', { class: 'hint' }, c.what),
+      h('div', { class: 'actions' }, b),
+    );
+  }
+  if (spot.state === 'playing') {
+    spotStatus.textContent = spot.nudge ? c.nudge : c.prompt(name);
+    const show = h('button', { type: 'button', class: 'spot-show' }, c.showMe);
+    show.addEventListener('click', () => answerSpot(null));
+    const looks = ([0, 1] as const).map((i) => {
+      const b = h('button', { type: 'button' }, c.look(i + 1));
+      b.addEventListener('click', () => spotLook(i));
+      return b;
+    });
+    return h(
+      'div',
+      { class: 'spot' },
+      spotStatus,
+      h('p', { class: 'hint' }, c.keys),
+      h('div', { class: 'actions' }, ...looks, show),
+    );
+  }
+  spotStatus.textContent =
+    spot.hit === null ? c.shown(direction) : spot.hit ? c.yes(direction) : c.close(direction);
+  const again = h('button', { type: 'button' }, c.again);
+  again.addEventListener('click', startSpot);
+  return h('div', { class: 'spot' }, spotStatus, h('div', { class: 'actions' }, again));
+}
+
 /** Puts the pair back on the lens first, for actions that draw on top of it. */
 function leaveDifference(): void {
   if (differencing) endDifference(false);
   dropDifference();
+  endSpot(false);
+}
+
+/** Colours: just where the target shows (default), or every colour both looks have. */
+function diffScopeToggle(d: NonNullable<typeof differencing>): HTMLElement {
+  const b = h(
+    'button',
+    { type: 'button', class: 'link-button' },
+    d.narrowed ? copy.show.diffAll : copy.show.diffNarrow,
+  );
+  b.addEventListener('click', () => {
+    diffAllColours = d.narrowed;
+    void showDifference();
+  });
+  return h('p', { class: 'hint' }, copy.show.diffScope(d.range, d.narrowed), ' ', b);
 }
 
 /** Under the difference button: what the greys mean, and the noise they are measured in. */
@@ -1464,6 +1848,7 @@ function differenceKey(): HTMLElement | null {
     ),
     h('p', { class: 'hint' }, copy.show.diffHow(differencing.sigma.toPrecision(2))),
     h('p', { class: 'hint' }, copy.show.diffColours(differencing.detectors)),
+    differencing.canNarrow ? diffScopeToggle(differencing) : null,
     differencing.masked
       ? h(
           'p',
@@ -1517,11 +1902,33 @@ function passMonth(pack: LoadedPack, season: number): string {
   return f.length ? monthYear(f.reduce((a, x) => a + x.mjd, 0) / f.length) : '';
 }
 
-/** "3.8–5.0 µm" for a run of neighbouring detectors. */
+/** Whether any brightness measurement's basis says this (the pipeline's own caveats). */
+function basisSays(pack: LoadedPack, re: RegExp): boolean {
+  return pack.measurements.some(
+    (m) => m.key.startsWith('brightness') && re.test(m.basis.join(' ')),
+  );
+}
+
+/** What the steady-star test gave in the detectors with a number: "1.00" to "1.03". */
+function steadyRange(ratios: BrightnessRatio[]): { lo: string; hi: string } | null {
+  const vals = ratios
+    .filter((r) => r.ratio != null && r.steady?.passed)
+    .flatMap((r) => r.steady?.ratios ?? []);
+  if (!vals.length) return null;
+  return { lo: Math.min(...vals).toFixed(2), hi: Math.max(...vals).toFixed(2) };
+}
+
+/** "3.8–5 µm", or "1.1–2.4 µm and 3.8–5 µm": runs of neighbouring detectors, merged. */
 function detectorRange(detectors: number[]): string {
-  const lo = RANGES[(detectors[0] ?? 1) - 1]?.[0] ?? 0;
-  const hi = RANGES[(detectors[detectors.length - 1] ?? 1) - 1]?.[1] ?? 0;
-  return copy.brightness.range(lo, hi);
+  const runs: [number, number][] = [];
+  for (const d of [...detectors].sort((a, b) => a - b)) {
+    const last = runs[runs.length - 1];
+    if (last && d === last[1] + 1) last[1] = d;
+    else runs.push([d, d]);
+  }
+  return list(
+    runs.map(([a, b]) => copy.brightness.range(RANGES[a - 1]?.[0] ?? 0, RANGES[b - 1]?.[1] ?? 0)),
+  );
 }
 
 /**
@@ -1547,7 +1954,8 @@ function brightnessSentence(name: string, pack: LoadedPack): string | null {
     neighbours && agree
       ? [{ range: detectorRange(ok.map((r) => r.detector)), r: value, err: change?.error ?? 0 }]
       : ok.map((r) => ({ range: detectorRange([r.detector]), r: r.ratio ?? 0, err: r.error ?? 0 }));
-  return copy.brightness.sentence(name, parts, from, to, sys);
+  const line = copy.brightness.sentence(name, parts, from, to, sys);
+  return basisSays(pack, /combined light/) ? `${line} ${copy.brightness.combinedSentence}` : line;
 }
 
 /**
@@ -1819,12 +2227,30 @@ function verbChips(): HTMLElement {
   );
 }
 
+/** Takes the visitor to a famous fast star or variable, for a live look. */
+function surpriseButton(): HTMLElement {
+  const b = h('button', { type: 'button', class: 'surprise' }, copy.surprise.button);
+  b.addEventListener('click', () => void surpriseMe());
+  return h('div', { class: 'actions' }, b);
+}
+
 function showWords(): Node[] {
   const place = state.place;
+  if (place.kind === 'sky' && state.room === 'watch') {
+    // Watch needs a target: say so, and offer the five, rather than look like Play.
+    const pick = h('div', { class: 'actions watch-pick' });
+    for (const w of WANDERERS.filter((x) => x.ready)) {
+      const b = h('button', { type: 'button' }, copy.wanderers[w.id].name);
+      b.addEventListener('click', () => void go(w.id));
+      pick.append(b);
+    }
+    return [h('h2', {}, copy.watch.pickHeading), h('p', {}, copy.watch.pickHint), pick, legend()];
+  }
   if (place.kind === 'sky') {
     const parts: (HTMLElement | null)[] = [
       h('h2', {}, copy.sky.invitation),
       verbChips(),
+      surpriseButton(),
       searchNote ? h('p', { class: 'hint' }, searchNote) : null,
       sweepControl(),
       legend(),
@@ -1836,6 +2262,15 @@ function showWords(): Node[] {
   const w = copy.wanderers[place.target];
   if (!current || place.kind === 'diving') {
     return [h('p', { class: 'eyebrow' }, w.short), h('h2', {}, copy.show.expectation)];
+  }
+
+  // While the visitor plays "Spot the mover", the column holds only the question: the
+  // headline and the facts would give the answer away.
+  if (spot?.state === 'playing') {
+    const game = spotSection(w.name);
+    return [h('p', { class: 'eyebrow' }, w.short), h('h2', {}, copy.spot.heading), game].filter(
+      (x): x is HTMLElement => x !== null,
+    );
   }
 
   const { show } = current;
@@ -2024,6 +2459,7 @@ function showWords(): Node[] {
                 .map((r) => [detectorRange([r.detector]), r.ratio ?? 0, r.error ?? 0] as const),
               ratios.filter((r) => r.ratio == null).map((r) => detectorRange([r.detector])),
             ),
+            basisSays(current.pack, /combined light/) ? ` ${copy.brightness.combined}` : '',
             h(
               'details',
               { class: 'why' },
@@ -2031,7 +2467,14 @@ function showWords(): Node[] {
               h(
                 'p',
                 {},
-                copy.brightness.how(ratios.find((r) => r.systematic != null)?.systematic ?? null),
+                copy.brightness.how(
+                  ratios.find((r) => r.systematic != null)?.systematic ?? null,
+                  steadyRange(ratios),
+                  {
+                    toleranceAfter: basisSays(current.pack, /chosen after seeing/),
+                    combined: basisSays(current.pack, /combined light/),
+                  },
+                ),
               ),
             ),
           ),
@@ -2103,7 +2546,7 @@ function showWords(): Node[] {
   if (canHold) {
     const hold = h(
       'button',
-      { type: 'button', class: 'primary hold', disabled: !ready },
+      { type: 'button', class: 'primary hold', disabled: !ready && place.kind !== 'reveal' },
       copy.show.hold,
       h('kbd', {}, copy.show.holdKey),
     );
@@ -2133,9 +2576,13 @@ function showWords(): Node[] {
   diff.addEventListener('click', () => (differencing ? endDifference() : void showDifference()));
   actions.append(diff, replay, copyLinkButton(), aladinLink(current.pack.manifest.grid.centre));
   out.push(actions);
-  if (canHold && !ready) out.push(h('p', { class: 'hint' }, copy.show.holdNotYet));
+  // Only while the pack is still arriving; during the reveal, holding simply ends it.
+  if (canHold && !ready && place.kind !== 'reveal')
+    out.push(h('p', { class: 'hint' }, copy.show.holdNotYet));
   const key = differenceKey();
   if (key) out.push(key);
+  out.push(spotSection(w.name));
+  if (!touchOnly) out.push(h('p', { class: 'hint keys-hint' }, copy.keys.hint));
   if (diffTrouble) out.push(h('p', { class: 'hint', role: 'status' }, copy.show.diffTrouble));
 
   out.push(h('dl', { class: 'facts' }, ...rows));
@@ -2302,6 +2749,15 @@ function lookWords(): HTMLElement[] {
       h('span', { class: 'chip look' }, copy.look.chip),
       h('span', {}, formatPosition(place)),
     ),
+    surprise ? h('h2', {}, surprise.name) : null,
+    surprise ? h('p', {}, surprise.note) : null,
+    surprise
+      ? h(
+          'p',
+          { class: 'hint' },
+          surprise.kind === 'mover' ? surpriseShiftLine(surprise) : copy.surprise.variable,
+        )
+      : null,
   ];
   if (place.kind === 'finding' || !plan) {
     const p = live?.probe;
@@ -2557,10 +3013,13 @@ const TOUR_ACTS: (() => void)[] = [
 
 function runTourStep(i: number): void {
   tourStep = Math.max(0, Math.min(TOUR_ACTS.length - 1, i));
-  TOUR_ACTS[tourStep]?.();
-  // Leaving a show resets the room to Play; the tour keeps it on Learn.
-  if (state.room !== 'learn') dispatch({ type: 'setRoom', room: 'learn' });
-  render();
+  try {
+    TOUR_ACTS[tourStep]?.();
+  } finally {
+    // Leaving a show resets the room to Play; the tour keeps it on Learn, whatever the step did.
+    if (state.room !== 'learn') dispatch({ type: 'setRoom', room: 'learn' });
+    render();
+  }
 }
 
 function endTour(): void {
@@ -3409,6 +3868,7 @@ function writeUrl(): void {
     if (differencing) q.set('view', 'difference');
   } else if ('at' in state.place && state.place.at) {
     q.set('at', `${state.place.at.ra.toFixed(5)},${state.place.at.dec.toFixed(5)}`);
+    if (surprise) q.set('spot', slug(surprise.name));
   }
   history.replaceState(null, '', `?${q}`);
 }
@@ -3488,4 +3948,17 @@ if (wanted)
   void openWanderer(wanted.id).then(() => {
     if (q.get('view') === 'difference') void showDifference();
   });
-else if (wantedAt) void openLook(wantedAt);
+else if (wantedAt) {
+  // A shared surprise keeps its name and line, if the spot is still in the list.
+  const spot = q.get('spot');
+  void (spot ? loadSurprises() : Promise.resolve([])).then((list) =>
+    openLook(
+      wantedAt,
+      // The name only if the link's position really is that star (within 5″).
+      list.find(
+        (x) =>
+          slug(x.name) === spot && separationDeg(wantedAt, { ra: x.ra, dec: x.dec }) * 3600 < 5,
+      ) ?? null,
+    ),
+  );
+}
