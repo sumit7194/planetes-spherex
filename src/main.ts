@@ -2508,7 +2508,7 @@ async function checkColourFully(look: LiveLook, d: Detector): Promise<boolean> {
     .map((photo, i) => ({ photo, i }))
     .filter(({ photo }) => photo.det === d && !have.has(photo.key));
   await eachLimited(todo, probesAtOnce(), async ({ photo, i }) => {
-    let pr: Awaited<ReturnType<typeof probePhoto>> = null;
+    let pr: Awaited<ReturnType<typeof probePhoto>>;
     try {
       pr = await probePhoto(photo, look.at, look.abort.signal);
     } catch {
