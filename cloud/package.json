@@ -1,0 +1,9 @@
+{
+  "name": "planetes-cloud",
+  "private": true,
+  "description": "Planetes cloud pieces: Cloudflare Worker + R2 (front door and tile store) and the AWS function next to NASA's SPHEREx bucket. See README.md.",
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^4.162.0"
+  }
+}

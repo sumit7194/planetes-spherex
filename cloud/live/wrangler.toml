@@ -1,0 +1,11 @@
+# planetes-live: the cloud helper (plan item C1). It runs next to NASA's SPHEREx bucket
+# (AWS us-east-1) thanks to targeted placement, reads only the bytes a cutout needs, and sends
+# the browser a small finished frame (~20 kB instead of ~1.5 MB of raw rows). Every answer is
+# cached: the data files never change (each reprocessing gets a new file name).
+name = "planetes-live"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[placement]
+mode = "targeted"
+hostname = "nasa-irsa-spherex.s3.amazonaws.com"

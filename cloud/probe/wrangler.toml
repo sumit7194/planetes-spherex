@@ -1,0 +1,11 @@
+# Test Worker: measures how fast a Cloudflare Worker reaches NASA's SPHEREx bucket (s3://nasa-irsa-spherex,
+# AWS us-east-1), with targeted placement (Cloudflare runs the Worker next to the given host).
+# Deployed only with Sumit's OK. Free plan is enough for this test.
+name = "planetes-probe"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Targeted placement: run the Worker next to NASA's bucket (AWS us-east-1), not near the visitor.
+[placement]
+mode = "targeted"
+hostname = "nasa-irsa-spherex.s3.amazonaws.com"

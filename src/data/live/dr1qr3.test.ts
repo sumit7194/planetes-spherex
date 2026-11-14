@@ -79,3 +79,47 @@ describe('index helpers', () => {
     expect(s).toEqual([...s].sort((a, b) => a - b));
   });
 });
+
+describe('the cloud helper frame', () => {
+  it('decodes a PLF1 frame into a LiveFrame', async () => {
+    const { decodeHelperFrame } = await import('./dr1qr3');
+    let json = JSON.stringify({
+      obsId: 'X',
+      size: 2,
+      lambdaUm: 1.5,
+      bandwidthUm: 0.02,
+      mjd: 60900.5,
+    });
+    while (json.length % 4) json += ' ';
+    const j = new TextEncoder().encode(json);
+    const buf = new ArrayBuffer(8 + j.length + 4 * 4 + 4);
+    const u8 = new Uint8Array(buf);
+    u8.set([0x50, 0x4c, 0x46, 0x31], 0);
+    new DataView(buf).setUint32(4, j.length, true);
+    u8.set(j, 8);
+    new Float32Array(buf, 8 + j.length, 4).set([1, 2, NaN, 4]);
+    u8.set([0, 1, 2, 3], 8 + j.length + 16);
+    const photo = {
+      key: 'k',
+      obsId: 'X',
+      det: 1,
+      mjd: 0,
+      release: 'DR1',
+      deep: false,
+      centre: { ra: 0, dec: 0 },
+      paDeg: 0,
+      halfDeg: 0,
+    } as const;
+    const f = decodeHelperFrame(buf, photo);
+    expect(f.tile.size).toBe(2);
+    expect(Array.from(f.tile.pixels.slice(0, 2))).toEqual([1, 2]);
+    expect(Number.isNaN(f.tile.pixels[2])).toBe(true);
+    expect(Array.from(f.tile.flags)).toEqual([0, 1, 2, 3]);
+    expect(f.lambdaUm).toBe(1.5);
+    expect(f.mjd).toBe(60900.5);
+    expect(() => decodeHelperFrame(buf.slice(0, buf.byteLength - 1), photo)).toThrow();
+    expect(() => decodeHelperFrame(buf, { ...photo, obsId: 'Y' })).toThrow();
+    expect(() => decodeHelperFrame(buf, photo, 4)).toThrow();
+    expect(decodeHelperFrame(buf, photo, 2).tile.size).toBe(2);
+  });
+});

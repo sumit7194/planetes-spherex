@@ -619,6 +619,120 @@ export interface Probe {
   bytes: number;
 }
 
+/* ------------------------------------------------------------------ the cloud helper (plan C1) */
+
+/**
+ * The cloud helper: two Cloudflare Workers (cloud/edge, cloud/live). planetes-edge answers from
+ * a cache near the visitor; on a miss, planetes-live, placed next to NASA's bucket, runs this
+ * same reader there and sends back only the finished cutout (~20 kB instead of ~1 MB of raw
+ * rows; ~1 s the first time, ~0.3 s cached). Pages use it by default and fall back to reading
+ * NASA directly on any failure or timeout (6 s probe, 10 s frame); after three failures in a row they read directly
+ * for a minute, then try the helper again. Off outside a browser (tests, and the Worker itself,
+ * which must read NASA directly). VITE_PLANETES_HELPER sets another address, or 'off'.
+ */
+export const DEFAULT_HELPER = 'https://planetes-edge.planetes.workers.dev';
+const HELPER_TIMEOUT_MS = { probe: 6_000, frame: 10_000 };
+const HELPER_PAUSE_MS = 60_000;
+let helperBase: string | null = (() => {
+  if (typeof document === 'undefined') return null;
+  const v = import.meta.env.VITE_PLANETES_HELPER as string | undefined;
+  return v === 'off' || v === '' ? null : (v ?? DEFAULT_HELPER);
+})();
+let helperFailures = 0;
+let helperPausedUntil = 0;
+
+/** Whether reads go through the helper right now (on, and not paused after failures). */
+export function helperActive(): boolean {
+  return helperBase !== null && Date.now() >= helperPausedUntil;
+}
+
+/** Turns the helper on (an address) or off (null); for tests and for the Worker itself. */
+export function setHelper(base: string | null): void {
+  helperBase = base;
+  helperFailures = 0;
+  helperPausedUntil = 0;
+}
+
+function helperUrl(route: string, photo: LivePhoto, centre: SkyPosition, extra = ''): string {
+  return (
+    `${helperBase}/v1/${route}?key=${encodeURIComponent(photo.key)}` +
+    `&ra=${centre.ra.toFixed(6)}&dec=${centre.dec.toFixed(6)}${extra}`
+  );
+}
+
+/** Runs `viaHelper` when the helper is on and healthy; null means "read NASA directly". */
+async function tryHelper<T>(
+  viaHelper: () => Promise<T>,
+  signal?: AbortSignal,
+): Promise<{ value: T } | null> {
+  if (!helperBase || Date.now() < helperPausedUntil) return null;
+  try {
+    const value = await viaHelper();
+    helperFailures = 0;
+    return { value };
+  } catch (e) {
+    // The caller's own Stop propagates; a helper failure or timeout falls back.
+    if (signal?.aborted) throw e;
+    if (++helperFailures >= 3) {
+      helperFailures = 0;
+      helperPausedUntil = Date.now() + HELPER_PAUSE_MS;
+    }
+    return null;
+  }
+}
+
+/** Decodes the helper's binary frame ('PLF1', see cloud/live/src/index.ts). */
+export function decodeHelperFrame(buf: ArrayBuffer, photo: LivePhoto, size?: number): LiveFrame {
+  const dv = new DataView(buf);
+  if (dv.getUint32(0, false) !== 0x504c4631) throw new Error('not a planetes frame');
+  const j = dv.getUint32(4, true);
+  const meta = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, j))) as {
+    obsId: string;
+    size: number;
+    lambdaUm: number | null;
+    bandwidthUm: number | null;
+    mjd: number;
+  };
+  // A frame for another photo or grid must never reach the lens.
+  if (meta.obsId !== photo.obsId) throw new Error('planetes frame is for another photo');
+  if (size !== undefined && meta.size !== size) throw new Error('planetes frame has another size');
+  const n = meta.size * meta.size;
+  if (buf.byteLength !== 8 + j + 5 * n) throw new Error('planetes frame has the wrong length');
+  return {
+    photo,
+    tile: {
+      id: photo.obsId,
+      size: meta.size,
+      pixels: new Float32Array(buf.slice(8 + j, 8 + j + 4 * n)),
+      flags: new Uint8Array(buf.slice(8 + j + 4 * n)),
+    },
+    lambdaUm: meta.lambdaUm ?? NaN,
+    bandwidthUm: meta.bandwidthUm ?? NaN,
+    // The file header's MJD-AVG (the Worker reads it; a cached answer can't carry a caller's
+    // value), falling back to the index's time.
+    mjd: Number.isFinite(meta.mjd) && meta.mjd > 0 ? meta.mjd : photo.mjd,
+    bytes: buf.byteLength,
+  };
+}
+
+async function helperGet(
+  url: string,
+  kind: keyof typeof HELPER_TIMEOUT_MS,
+  signal?: AbortSignal,
+): Promise<Response | null> {
+  // AbortSignal.any is 2023+ (Chrome 116, Safari 17.4); older browsers keep only the caller's Stop.
+  const timeout = AbortSignal.timeout(HELPER_TIMEOUT_MS[kind]);
+  const both = signal
+    ? typeof AbortSignal.any === 'function'
+      ? AbortSignal.any([signal, timeout])
+      : signal
+    : timeout;
+  const r = await fetch(url, { signal: both });
+  if (r.status === 204) return null;
+  if (!r.ok) throw new Error(`helper HTTP ${r.status}`);
+  return r;
+}
+
 /**
  * Where a position falls on one photo, and the colour that photo saw there, without reading any
  * image or flag rows: the headers (one request) and the WCS-WAVE tail (one request), about
@@ -629,6 +743,13 @@ export async function probePhoto(
   centre: SkyPosition,
   signal?: AbortSignal,
 ): Promise<Probe | null> {
+  const viaHelper = await tryHelper(async () => {
+    const r = await helperGet(helperUrl('probe', photo, centre), 'probe', signal);
+    if (!r) return null;
+    const p = (await r.json()) as Omit<Probe, 'bytes'>;
+    return { ...p, bytes: 0 };
+  }, signal);
+  if (viaHelper) return viaHelper.value;
   const url = `${BUCKET}/${photo.key}`;
   const [{ hi, bytes }, tail] = await Promise.all([
     imageHeaders(url, signal),
@@ -651,6 +772,12 @@ export async function readPhoto(
   scaleArcsec = 6.15,
   signal?: AbortSignal,
 ): Promise<LiveFrame | null> {
+  const viaHelper = await tryHelper(async () => {
+    const extra = `&size=${size}&scale=${scaleArcsec}&mjd=${photo.mjd}`;
+    const r = await helperGet(helperUrl('frame', photo, centre, extra), 'frame', signal);
+    return r ? decodeHelperFrame(await r.arrayBuffer(), photo, size) : null;
+  }, signal);
+  if (viaHelper) return viaHelper.value;
   const url = `${BUCKET}/${photo.key}`;
   let bytes = 0;
   const { h0, hi, bytes: hb } = await imageHeaders(url, signal);

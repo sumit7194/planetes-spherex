@@ -1,0 +1,10 @@
+# planetes-edge: the front door (plan item C1, step 2). It runs in the Cloudflare data centre
+# nearest the visitor (no placement), answers from that centre's cache when it can, and passes
+# misses to planetes-live (placed next to NASA's bucket) over a service binding.
+name = "planetes-edge"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[[services]]
+binding = "LIVE"
+service = "planetes-live"
