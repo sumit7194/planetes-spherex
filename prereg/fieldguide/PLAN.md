@@ -48,3 +48,11 @@ Physics signs the chosen examples and their evidence lines before anything is pu
   - halo (HALO): 21,683; chosen 2026W38_1A_0254_1 D5, 113 px, at RW Aurigae's own position.
   - streak (STREAK, SATELLITE_HALO): 41; chosen 2025W19_1B_0147_2 D6, 227 px, near the box centre (RA 167.4147, Dec +44.4992).
   - **Problem seen:** most boxes are centred on a target star, and the largest-excess rule picked regions sitting on real bright stars (cosmic-ray, persistence and streak at or near a box centre; the halo is RW Aurigae itself). Labelling a bright star "the pipeline flagged this as a cosmic ray" would mislead. Sent to Physics for a dated rule change before any labelling; nothing has been labelled.
+- 15 Nov 2026, 03:14 IST: **rule change, approved by Physics, made AFTER seeing the first result** (the first rule picked bright stars carrying flags). Nothing had been labelled.
+  - (a) A region counts only if its excess isn't explained by a known source: no SOURCE-flagged pixel in it; no Gaia DR3 source with G < 19 within 2 px (moved to the photo's date by proper motion); no SkyBoT asteroid within 2 px at the photo's date (checked on the survivors, best first). CatWISE would also count, but IRSA is down tonight, so it's **Gaia only** (logged as a known gap). The confirmation tests stay the backstop.
+  - (b) Unchanged: the largest excess at S/N ≥ 5 among the survivors.
+  - (c) HALO is not its own kind. It goes under Barnard's Star: "its halo, flagged by the pipeline", with G 8.2 as the evidence.
+  - (d) Ghost dropped: "no GHOST flags in the photos we had".
+  - **Star-hit example** (new, fixed now): the largest-excess TRANSIENT region that (a) excludes **because of a Gaia match**. Line: "A flag marks pixels to treat with care. It doesn't mean the source is fake: this is a catalogued star."
+  - **Size clue** (Physics): real cosmic-ray hits are 1 to a few pixels. A surviving TRANSIENT region of tens of pixels is more likely a satellite trail or an edge effect, and is said so.
+  - **Guide note:** "Examples come from photos we already had for our five targets and the live look, not a random sample of the sky."
