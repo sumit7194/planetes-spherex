@@ -30,3 +30,4 @@
 
 ## 6. Log
 - 15 Nov 2026, 04:00 IST: registered.
+- 15 Nov 2026, 04:00 IST: **setup check (timings and pointings only, no pixels or SkyBoT): the motion rule as written can't be met by almost any asteroid.** A visit (same obsId stem and detector, ≥ 3 exposures) spans 4.3–6.5 minutes in our cache (1,209 visits, median 6.4). Moving ≥ 2 px (12″) in 6.5 minutes needs ≥ ~110″/h. A main-belt asteroid near opposition moves ~30–40″/h (~0.25°/day), so only fast near-Earth asteroids could pass, and almost none at V ≤ 18 will be in our boxes. The same field and detector *is* revisited by other visits: 391 pairs < 2 h apart, 537 at 2–6 h, 1,977 at 6–24 h. A main-belt asteroid moves ~7–30 px between visits 1.5–6 h apart. Asked Physics for a dated rule change before any search; nothing has been searched.
