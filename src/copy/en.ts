@@ -850,6 +850,20 @@ export const copy = {
     oldPlace: (name: string, year: number, moved: string) =>
       `You typed where ${name} was in about ${year}; it has moved ${moved} since. Here it is now.`,
     closeNote: 'Close this note',
+    /** The path from the typed year to today, under the arrival note (queue #4). */
+    path: {
+      typed: (year: number) => `${year}: your numbers`,
+      now: '2026',
+      spherex: 'SPHEREx',
+      closeUp: 'the close-up',
+      north: 'N',
+      east: 'E',
+      scale: (len: string) => len,
+      alt: (name: string, year: number, moved: string, dir: string, spherex: string) =>
+        `${name}'s path from ${year} to 2026: ${moved} towards the ${dir}, in a straight line. SPHEREx's photos cover only the last ${spherex} of it.`,
+      caption:
+        'North up, east left, as on the sky. Ticks mark the years; the bright stretch is what SPHEREx photographed; the square is the close-up. Straight motion only (Gaia/CatWISE): the yearly parallax wobble is far smaller than this drawing.',
+    },
   },
   share: {
     copy: 'Copy link',

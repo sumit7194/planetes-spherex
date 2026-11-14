@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { pastPlace, WANDERERS } from './targets';
+import { pastPlace, WANDERERS, offsetAt, trackTicks, motionDirection } from './targets';
 
 const w = (id: string) => {
   const x = WANDERERS.find((t) => t.id === id);
@@ -36,5 +36,25 @@ describe('where a wanderer used to be', () => {
     expect(pastPlace(b, { ra: b.at.ra + 0.05, dec: b.at.dec })).toBeNull(); // 3′ east: off the track
     const r = w('rw-aur');
     expect(pastPlace(r, { ra: r.at.ra + 0.01, dec: r.at.dec })).toBeNull();
+  });
+});
+
+describe('the path from an old position to now', () => {
+  const w0855 = w('w0855');
+  const barnard = w('barnard');
+  it('puts WISE 0855 in 2010 about 2.2′ east of today (it moves west)', () => {
+    const o = offsetAt(w0855, 2010);
+    expect(o.east).toBeCloseTo(129.9, 0); // −8.118″/yr × −16 yr
+    expect(o.north).toBeCloseTo(-10.8, 0);
+    expect(motionDirection(w0855)).toBe('west');
+  });
+  it("puts Barnard's Star north-moving, ~10.4″ a year", () => {
+    expect(motionDirection(barnard)).toBe('north');
+    expect(Math.hypot(...Object.values(offsetAt(barnard, 2025)))).toBeCloseTo(10.39, 1);
+  });
+  it('ticks every 2, 5 or 10 years by the span, never at 2026 itself', () => {
+    expect(trackTicks(2016.6)).toEqual([2018, 2020, 2022, 2024]);
+    expect(trackTicks(2010.4)).toEqual([2015, 2020, 2025]);
+    expect(trackTicks(1990)).toEqual([1990, 2000, 2010, 2020]);
   });
 });

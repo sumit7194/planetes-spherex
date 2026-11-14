@@ -18,6 +18,8 @@ import {
   PACK_RELEASES,
   WANDERERS,
   pastPlace,
+  offsetAt,
+  motionDirection,
 } from './app/targets';
 import {
   blendingNeighbour,
@@ -124,6 +126,7 @@ import {
   wavelengthColour,
   type SpectrumPoint,
 } from './ui/figures';
+import { pastPathFigure } from './ui/pastPath';
 import {
   arcsecAbout,
   arcsecAboutText,
@@ -1062,7 +1065,12 @@ for (const w of WANDERERS) {
 /* ---------- search: a typed position near a wanderer opens its case ---------- */
 
 /** Said in the summary when the visitor typed where a mover used to be. */
-let typedNote: { id: TargetId; text: string } | null = null;
+let typedNote: {
+  id: TargetId;
+  text: string;
+  /** Where the visitor typed, and the year the wanderer was there: for the path figure. */
+  path?: { typed: SkyPosition; year: number };
+} | null = null;
 /** An angle for people: arcminutes from one, else arcseconds. */
 function angleText(arcsec: number): string {
   return arcsec >= 60 ? `${(arcsec / 60).toFixed(1)}′` : `${Math.round(arcsec)}″`;
@@ -1302,7 +1310,7 @@ function buildOptions(q: string): { opts: Opt[]; footer: string } {
       meta:
         near && name
           ? past && moved
-            ? copy.home.echoPast(name, Math.floor(past.year), moved)
+            ? copy.home.echoPast(name, Math.floor(past.year + 0.05), moved)
             : copy.home.echoNear(name)
           : `${degText(at.ra)}, ${degText(at.dec)} · ${f.positionMeta}`,
       at: near?.at ?? at,
@@ -1548,9 +1556,11 @@ function submitSearch(): void {
       id: near.id,
       text: copy.search.oldPlace(
         copy.wanderers[near.id].name,
-        Math.floor(past.year),
+        // A J2000 catalogue place (epoch 2000.0) falls at 1999.98 on the track: say 2000.
+        Math.floor(past.year + 0.05),
         angleText(past.movedArcsec),
       ),
+      path: { typed: parsed.position, year: past.year },
     };
   if (near?.ready) void openWanderer(near.id);
   else if (near) {
@@ -1558,6 +1568,57 @@ function submitSearch(): void {
     render();
   } else void openLook(parsed.position);
 }
+/** The close-up's field: 40 pack pixels of 6.15″. */
+const CLOSE_UP_ARCSEC = 40 * 6.15;
+
+/** "From your numbers to now": the wanderer's straight path from the typed year to today. */
+function typedPathFigure(
+  id: TargetId,
+  path: { typed: SkyPosition; year: number } | undefined,
+): HTMLElement | null {
+  const w = WANDERERS.find((x) => x.id === id);
+  if (!path || !w || !current) return null;
+  const mjds = current.pack.manifest.frames.map((f) => f.mjd);
+  const year = (mjd: number) => 2000 + (mjd - 51544.5) / 365.25;
+  const t = copy.search.path;
+  const name = copy.wanderers[id].name;
+  const moved = Math.hypot(...Object.values(offsetAt(w, path.year)));
+  const span: [number, number] = [year(Math.min(...mjds)), year(Math.max(...mjds))];
+  // How far it moved while SPHEREx photographed it: between the first and the last photo.
+  const p0 = offsetAt(w, span[0]);
+  const p1 = offsetAt(w, span[1]);
+  const inSpherex = Math.hypot(p1.east - p0.east, p1.north - p0.north);
+  const fig = pastPathFigure({
+    wanderer: w,
+    typed: path.typed,
+    year: path.year,
+    spherex: span,
+    closeUpArcsec: CLOSE_UP_ARCSEC,
+    labels: {
+      typed: t.typed,
+      now: t.now,
+      spherex: t.spherex,
+      closeUp: t.closeUp,
+      north: t.north,
+      east: t.east,
+      scale: t.scale,
+      alt: t.alt(
+        name,
+        Math.floor(path.year + 0.05),
+        angleText(moved),
+        motionDirection(w),
+        angleText(Math.abs(inSpherex)),
+      ),
+    },
+  });
+  return h(
+    'figure',
+    { class: 'past-path-fig' },
+    fig,
+    h('figcaption', { class: 'hint' }, t.caption),
+  );
+}
+
 /** The keys, in a native dialog (Esc closes it; focus returns to where it was). */
 const keysDialog = h('dialog', { class: 'keys-dialog', 'aria-labelledby': 'keys-title' });
 function openKeys(): void {
@@ -4017,6 +4078,9 @@ function showWords(): Node[] {
       render();
     });
     summary.splice(1, 0, h('p', { class: 'typed-note', role: 'status' }, typedNote.text, close));
+    // The path from the typed year to today (queue #4), under the note.
+    const fig = typedPathFigure(id, typedNote.path);
+    if (fig) summary.splice(2, 0, fig);
   }
   // "How sure": its one-line legend (measured ± error, predicted) stays open; the chart folds.
   const factsTop = out.filter(isFact).map((n) => {

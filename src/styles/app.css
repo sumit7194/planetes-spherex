@@ -3227,3 +3227,61 @@ span[data-fit='1'] {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* "From your numbers to now" (queue #4): the track is a catalogue prediction (lilac, dashed, as
+   predicted marks everywhere); the stretch SPHEREx photographed is the photographed blue. */
+.past-path-fig {
+  margin: 4px 0 10px;
+}
+.past-path {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+}
+.past-path .pp-track {
+  stroke: var(--predicted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.past-path .pp-tick {
+  stroke: var(--predicted);
+  stroke-width: 1;
+}
+.past-path .pp-sphx {
+  stroke: var(--look);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.past-path .pp-field {
+  fill: none;
+  stroke: var(--mist);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+.past-path .pp-typed {
+  stroke: var(--starlight);
+  stroke-width: 1.5;
+}
+.past-path .pp-now {
+  fill: var(--starlight);
+}
+.past-path .pp-bar,
+.past-path .pp-compass {
+  stroke: var(--mist);
+  stroke-width: 1;
+  fill: none;
+}
+.past-path text {
+  fill: var(--mist);
+  font: 11px var(--sans);
+}
+.past-path .pp-label {
+  fill: var(--starlight);
+}
+.past-path .pp-small {
+  font-size: 10px;
+}
+.past-path .pp-sphx-label {
+  fill: var(--look);
+}

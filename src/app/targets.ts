@@ -96,3 +96,34 @@ export function pastPlace(
 
 /** Typed positions this close to a wanderer open its case (the challenge's WISE 0855 coordinate is 2.1′ off). */
 export const NEAR_WANDERER_DEG = 5 / 60;
+
+/** Offset (arcsec east, north) of a wanderer at `year` from its 2026.0 place: straight motion. */
+export function offsetAt(w: Wanderer, year: number): { east: number; north: number } {
+  const dt = year - WANDERER_EPOCH;
+  return { east: (w.pm.ra / 1000) * dt, north: (w.pm.dec / 1000) * dt };
+}
+
+/** Year ticks along a track from `from` to 2026: every 2, 5 or 10 years by its span. */
+export function trackTicks(from: number): number[] {
+  const span = WANDERER_EPOCH - from;
+  const step = span <= 12 ? 2 : span <= 30 ? 5 : 10;
+  const out: number[] = [];
+  for (let y = Math.ceil(from / step) * step; y < WANDERER_EPOCH; y += step) out.push(y);
+  return out;
+}
+
+/** The way a wanderer moves, as one of 8 compass words (north up, east left on the sky). */
+export function motionDirection(w: Wanderer): string {
+  const pa = (Math.atan2(w.pm.ra, w.pm.dec) * 180) / Math.PI; // east of north
+  const words = [
+    'north',
+    'north-east',
+    'east',
+    'south-east',
+    'south',
+    'south-west',
+    'west',
+    'north-west',
+  ];
+  return words[Math.round((((pa % 360) + 360) % 360) / 45) % 8] ?? 'north';
+}
