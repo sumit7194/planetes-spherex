@@ -1,0 +1,33 @@
+name: Build the exact sky index (runs next to NASA's S3 bucket)
+
+# Reads the primary + IMAGE headers and the FLAGS header of every SPHEREx DR1 + QR3 photo in
+# s3://nasa-irsa-spherex and writes the exact sky index (pipeline/build_exact_index.py).
+# Output is uploaded as an artifact for review; nothing is committed or published by this workflow.
+# Re-run it for every new SPHEREx release.
+on:
+  push:
+    branches: [exact-index]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Build
+        working-directory: pipeline
+        run: |
+          uv sync
+          uv run python build_exact_index.py --out ../exactindex --conc 256
+      - name: Pack
+        run: tar -czf exactindex.tar.gz exactindex && ls -la exactindex.tar.gz && du -sh exactindex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: exactindex-dr1qr3
+          path: exactindex.tar.gz
+          retention-days: 7
