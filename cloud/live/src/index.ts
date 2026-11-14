@@ -14,6 +14,10 @@
  *   GET /v1/gaia?ra=&dec=&r=         -> JSON {stars: [{id, ra, dec, pmra, pmdec, g}], epoch: 2016}:
  *                                       Gaia DR3 within r arcsec (<= 120), G < 21, from ESA's
  *                                       archive (browsers can't query it: no CORS). Cached 30 days.
+ *   GET /v1/resolve?name=            -> JSON {found, name, type, ra, dec, epoch: 2000, pmra, pmdec,
+ *                                       plx, spType}: SIMBAD via CDS Sesame (the search box's names
+ *                                       beyond its own index; browsers get no CORS through CDS's
+ *                                       mirror redirect). Cached 30 days.
  *   GET /v1/health                   -> JSON {ok, version, colo}; colo is where the request
  *                                       entered Cloudflare. Where the code ran shows in the
  *                                       cf-placement response header (e.g. remote-ATL).
@@ -226,6 +230,88 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   return new Response(body, { headers: h });
 }
 
+// CDS first; its redirect target fails TLS from Cloudflare (HTTP 525, 14 Nov), so Harvard's
+// VizieR mirror of the same service is the fallback.
+const SESAME = [
+  'https://cds.unistra.fr/cgi-bin/nph-sesame/-oxp/SNV?',
+  'https://vizier.cfa.harvard.edu/viz-bin/nph-sesame/-oxp/SNV?',
+];
+
+/** A name resolved by SIMBAD (CDS Sesame): its J2000 place and, when known, its proper motion. */
+async function resolve(url: URL, ctx: ExecutionContext): Promise<Response> {
+  const raw = (url.searchParams.get('name') ?? '').trim().replace(/\s+/g, ' ');
+  if (!raw || raw.length > 80 || !/^[\p{L}\p{N} +\-.'’*()_/]+$/u.test(raw))
+    return bad("name: 1-80 letters, digits, spaces and + - . ' * ( ) _ /");
+  const cacheKey = new Request(
+    `https://cache.planetes/${VERSION}/v1/resolve?name=${encodeURIComponent(raw.toLowerCase())}`,
+  );
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    const h = new Headers(hit.headers);
+    h.set('x-planetes-cache', 'hit');
+    return new Response(hit.body, { status: hit.status, headers: h });
+  }
+  const t0 = Date.now();
+  let xml = '';
+  let last = '';
+  for (const base of SESAME) {
+    try {
+      const res = await fetch(base + encodeURIComponent(raw), {
+        headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(5_000),
+      });
+      const text = res.ok ? await res.text() : '';
+      if (res.ok && text.includes('<Sesame')) {
+        xml = text;
+        break;
+      }
+      last = `HTTP ${res.status}`;
+    } catch (e) {
+      last = (e as Error).message;
+    }
+  }
+  if (!xml) return bad(`SIMBAD lookup failed: ${last}`, 502);
+  const block = /<Resolver[^>]*>([\s\S]*?)<\/Resolver>/.exec(xml)?.[1] ?? '';
+  const tag = (name: string, inside = block) =>
+    new RegExp(`<${name}>([^<]*)</${name}>`).exec(inside)?.[1]?.trim() ?? null;
+  const ra = Number(tag('jradeg'));
+  const dec = Number(tag('jdedeg'));
+  const pm = /<pm>([\s\S]*?)<\/pm>/.exec(block)?.[1] ?? '';
+  const plx = /<plx>([\s\S]*?)<\/plx>/.exec(block)?.[1] ?? '';
+  const num = (v: string | null) =>
+    v === null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v);
+  const found = Number.isFinite(ra) && Number.isFinite(dec) && tag('jradeg') !== null;
+  const body = JSON.stringify(
+    found
+      ? {
+          found: true,
+          query: raw,
+          name: (tag('oname') ?? raw).replace(/^(NAME|V\*|\*\*?)\s+/, '').replace(/\s+/g, ' '),
+          type: tag('otype'),
+          ra,
+          dec,
+          epoch: 2000,
+          pmra: num(tag('pmRA', pm)),
+          pmdec: num(tag('pmDE', pm)),
+          plx: num(tag('v', plx)),
+          spType: tag('spType'),
+          source: 'SIMBAD (CDS Sesame)',
+        }
+      : { found: false, query: raw, source: 'SIMBAD (CDS Sesame)' },
+  );
+  const h = new Headers({
+    ...CORS,
+    'content-type': 'application/json',
+    'cache-control': 'public, max-age=2592000',
+    'x-planetes-ms': String(Date.now() - t0),
+  });
+  ctx.waitUntil(cache.put(cacheKey, new Response(body, { headers: h })));
+  h.set('x-planetes-cache', 'miss');
+  return new Response(body, { headers: h });
+}
+
 export default {
   async fetch(request: Request, _env: unknown, ctx: ExecutionContext): Promise<Response> {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -243,6 +329,7 @@ export default {
       );
     }
     if (route === '/v1/gaia') return gaia(url, ctx);
+    if (route === '/v1/resolve') return resolve(url, ctx);
     if (route !== '/v1/frame' && route !== '/v1/probe' && route !== '/v1/native')
       return bad('unknown route', 404);
 
