@@ -331,10 +331,16 @@ export const copy = {
     holdNotYet: 'Both looks are still coming in.',
     /** Colour by date (E3, Viewer's design): the shown pair as one blue/orange picture. */
     byDate: 'Colour by date',
-    byDateLabel: (early: string, late: string) => `Colour by date: ${early} blue, ${late} orange`,
+    byDateLabel: (early: string, late: string) =>
+      `Colour by date: ${early} blue, ${late} orange, white where nothing moved`,
     byDateKey: {
       white: "white: didn't move",
-      brightness: 'A star that changed brightness also comes out tinted (RW Aurigae does).',
+      brightness:
+        'A star tinted all over changed brightness, not place: orange-heavy if it got brighter, blue-heavy if fainter (RW Aurigae flickers). A move shows as a blue copy and an orange copy side by side.',
+      smallMove: (px: string, arcsec: string) =>
+        `This move is ${px} px (${arcsec}), under one SPHEREx pixel, so it shows only as a faint fringe here; Hold to compare or Show the difference show it more clearly.`,
+      narrowMove: (px: string) =>
+        `This move is ${px} px, so its fringe is narrow; Hold to compare shows it too.`,
       fringes:
         'Thin coloured fringes on steady stars come from the blur changing between the two looks, not from motion.',
       masked: 'Hatched: masked or saturated in either look, so no colour is shown.',
@@ -870,9 +876,9 @@ export const copy = {
       east: 'E',
       scale: (len: string) => len,
       alt: (name: string, year: number, moved: string, dir: string, spherex: string) =>
-        `${name}'s path from ${year} to 2026: ${moved} towards the ${dir}, in a straight line. SPHEREx's photos cover only the last ${spherex} of it.`,
+        `The path ${name}'s catalogue motion gives from ${year} to 2026: ${moved} towards the ${dir}, in a straight line. SPHEREx's photos cover only the last ${spherex} of it.`,
       caption: (source: string, every: number) =>
-        `North up, east left, as on the sky. Ticks every ${every} years; the bright stretch is what SPHEREx photographed; the square is the close-up. Straight motion from the ${source}: the yearly parallax wobble is far smaller than this drawing.`,
+        `The path its catalogue motion gives: north up, east left, as on the sky. Ticks every ${every} years; the bright stretch is what SPHEREx photographed; the square is the close-up. Straight motion from the ${source}: the yearly parallax wobble (about a second of arc) is far smaller than this drawing and under one SPHEREx pixel.`,
       show: 'See the path',
       hide: 'Hide the path',
       catalogue: 'catalogue proper motion',

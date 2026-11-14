@@ -3343,6 +3343,18 @@ function endTimeColour(redraw = true): void {
   if (redraw) render();
 }
 
+function smallMoveLine(k: typeof copy.show.byDateKey): HTMLElement | null {
+  const show = current?.show;
+  if (show?.kind !== 'motion') return null;
+  const px = show.lengthPx;
+  if (px >= 1.5) return null;
+  return h(
+    'p',
+    { class: 'hint' },
+    px < 1 ? k.smallMove(fixed(px, 1), angleText(show.lengthArcsec)) : k.narrowMove(fixed(px, 1)),
+  );
+}
+
 /** Under the actions while colouring: which date is which colour, and what else tints. */
 function timeColourKey(): HTMLElement | null {
   if (!colouring) return null;
@@ -3366,6 +3378,9 @@ function timeColourKey(): HTMLElement | null {
       swatch([255, 255, 255]),
       h('span', {}, k.white),
     ),
+    // How big this pair's move is, with the page's own numbers (Viewer, 15 Nov): under a pixel
+    // the still can only show a faint fringe, and saying so points to the clearer views.
+    smallMoveLine(k),
     h('p', { class: 'hint' }, k.brightness),
     h('p', { class: 'hint' }, k.fringes),
     h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
