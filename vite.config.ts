@@ -40,6 +40,7 @@ export default defineConfig({
         main: resolve(import.meta.dirname, 'index.html'),
         credits: resolve(import.meta.dirname, 'credits.html'),
         tests: resolve(import.meta.dirname, 'tests.html'),
+        fieldguide: resolve(import.meta.dirname, 'fieldguide.html'),
       },
     },
   },

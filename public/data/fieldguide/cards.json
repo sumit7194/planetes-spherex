@@ -1,0 +1,240 @@
+{
+ "note": "Draft wording; Physics signs the labels and evidence before this is pushed.",
+ "rules": "prereg/fieldguide/PLAN.md",
+ "cards": [
+  {
+   "id": "bad-pixel",
+   "section": "not-in-sky",
+   "title": "A pixel that isn’t working",
+   "looksLike": "a new point of light",
+   "label": "flagged",
+   "evidence": [
+    "Flagged NONFUNC (not working) and TRANSIENT by the pipeline",
+    "About 23,052 MJy/sr in one pixel, far brighter than any star could make one pixel",
+    "Nothing there in 18 of 18 other photos of the same sky within 5 days"
+   ],
+   "howToTell": "A real source shows in the other photos of the same spot; a bad pixel shows in one.",
+   "source": {
+    "photos": [
+     "2025W45_2A_0308_3",
+     "2025W45_2A_0308_4"
+    ],
+    "date": "7 November 2025",
+    "detector": "detector D5 (3.8–4.4 µm)",
+    "lambda": "4.37 µm",
+    "at": "133.74435,-7.21124"
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "stuck-a.f32",
+     "mark": "stuck-a.mark.u8",
+     "masked": "stuck-a.masked.u8",
+     "caption": "7 November 2025: one pixel",
+     "alt": "7 November 2025: one very bright pixel, outlined",
+     "ring": [
+      16.0,
+      16.0
+     ]
+    },
+    {
+     "size": 32,
+     "image": "stuck-b.f32",
+     "mark": "stuck-b.mark.u8",
+     "masked": "stuck-b.masked.u8",
+     "caption": "7 November 2025: the same sky",
+     "alt": "7 November 2025: the same sky, nothing there",
+     "ring": [
+      16.21209155092174,
+      15.505700425330119
+     ]
+    }
+   ]
+  },
+  {
+   "id": "persistence",
+   "section": "not-in-sky",
+   "title": "An afterglow on the detector",
+   "looksLike": "a faint new source",
+   "label": "flagged",
+   "evidence": [
+    "Flagged PERSIST by the pipeline: light left on the detector by something bright it saw before",
+    "Nothing there in 16 of 16 other photos of the same sky within 5 days"
+   ],
+   "howToTell": "If it isn’t in the other photos of the same spot and carries a persistence flag, it’s the detector remembering, not the sky.",
+   "source": {
+    "photos": [
+     "2025W40_1A_0125_4",
+     "2025W40_1A_0125_3"
+    ],
+    "date": "29 September 2025",
+    "detector": "detector D6 (4.4–5 µm)",
+    "lambda": "4.78 µm",
+    "at": "331.09373,-56.74619"
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "persist-a.f32",
+     "mark": "persist-a.mark.u8",
+     "masked": "persist-a.masked.u8",
+     "caption": "29 September 2025: flagged",
+     "alt": "29 September 2025: a pixel flagged as persistence, outlined",
+     "ring": [
+      16.0,
+      16.0
+     ]
+    },
+    {
+     "size": 32,
+     "image": "persist-b.f32",
+     "mark": "persist-b.mark.u8",
+     "masked": "persist-b.masked.u8",
+     "caption": "29 September 2025: the same sky",
+     "alt": "29 September 2025: the same sky, nothing there",
+     "ring": [
+      16.4687593898646,
+      16.1813929824948
+     ]
+    }
+   ]
+  },
+  {
+   "id": "saturated",
+   "section": "in-sky",
+   "title": "A star too bright for the detector",
+   "looksLike": "a strange blob or a spike",
+   "label": "confirmed",
+   "evidence": [
+    "Barnard’s Star, Gaia DR3 G 8.2: far brighter than SPHEREx can measure",
+    "Flagged BLOOM and OVERFLOW at its centre (84 pixels) and HALO around it (130 pixels)",
+    "Its light is real; only the centre’s numbers can’t be trusted"
+   ],
+   "howToTell": "A blob on a bright catalogued star with saturation flags is the star itself, not something new.",
+   "source": {
+    "photos": [
+     "2025W40_1A_0367_1"
+    ],
+    "date": "30 September 2025",
+    "detector": "detector D4 (2.4–3.8 µm)",
+    "lambda": "2.50 µm",
+    "at": "269.44630,4.76820"
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "sat-a.f32",
+     "mark": "sat-a.mark.u8",
+     "masked": "sat-a.masked.u8",
+     "caption": "saturated centre",
+     "alt": "Barnard's Star: the saturated centre outlined"
+    },
+    {
+     "size": 32,
+     "image": "sat-b.f32",
+     "mark": "sat-b.mark.u8",
+     "masked": "sat-b.masked.u8",
+     "caption": "its halo",
+     "alt": "Barnard's Star: the halo flags outlined"
+    }
+   ]
+  },
+  {
+   "id": "ordinary-star",
+   "section": "in-sky",
+   "title": "An ordinary star (for comparison)",
+   "looksLike": "exactly what it is",
+   "label": "confirmed",
+   "evidence": [
+    "Gaia DR3 156431337512370816, G 15.5, within 1 pixel",
+    "S/N 50; no artefact flags; no other Gaia star within 3 pixels",
+    "Also seen in another photo of the same spot (S/N 48)"
+   ],
+   "howToTell": "A catalogued star that shows in every photo of the spot is just a star.",
+   "source": {
+    "photos": [
+     "2025W37_1A_0068_2",
+     "2025W37_1A_0068_1"
+    ],
+    "date": "8 September 2025",
+    "detector": "detector D2 (1.1–1.6 µm)",
+    "lambda": "1.48 µm",
+    "at": "76.94974,30.46843"
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "star-a.f32",
+     "mark": "star-a.mark.u8",
+     "masked": "star-a.masked.u8",
+     "caption": "8 September 2025",
+     "alt": "8 September 2025: an ordinary star, ringed",
+     "ring": [
+      16.389580125153543,
+      16.234752010171405
+     ]
+    },
+    {
+     "size": 32,
+     "image": "star-b.f32",
+     "mark": "star-b.mark.u8",
+     "masked": "star-b.masked.u8",
+     "caption": "8 September 2025",
+     "alt": "8 September 2025: the same star again",
+     "ring": [
+      16.220069265755,
+      15.763940997412192
+     ]
+    }
+   ]
+  },
+  {
+   "id": "blend",
+   "section": "in-sky",
+   "title": "Two sources in one pixel",
+   "looksLike": "one object, maybe a new one",
+   "label": "confirmed",
+   "evidence": [
+    "WISE 0855 and a Gaia star (G 16.3) lie 6.4″ apart: about one SPHEREx pixel (6.15″)",
+    "At 1.1–1.6 µm the light is centred 0.7″ or less from the star",
+    "At 4.4–5 µm it moves to 3.5″ from the star and 2.9″ from WISE 0855’s predicted place"
+   ],
+   "howToTell": "If a catalogued star sits within a pixel or two, the spot is a blend: look at its colours, as “Two colours” does on WISE 0855’s page.",
+   "source": {
+    "photos": [
+     "stacks of 15 (D2) and 21 (D6) photos"
+    ],
+    "date": "1 May 2026",
+    "detector": "D2 and D6",
+    "lambda": "1.1–1.6 and 4.4–5 µm",
+    "at": null
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "blend-d2.f32",
+     "mark": "blend-d2.mark.u8",
+     "masked": "blend-d2.masked.u8",
+     "caption": "D2 · 1.1–1.6 µm",
+     "alt": "WISE 0855's spot in D2 · 1.1–1.6 µm, May 2026 stack",
+     "ring": [
+      15.5,
+      15.5
+     ]
+    },
+    {
+     "size": 32,
+     "image": "blend-d6.f32",
+     "mark": "blend-d6.mark.u8",
+     "masked": "blend-d6.masked.u8",
+     "caption": "D6 · 4.4–5 µm",
+     "alt": "WISE 0855's spot in D6 · 4.4–5 µm, May 2026 stack",
+     "ring": [
+      15.5,
+      15.5
+     ]
+    }
+   ]
+  }
+ ]
+}

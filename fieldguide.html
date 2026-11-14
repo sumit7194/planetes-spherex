@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="What fools you: real SPHEREx photos of things that look like a discovery and aren’t, or aren’t new."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <script>
+      /* Dark unless the visitor chose Light (Sumit, 15 Nov; src/ui/scheme.ts), before first paint. */
+      (function () {
+        var pick = 'dark';
+        try {
+          if (localStorage.getItem('planetes-scheme') === 'light') pick = 'light';
+        } catch (e) {}
+        document.documentElement.dataset.scheme = pick;
+        document.documentElement.dataset.ui = pick;
+      })();
+    </script>
+    <title>What fools you · Planetes</title>
+  </head>
+  <body>
+    <main id="fieldguide"></main>
+    <script type="module" src="/src/fieldguide.ts"></script>
+  </body>
+</html>

@@ -23,7 +23,16 @@ anything there (S/N >= 5) or nothing (S/N < 3)?; (detector place) other photos o
 where the same detector pixel looks at different sky (> 2 px away): is that pixel bright there too?
 Writes cache/fieldguide_confirm.json.
 
-Usage: uv run python fieldguide.py index | search | select | confirm
+Step 5 (`named`): the named examples' instances, by the rules fixed in PLAN.md before searching:
+the control star (Physics' conditions; S/N closest to 50) and Barnard's Star's saturation (the
+photo with the largest saturation-flagged area connected to the star). Writes
+cache/fieldguide_named.json.
+
+Step 6 (`export`): 32x32 panels (f32 image, u8 mask of the card's own flag, u8 other-masked) and
+public/data/fieldguide/cards.json with each card's draft wording and evidence (Physics signs the
+labels and evidence before anything is pushed).
+
+Usage: uv run python fieldguide.py index | search | select | confirm | named | export
 """
 from __future__ import annotations
 
@@ -388,5 +397,272 @@ def confirm() -> None:
     (CACHE / "fieldguide_confirm.json").write_text(json.dumps(out, indent=1))
 
 
+SATURATION = ("OVERFLOW", "NONLINEAR", "BLOOM")
+BARNARD = (269.4463, 4.7682)  # its 2026 place; boxes were cut around it
+
+
+def named() -> None:
+    import catalogs
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    flds = fields(idx["rows"])
+    gaia_for_fields(flds)
+    field_of = {r["path"]: f for f in flds for r in f["rows"]}
+    controls, barnard = [], []
+    for i, row in enumerate(idx["rows"]):
+        # Our own cache, written only by this pipeline on this machine (as build_pack's).
+        e = pickle.loads((CACHE / row["path"]).read_bytes())
+        h, wd = e["img"].shape
+        w = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+        yr = year_of(row["mjd"])
+        gaia = field_of[row["path"]]["gaia"]
+        pos = [catalogs.propagate(g, yr) for g in gaia]
+        if pos:
+            xs, ys = w.all_world2pix([p_[0] for p_ in pos], [p_[1] for p_ in pos], 0)
+            bx, by = np.asarray(xs) - e["x0"], np.asarray(ys) - e["y0"]
+            inside = (bx >= 9) & (by >= 9) & (bx < wd - 9) & (by < h - 9)
+            rej = mask_of(e, FIT_REJECT)
+            for k in np.nonzero(inside)[0]:
+                others = np.hypot(bx - bx[k], by - by[k])
+                others[k] = 1e9
+                if others.min() <= 3:
+                    continue
+                xi, yi = int(round(bx[k])), int(round(by[k]))
+                if rej[yi - 1:yi + 2, xi - 1:xi + 2].any():
+                    continue
+                m = measure(e, bx[k], by[k], 1)
+                if m and 20 <= m["sn"] <= 100:
+                    controls.append(dict(obs=row["obs"], det=row["det"], mjd=row["mjd"], path=row["path"],
+                                         x=float(bx[k]), y=float(by[k]), x0=int(e["x0"]), y0=int(e["y0"]),
+                                         gaia=dict(id=gaia[k]["id"], G=gaia[k]["mag"]), lam=row["lam"], **m))
+        if sep_deg(row["ra"], row["dec"], *BARNARD) < 0.3:
+            sat = mask_of(e, SATURATION)
+            if sat.any():
+                lab, n = ndimage.label(sat, structure=np.ones((3, 3)))
+                px, py = w.all_world2pix(BARNARD[0], BARNARD[1], 0)
+                cx, cy = float(px) - e["x0"], float(py) - e["y0"]
+                best = None
+                for k in range(1, n + 1):
+                    yy, xx = np.nonzero(lab == k)
+                    d = float(np.min(np.hypot(xx - cx, yy - cy)))
+                    if d <= 3 and (best is None or (lab == k).sum() > best[0]):
+                        best = (int((lab == k).sum()), k)
+                if best:
+                    names = sorted({nm for nm in SATURATION if mask_of(e, (nm,))[lab == best[1]].any()})
+                    barnard.append(dict(obs=row["obs"], det=row["det"], mjd=row["mjd"], path=row["path"],
+                                        area=best[0], names=names, x=cx, y=cy, x0=int(e["x0"]),
+                                        y0=int(e["y0"]), lam=row["lam"],
+                                        halo_px=int(mask_of(e, ("HALO",)).sum())))
+        if i % 3000 == 0:
+            print(i, len(controls), len(barnard), flush=True)
+    controls.sort(key=lambda c: abs(c["sn"] - 50))
+    barnard.sort(key=lambda b: -b["area"])
+    out = dict(control=dict(n=len(controls), chosen=controls[0] if controls else None, next=controls[1:4]),
+               barnard=dict(n=len(barnard), chosen=barnard[0] if barnard else None, next=barnard[1:4]))
+    (CACHE / "fieldguide_named.json").write_text(json.dumps(out, indent=1, default=float))
+    c, b = out["control"]["chosen"], out["barnard"]["chosen"]
+    print("control", len(controls), c and (c["obs"], c["det"], c["sn"], c["gaia"]))
+    print("barnard", len(barnard), b and (b["obs"], b["det"], b["area"], b["names"], b["halo_px"]))
+
+
+OUT = HERE.parent / "public" / "data" / "fieldguide"
+CUT = 32
+DET_RANGE = {1: "0.75–1.1 µm", 2: "1.1–1.6 µm", 3: "1.6–2.4 µm", 4: "2.4–3.8 µm", 5: "3.8–4.4 µm", 6: "4.4–5 µm"}
+
+
+def date_of(mjd: float) -> str:
+    import datetime as dt
+    d = dt.datetime(1858, 11, 17) + dt.timedelta(days=mjd)
+    return f"{d.day} {d:%B %Y}"
+
+
+def crop(arr: np.ndarray, x: float, y: float, fill) -> np.ndarray:
+    """A CUT x CUT square centred on (x, y), padded with `fill` off the box."""
+    out = np.full((CUT, CUT), fill, dtype=arr.dtype)
+    xi, yi = int(round(x)) - CUT // 2, int(round(y)) - CUT // 2
+    h, w = arr.shape
+    for j in range(CUT):
+        for i in range(CUT):
+            yy, xx = yi + j, xi + i
+            if 0 <= yy < h and 0 <= xx < w:
+                out[j, i] = arr[yy, xx]
+    return out
+
+
+def write_panel(name: str, img, mark, masked) -> dict:
+    OUT.mkdir(parents=True, exist_ok=True)
+    np.asarray(img, "<f4").tofile(OUT / f"{name}.f32")
+    np.asarray(mark, np.uint8).tofile(OUT / f"{name}.mark.u8")
+    np.asarray(masked, np.uint8).tofile(OUT / f"{name}.masked.u8")
+    return dict(size=CUT, image=f"{name}.f32", mark=f"{name}.mark.u8", masked=f"{name}.masked.u8")
+
+
+def photo_panel(name: str, path: str, x: float, y: float, mark_names, caption: str, alt: str,
+                ring=False) -> dict:
+    # Our own cache, written only by this pipeline on this machine (as build_pack's).
+    e = pickle.loads((CACHE / path).read_bytes())
+    img = crop(e["img"].astype("f4"), x, y, np.nan)
+    mark = crop(mask_of(e, mark_names).astype(np.uint8), x, y, 0) if mark_names else np.zeros((CUT, CUT), np.uint8)
+    masked = crop(mask_of(e, FIT_REJECT).astype(np.uint8), x, y, 1)
+    p = dict(write_panel(name, img, mark, masked), caption=caption, alt=alt)
+    if ring:
+        p["ring"] = [CUT // 2 + (x - round(x)), CUT // 2 + (y - round(y))]
+    return p
+
+
+def other_photo(c: dict, rows: list[dict], want_sn) -> tuple[dict, float, float] | None:
+    """The other photo of the same sky, same detector, nearest in time, meeting want_sn(sn)."""
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    best = None
+    for row in idx["rows"]:
+        if row["det"] != c["det"] or row["obs"] == c["obs"] or sep_deg(row["ra"], row["dec"], c["ra"], c["dec"]) > 0.3:
+            continue
+        e = pickle.loads((CACHE / row["path"]).read_bytes())
+        w = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+        px, py = w.all_world2pix(c["ra"], c["dec"], 0)
+        bx, by = float(px) - e["x0"], float(py) - e["y0"]
+        m = measure(e, bx, by, 1)
+        if not m or not want_sn(m["sn"]):
+            continue
+        dt_ = abs(row["mjd"] - c["mjd"])
+        if best is None or dt_ < best[0]:
+            best = (dt_, row, bx, by, m)
+    return None if best is None else (dict(best[1], m=best[4]), best[2], best[3])
+
+
+def export() -> None:
+    conf = json.loads((CACHE / "fieldguide_confirm.json").read_text())
+    named_ = json.loads((CACHE / "fieldguide_named.json").read_text())
+    sel = json.loads((CACHE / "fieldguide_select.json").read_text())
+    cards = []
+
+    def det_line(det, lam):
+        return f"detector D{det} ({DET_RANGE[det]})", f"{lam:.2f} µm"
+
+    # 1. A pixel the pipeline marks as not working (flag-only; Physics to sign).
+    c = sel["kinds"]["hot-or-dead-pixel"]["chosen"]
+    cf = conf["hot-or-dead-pixel"]["same_sky"]
+    other = other_photo(c, [], lambda sn: sn < 3)
+    panels = [photo_panel("stuck-a", c["path"], c["x"], c["y"], ("NONFUNC", "TRANSIENT"),
+                          f"{date_of(c['mjd'])}: one pixel", f"{date_of(c['mjd'])}: one very bright pixel, outlined", True)]
+    if other:
+        o, ox, oy = other
+        panels.append(photo_panel("stuck-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same sky",
+                                  f"{date_of(o['mjd'])}: the same sky, nothing there", True))
+    d, lam = det_line(c["det"], c["lam"])
+    cards.append(dict(
+        id="bad-pixel", section="not-in-sky", title="A pixel that isn’t working",
+        looksLike="a new point of light", label="flagged",
+        evidence=[f"Flagged NONFUNC (not working) and TRANSIENT by the pipeline",
+                  f"About {c['excess']:,.0f} MJy/sr in one pixel, far brighter than any star could make one pixel",
+                  f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
+        howToTell="A real source shows in the other photos of the same spot; a bad pixel shows in one.",
+        source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
+                    detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
+        panels=panels))
+
+    # 2. Persistence (flag-only; Physics to sign).
+    c = sel["kinds"]["persistence"]["chosen"]
+    cf = conf["persistence"]["same_sky"]
+    other = other_photo(c, [], lambda sn: sn < 3)
+    panels = [photo_panel("persist-a", c["path"], c["x"], c["y"], ("PERSIST",),
+                          f"{date_of(c['mjd'])}: flagged", f"{date_of(c['mjd'])}: a pixel flagged as persistence, outlined", True)]
+    if other:
+        o, ox, oy = other
+        panels.append(photo_panel("persist-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same sky",
+                                  f"{date_of(o['mjd'])}: the same sky, nothing there", True))
+    d, lam = det_line(c["det"], c["lam"])
+    cards.append(dict(
+        id="persistence", section="not-in-sky", title="An afterglow on the detector",
+        looksLike="a faint new source", label="flagged",
+        evidence=["Flagged PERSIST by the pipeline: light left on the detector by something bright it saw before",
+                  f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
+        howToTell="If it isn’t in the other photos of the same spot and carries a persistence flag, it’s the detector remembering, not the sky.",
+        source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
+                    detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
+        panels=panels))
+
+    # 3. Saturation and its halo: Barnard's Star.
+    b = named_["barnard"]["chosen"]
+    d, lam = det_line(b["det"], b["lam"])
+    cards.append(dict(
+        id="saturated", section="in-sky", title="A star too bright for the detector",
+        looksLike="a strange blob or a spike", label="confirmed",
+        evidence=["Barnard’s Star, Gaia DR3 G 8.2: far brighter than SPHEREx can measure",
+                  f"Flagged {' and '.join(b['names'])} at its centre ({b['area']} pixels) and HALO around it ({b['halo_px']} pixels)",
+                  "Its light is real; only the centre’s numbers can’t be trusted"],
+        howToTell="A blob on a bright catalogued star with saturation flags is the star itself, not something new.",
+        source=dict(photos=[b["obs"]], date=date_of(b["mjd"]), detector=d, **{"lambda": lam},
+                    at="269.44630,4.76820"),
+        panels=[photo_panel("sat-a", b["path"], b["x"], b["y"], SATURATION, "saturated centre",
+                            "Barnard's Star: the saturated centre outlined"),
+                photo_panel("sat-b", b["path"], b["x"], b["y"], ("HALO",), "its halo",
+                            "Barnard's Star: the halo flags outlined")]))
+
+    # 4. The control: an ordinary star.
+    c = named_["control"]["chosen"]
+    # Its sky position, for the second photo.
+    e = pickle.loads((CACHE / c["path"]).read_bytes())
+    ra, dec = sky_of(e, c["x"], c["y"])
+    c2 = dict(c, ra=ra, dec=dec)
+    other = other_photo(c2, [], lambda sn: sn >= 5)
+    panels = [photo_panel("star-a", c["path"], c["x"], c["y"], (), date_of(c["mjd"]),
+                          f"{date_of(c['mjd'])}: an ordinary star, ringed", True)]
+    if other:
+        o, ox, oy = other
+        panels.append(photo_panel("star-b", o["path"], ox, oy, (), date_of(o["mjd"]),
+                                  f"{date_of(o['mjd'])}: the same star again", True))
+    d, lam = det_line(c["det"], c["lam"])
+    cards.append(dict(
+        id="ordinary-star", section="in-sky", title="An ordinary star (for comparison)",
+        looksLike="exactly what it is", label="confirmed",
+        evidence=[f"Gaia DR3 {c['gaia']['id']}, G {c['gaia']['G']:.1f}, within 1 pixel",
+                  f"S/N {c['sn']:.0f}; no artefact flags; no other Gaia star within 3 pixels",
+                  ("Also seen in another photo of the same spot (S/N "
+                   f"{other[0]['m']['sn']:.0f})") if other else "Not checked in another photo"],
+        howToTell="A catalogued star that shows in every photo of the spot is just a star.",
+        source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
+                    detector=d, **{"lambda": lam}, at=f"{ra:.5f},{dec:.5f}"),
+        panels=panels))
+
+    # 5. A blend: WISE 0855 and its G 16.3 neighbour (the pack's own stacks; measured centres).
+    pk = HERE.parent / "public" / "data" / "packs" / "dr1qr3" / "w0855"
+    man = json.loads((pk / "manifest.json").read_text())
+    n = man["grid"]["size"]
+    later = 2
+    frames = [f for f in man["frames"] if f["season"] == later]
+    mjd = sum(f["mjd"] for f in frames) / len(frames)
+    shift = json.loads((HERE / "targets.json").read_text())
+    tl = shift["targets"] if isinstance(shift, dict) and "targets" in shift else shift
+    cs = [x for x in tl if x.get("slug") == "w0855"][0]["spotFact"]["centreShift"]["may2026"]
+    blend_panels, nstack = [], []
+    for det, lab in ((2, "D2 · 1.1–1.6 µm"), (6, "D6 · 4.4–5 µm")):
+        st = [x for x in man["stacks"] if x["kind"] == "one-detector" and x["season"] == later and x["detectors"] == [det]][0]
+        nstack.append(len(st["frameIds"]))
+        img = np.fromfile(pk / st["image"], "<f4").reshape(n, n)
+        fl = np.fromfile(pk / st["flags"], np.uint8).reshape(n, n)
+        c0 = n / 2 - 0.5
+        pimg = crop(img, c0, c0, np.nan)
+        pmask = crop(((fl & 3) > 0).astype(np.uint8), c0, c0, 1)
+        blend_panels.append(dict(write_panel(f"blend-d{det}", pimg, np.zeros((CUT, CUT), np.uint8), pmask),
+                                 caption=lab, alt=f"WISE 0855's spot in {lab}, May 2026 stack",
+                                 ring=[CUT // 2 - 0.5, CUT // 2 - 0.5]))
+    cards.append(dict(
+        id="blend", section="in-sky", title="Two sources in one pixel",
+        looksLike="one object, maybe a new one", label="confirmed",
+        evidence=["WISE 0855 and a Gaia star (G 16.3) lie 6.4″ apart: about one SPHEREx pixel (6.15″)",
+                  f"At 1.1–1.6 µm the light is centred {cs['D1_D4_fromGaia'].split('-')[-1]}″ or less from the star",
+                  f"At 4.4–5 µm it moves to {cs['D6']['fromGaia']}″ from the star and {cs['D6']['fromW0855']}″ from WISE 0855’s predicted place"],
+        howToTell="If a catalogued star sits within a pixel or two, the spot is a blend: look at its colours, as “Two colours” does on WISE 0855’s page.",
+        source=dict(photos=[f"stacks of {nstack[0]} (D2) and {nstack[1]} (D6) photos"], date=date_of(mjd),
+                    detector="D2 and D6", **{"lambda": "1.1–1.6 and 4.4–5 µm"}, at=None),
+        panels=blend_panels))
+
+    (OUT / "cards.json").write_text(json.dumps(dict(
+        note="Draft wording; Physics signs the labels and evidence before this is pushed.",
+        rules="prereg/fieldguide/PLAN.md", cards=cards), indent=1, ensure_ascii=False))
+    print(len(cards), "cards;", sorted(p_.name for p_ in OUT.iterdir())[:20])
+
+
 if __name__ == "__main__":
-    {"index": index, "search": search, "select": select, "confirm": confirm}[sys.argv[1]]()
+    {"index": index, "search": search, "select": select, "confirm": confirm,
+     "named": named, "export": export}[sys.argv[1]]()

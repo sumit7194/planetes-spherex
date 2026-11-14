@@ -1160,6 +1160,23 @@ export const copy = {
    * "what makes it hard" lines, the limits and the after-seeing list are written by hand; every
    * number comes from the packs or the committed run outputs.
    */
+  /** "What fools you" (fieldguide.html, queue N1; Viewer's design, Physics' rules). */
+  fieldguide: {
+    back: 'Planetes',
+    title: 'What fools you',
+    lede: 'Real SPHEREx photos of things that look like a discovery and aren’t, or aren’t new. Every example is a real photo; none is drawn.',
+    notInSky: 'Not in the sky',
+    inSkyNotNew: 'In the sky, but not new',
+    looksLike: 'Looks like:',
+    flagged: 'The pipeline flagged this; the flag name is the evidence.',
+    confirmed: 'Confirmed by independent evidence, below.',
+    howToTell: 'How to tell:',
+    openSpot: 'Open this spot',
+    loadFailed: 'The examples couldn’t be loaded just now.',
+    note: 'Examples come from photos we already had for our five targets and the live look, not a random sample of the sky. Each is the clearest example our fixed rule found (prereg/fieldguide/PLAN.md).',
+    stretch:
+      'Every panel uses the lens’s stretch rule (asinh from the 5th percentile to the brightest pixel), shared by the panels of one card and set from the pixels the card isn’t about, so the flagged pixels can show as white. Hatched: masked by other flags. Red outline: the flag the card is about.',
+  },
   tests: {
     title: 'How we tested',
     back: 'Planetes',
