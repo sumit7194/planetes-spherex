@@ -74,7 +74,7 @@ How faint, and how slow, a mover can the season-pair search find, at a fixed fal
 - Results are shown as "candidates"; yardstick numbers go next to any public claim.
 
 ## 7. Before injecting (to do, in order)
-**Registration means committed (Physics):** the plan text, the draw script, both field-list hashes and the Sonora file hashes are all committed in `prereg/slowmover/` before any photo is read for injection. Registration commit: *(filled in below once made)*.
+**Registration means committed (Physics):** the plan text, the draw script, both field-list hashes and the Sonora file hashes are all committed in `prereg/slowmover/` before any photo is read for injection. Registration commit: **4db4606** (14 Nov 2026, before any photo was read for injection).
 
 **Mac use:** any step run on this Mac (not the helper or the cloud) is logged first in ~/mac_shared/LEDGER.md with its memory ceiling.
 
