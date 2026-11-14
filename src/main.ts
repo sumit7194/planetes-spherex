@@ -4390,8 +4390,14 @@ function colourShiftBlock(): HTMLElement | null {
       ],
       rows: [early, late].map((L) => {
         const date = monthYear(L.mjd);
+        // Short, horizontal row labels; the full date is in each panel's name (Viewer).
+        const short = new Date((L.mjd - 40587) * 86400000).toLocaleDateString('en-GB', {
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC',
+        });
         return {
-          label: date,
+          label: short,
           cells: [cell(L.a, L.panels[0], date), cell(L.b, L.panels[1], date)] as [
             ReturnType<typeof cell>,
             ReturnType<typeof cell>,

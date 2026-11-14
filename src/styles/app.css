@@ -3541,8 +3541,7 @@ span[data-fit='1'] {
   text-align: center;
 }
 .cs-row {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  white-space: nowrap;
 }
 .cs-question {
   margin: 0 0 4px;

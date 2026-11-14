@@ -37,14 +37,17 @@ function panelCanvas(tile: Tile, p: ColourPanel, alt: string): HTMLCanvasElement
   for (let y = y0; y <= yTop; y++)
     for (let x = x0; x < x0 + CROP; x++) crop.push(tile.pixels[y * n + x] ?? NaN);
   const stretch = sharedStretch([Float32Array.from(crop)], { floorP: 0.1, ceilingP: 1 });
+  // Backed at the screen's pixel density, so the marks' thin strokes stay sharp (Viewer).
+  const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
   const canvas = h('canvas', {
-    width: String(CROP * ZOOM),
-    height: String(CROP * ZOOM),
+    width: String(CROP * ZOOM * dpr),
+    height: String(CROP * ZOOM * dpr),
     role: 'img',
     'aria-label': alt,
   }) as HTMLCanvasElement;
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
+  ctx.scale(dpr, dpr);
   // North up: the top row of the canvas is the crop's highest y.
   for (let y = y0; y <= yTop; y++)
     for (let x = x0; x < x0 + CROP; x++) {
