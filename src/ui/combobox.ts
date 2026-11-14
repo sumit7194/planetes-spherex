@@ -160,7 +160,11 @@ export function combobox(
     paint();
     on.active(current());
     window.clearTimeout(statusTimer);
-    statusTimer = window.setTimeout(() => (live.textContent = on.status(choosable().length)), 500);
+    // Only when the count changes: a refresh (a hover, the photo dates arriving) isn't news.
+    statusTimer = window.setTimeout(() => {
+      const said = on.status(choosable().length);
+      if (live.textContent !== said) live.textContent = said;
+    }, 500);
   }
 
   function open(): void {

@@ -217,6 +217,8 @@ export class SkyView {
   #raf = 0;
   #last = 0;
   #drag: { x: number; y: number; ra: number; dec: number } | null = null;
+  /** The flat map easing back inside its top or bottom after an elastic drag. */
+  #flatSpring: { from: number; to: number; t0: number } | null = null;
   /**
    * A flight: along the great circle (arc, degrees); a long hop (arc > 10°) also pulls the view
    * back mid-way by `bump` degrees of field, so you see where you're going (Sumit, 14 Nov:
@@ -743,6 +745,12 @@ export class SkyView {
           this.#centre = { ...toPos(rotate3(toVec(this.#centre), axis, a)) };
           this.#sat = norm3(rotate3(sat, axis, a));
         }
+      }
+      const sp = this.#flatSpring;
+      if (sp) {
+        const k = Math.min(1, (t - sp.t0) / 320);
+        this.#flat.dy = sp.from + (sp.to - sp.from) * (1 - Math.pow(1 - k, 3));
+        if (k >= 1) this.#flatSpring = null;
       }
       if (this.#last) this.#easeNear(t - this.#last);
       this.#last = t;
@@ -2966,7 +2974,11 @@ export class SkyView {
     }
     if (!this.#drag) {
       const over = this.#hit(e);
-      this.canvas.style.cursor = over?.ready ? 'pointer' : 'grab';
+      this.canvas.style.cursor = over?.ready
+        ? 'pointer'
+        : this.#entry === 'flat' && !this.#spinning && this.#flat.zoom <= 1.001
+          ? 'ew-resize'
+          : 'grab';
       const id = over?.ready ? over.id : null;
       if (id !== this.#hover) {
         this.#hover = id;
@@ -2982,10 +2994,17 @@ export class SkyView {
       const { w: mw, h: mh } = this.#flatSize();
       this.#flat.pan = this.#drag.ra + (((e.clientX - this.#drag.x) * u) / mw) * (360 / zoom);
       const limit = (mh / 2) * (1 - 1 / zoom);
-      this.#flat.dy = Math.max(
-        -limit,
-        Math.min(limit, this.#drag.dec - ((e.clientY - this.#drag.y) * u) / zoom),
-      );
+      const raw = this.#drag.dec - ((e.clientY - this.#drag.y) * u) / zoom;
+      const held = Math.max(-limit, Math.min(limit, raw));
+      // Past the poles the map gives a little and springs back on release (Sumit asked about
+      // sliding up and down; at full size pole to pole is already on screen, and a dead drag
+      // reads as broken). At most 24 px on screen, with growing resistance; none under
+      // reduced motion, where the cursor says the pan is sideways instead (Viewer, 14 Nov).
+      const give = this.#spinning ? (24 * u) / zoom : 0;
+      const over = raw - held;
+      this.#flat.dy =
+        held + Math.sign(over) * give * (1 - Math.exp(-Math.abs(over) / (3 * give || 1)));
+      this.#flatSpring = null;
       this.draw();
       return;
     }
@@ -3002,6 +3021,12 @@ export class SkyView {
       return;
     }
     const moved = this.#drag ? Math.hypot(e.clientX - this.#drag.x, e.clientY - this.#drag.y) : 0;
+    if (this.#drag && this.#entry === 'flat') {
+      const limit = (this.#flatSize().h / 2) * (1 - 1 / this.#flat.zoom);
+      const to = Math.max(-limit, Math.min(limit, this.#flat.dy));
+      if (to !== this.#flat.dy)
+        this.#flatSpring = { from: this.#flat.dy, to, t0: performance.now() };
+    }
     this.#drag = null;
     if (moved < 5) {
       const rect0 = this.canvas.getBoundingClientRect();
