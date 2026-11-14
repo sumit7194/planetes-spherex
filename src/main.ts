@@ -5393,8 +5393,8 @@ watchQuality(
 if (import.meta.env.DEV) Object.assign(window, { sky });
 const wanted = WANDERERS.find((w) => w.id === q.get('target') && w.ready);
 const wantedAt = positionFromQuery(q);
-// The flat map's projection: Hammer–Aitoff by default; ?flatmap=equalearth tries Equal Earth.
-if (q.get('flatmap') === 'equalearth') sky.flatProjection = 'equalEarth';
+// The flat map's projection: Equal Earth (Viewer, 14 Nov); ?flatmap=hammer for comparison.
+if (q.get('flatmap') === 'hammer') sky.flatProjection = 'hammer';
 const wantedLooks = q
   .get('looks')
   ?.split('-')

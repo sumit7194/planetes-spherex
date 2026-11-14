@@ -3044,3 +3044,29 @@ span[data-fit='1'] {
   color: var(--sky-look);
   font-size: 13px;
 }
+
+/* The flat map on the homepage: the whole sky gets the page, and the column becomes a compact
+   floating search, as in a map app (Viewer, 14 Nov). Look around restores the welcome column. */
+@media (min-width: 601px) {
+  #app.home[data-entry='flat'] .words {
+    position: fixed;
+    top: 76px;
+    right: 28px;
+    width: min(380px, calc(100vw - 56px));
+    margin: 0;
+    padding: 12px 14px;
+  }
+  #app.home[data-entry='flat'] .words::before {
+    inset: -40px -60px;
+  }
+}
+#app.home[data-entry='flat'] :is(.home-headline, .home-welcome, .legend) {
+  display: none;
+}
+#app.home[data-entry='flat'] .words .actions {
+  margin: 8px 0 0;
+}
+#app.home[data-entry='flat'] .words .surprise {
+  padding: 6px 14px;
+  font-size: 13.5px;
+}

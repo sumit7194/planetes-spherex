@@ -1039,7 +1039,7 @@ export class SkyView {
    * The flat map's projection: Hammer–Aitoff (an ellipse) or Equal Earth (a rounded rectangle
    * that fills more of the page). Both equal-area, so the coverage and the poles stay honest.
    */
-  flatProjection: 'hammer' | 'equalEarth' = 'hammer';
+  flatProjection: 'hammer' | 'equalEarth' = 'equalEarth';
   /** λ, φ (radians) to the map's box, each in [−1, 1]. */
   #flatForward(lambda: number, phi: number): [number, number] {
     if (this.flatProjection === 'equalEarth') {
@@ -2925,8 +2925,11 @@ export class SkyView {
     const k = Math.exp(-dy * 0.002); // > 1 zooms in
     if (this.#entry === 'flat') {
       const next = this.#flat.zoom * k;
+      // Zooming in past the map's closest hands over to Look around, but only after a beat at
+      // the limit (Viewer: wheel momentum mustn't overshoot into another view).
       if (next > FLAT_ZOOM_MAX && this.#flat.zoom >= FLAT_ZOOM_MAX - 0.01) {
-        this.onHandOver('inside');
+        if (this.#detentPassed(-dy)) this.onHandOver('inside');
+        this.draw();
         return;
       }
       const zoom = Math.max(1, Math.min(FLAT_ZOOM_MAX, next));
