@@ -73,6 +73,11 @@
         },
         "epoch": {
           "type": "number"
+        },
+        "motionDetectors": {
+          "description": "Detectors where the target shows well enough to follow (event packs).",
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1, "maximum": 6 }
         }
       }
     },
@@ -118,6 +123,9 @@
         },
         "testedUtc": {
           "type": ["string", "null"]
+        },
+        "method": {
+          "type": "string"
         }
       }
     },
@@ -136,6 +144,39 @@
     "measurements": {
       "type": "string",
       "examples": ["measurements.json"]
+    },
+    "bundles": {
+      "description": "Every photo of one detector in one file, in date order (pipeline/pack_bundles.py).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["detector", "file", "frameIds", "bytesPerFrame", "layout", "sha256"],
+        "properties": {
+          "detector": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "file": { "type": "string" },
+          "frameIds": { "type": "array", "items": { "type": "string" } },
+          "bytesPerFrame": { "type": "integer" },
+          "layout": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "coadds": {
+      "description": "The all-photos-added-together image per detector, made as src/data/pack/coadd.ts makes it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["detector", "id", "image", "flags", "n"],
+        "properties": {
+          "detector": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "id": { "type": "string" },
+          "image": { "type": "string" },
+          "flags": { "type": "string" },
+          "n": { "type": "integer", "minimum": 1 }
+        }
+      }
     },
     "layers": {
       "type": "array",
@@ -215,6 +256,10 @@
         "sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "release": {
+          "description": "The data release the photo came from (DR1, QR3).",
+          "type": "string"
         },
         "image": {
           "type": "string",

@@ -55,6 +55,32 @@ export interface PackManifest {
   /** Relative path of the measurements file. */
   measurements: string;
   layers: LayerRef[];
+  /**
+   * Every photo of one detector in one file, in date order (pipeline/pack_bundles.py): Watch
+   * fetches one file per colour range instead of two per photo (1,074 requests for R Dra).
+   */
+  bundles?: FrameBundle[];
+  /** The "all photos added together" images, made as src/data/pack/coadd.ts makes them. */
+  coadds?: CoaddRef[];
+}
+
+export interface FrameBundle {
+  detector: number;
+  file: string;
+  frameIds: string[];
+  /** float32 image (size² × 4 bytes) then uint8 flags (size² bytes), per frame. */
+  bytesPerFrame: number;
+  layout: string;
+  sha256: string;
+}
+
+export interface CoaddRef {
+  detector: number;
+  id: string;
+  image: string;
+  flags: string;
+  /** How many photos were added. */
+  n: number;
 }
 
 export interface Frame {
@@ -73,6 +99,8 @@ export interface Frame {
   /** Registration offset applied, pixels (x east-left, y north-up). */
   registrationPx: [number, number];
   sha256: string;
+  /** The data release the photo came from (DR1, QR3). */
+  release?: string;
   image: string;
   flags: string;
 }

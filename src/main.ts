@@ -68,6 +68,7 @@ import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
   loadTile as loadPackTile,
+  loadBundledTile,
   stackPair,
   type LoadedPack,
   type Tile,
@@ -2500,7 +2501,11 @@ function photoTile(pack: LoadedPack, f: Frame): Promise<Tile> {
   const key = `${pack.base}/${f.id}`;
   let p = photoTiles.get(key);
   if (!p) {
-    p = loadPackTile(pack.base, pack.manifest.grid.size, f);
+    // From its colour range's bundle when the pack has one: one download for all of them.
+    const bundle = pack.manifest.bundles?.find((b) => b.detector === f.detector);
+    p = bundle
+      ? loadBundledTile(pack.base, pack.manifest.grid.size, bundle, f.id)
+      : loadPackTile(pack.base, pack.manifest.grid.size, f);
     photoTiles.set(key, p);
     p.catch(() => photoTiles.delete(key));
   }
@@ -4716,6 +4721,14 @@ function coaddSection(pack: LoadedPack): HTMLElement {
     coadds.set(id, null);
     void Promise.all(
       RANGES.map(async (range, i) => {
+        // Made when the pack was built (six small files), else added up here from every photo.
+        const made = pack.manifest.coadds?.find((c) => c.detector === i + 1);
+        if (made)
+          return {
+            tile: await loadPackTile(pack.base, pack.manifest.grid.size, made),
+            n: made.n,
+            range,
+          };
         const frames = pack.manifest.frames.filter((f) => f.detector === i + 1);
         const tiles = await Promise.all(frames.map((f) => photoTile(pack, f)));
         return { tile: coadd(`coadd_D${i + 1}`, tiles), n: tiles.length, range };

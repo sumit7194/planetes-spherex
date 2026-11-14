@@ -1,4 +1,4 @@
-import type { Measurement, PackManifest, Stack, TargetId } from './types';
+import type { FrameBundle, Measurement, PackManifest, Stack, TargetId } from './types';
 import { PACK_FORMAT } from './types';
 
 /** A loaded tile: pixels in MJy/sr (NaN = no data) and the flag mask. */
@@ -39,6 +39,45 @@ export async function loadTile(
     throw new Error(`${t.id}: tile is not ${size} × ${size}`);
   }
   return { id: t.id, size, pixels, flags } satisfies Tile;
+}
+
+/** One fetch per bundle file, shared by every photo in it. */
+const bundleFiles = new Map<string, Promise<{ buf: ArrayBuffer; index: Map<string, number> }>>();
+
+/**
+ * One photo from its detector's bundle: the same bytes as its own .f32 and .u8 files, sliced
+ * from one shared download (no copy).
+ */
+export async function loadBundledTile(
+  base: string,
+  size: number,
+  bundle: FrameBundle,
+  frameId: string,
+): Promise<Tile> {
+  const url = `${base}/${bundle.file}`;
+  let file = bundleFiles.get(url);
+  if (!file) {
+    file = fetchOk(url)
+      .then((r) => r.arrayBuffer())
+      .then((buf) => {
+        if (buf.byteLength !== bundle.bytesPerFrame * bundle.frameIds.length)
+          throw new Error(`${url}: unexpected size`);
+        return { buf, index: new Map(bundle.frameIds.map((id, k) => [id, k])) };
+      });
+    bundleFiles.set(url, file);
+    file.catch(() => bundleFiles.delete(url));
+  }
+  const { buf, index } = await file;
+  const k = index.get(frameId);
+  if (k === undefined) throw new Error(`${frameId} is not in ${url}`);
+  const n = size * size;
+  const at = k * bundle.bytesPerFrame;
+  return {
+    id: frameId,
+    size,
+    pixels: new Float32Array(buf, at, n),
+    flags: new Uint8Array(buf, at + 4 * n, n),
+  } satisfies Tile;
 }
 
 /** Loads a target's manifest, measurements and stacks (frames are loaded on demand). */
