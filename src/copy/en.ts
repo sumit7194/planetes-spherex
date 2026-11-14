@@ -792,10 +792,10 @@ export const copy = {
       full: 'Showing all. Show the summary only',
     },
   },
-  /** The Learn room: a one-minute guided tour (Rubin SkyViewer's "Please guide me" pattern). */
+  /** The Learn room: a short guided tour (Rubin SkyViewer's "Please guide me" pattern). */
   tour: {
-    eyebrow: (n: number, of: number) => `A one-minute tour, ${n} of ${of}`,
-    title: 'A one-minute tour',
+    eyebrow: (n: number, of: number) => `A short tour, ${n} of ${of}`,
+    title: 'A short tour',
     steps: [
       'How SPHEREx sees the sky: it scans a ring of sky at right angles to the Sun; as Earth orbits, the ring sweeps the whole sky every six months.',
       'From out here: Earth, and SPHEREx on its orbit about 660 km up, looking out, away from Earth.',

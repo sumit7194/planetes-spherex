@@ -3591,7 +3591,7 @@ function overlaySection(id: TargetId): HTMLElement | null {
   );
 }
 
-/* ---------- Learn: a one-minute guided tour of the sky and the five ---------- */
+/* ---------- Learn: a short guided tour of the sky and the five ---------- */
 
 let tourStep = 0;
 /** What each step shows: the sky, a flight to the runaway, the shows, then the sky again. */
