@@ -3662,3 +3662,15 @@ span[data-fit='1'] {
   min-width: 0;
   margin: 0;
 }
+
+/* N8: the Listen button and its one-line mapping, under a measured spectrum. */
+.listen-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+.listen-row .hint {
+  margin: 0;
+}

@@ -1086,6 +1086,14 @@ export const copy = {
   /** Spectra on the fly (checklist C3), from Physics' per-photo photometry; lines checked by Physics. */
   spectrum: {
     heading: 'Its infrared spectrum',
+    /** N8, "Listen" (Viewer's design): the measured spectrum as sound, on request only. */
+    listen: {
+      listen: 'Listen',
+      stop: 'Stop',
+      name: (what: string) => `Listen to ${what}, about 4 seconds`,
+      mapping: 'Short wavelengths play high, long ones low; louder means brighter.',
+      binned: 'It plays the averaged bins, not single photos.',
+    },
     caption:
       'The combined light of the two brown dwarfs, photo by photo: each dot is one SPHEREx photo at its own wavelength.',
     x: 'wavelength, microns',

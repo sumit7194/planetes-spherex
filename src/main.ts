@@ -141,6 +141,7 @@ import { sharedStretch, type Stretch } from './render/stretch';
 import { parseGlow } from './render/milkyway';
 import { canRun3D, watchQuality } from './render/quality';
 import { h, prefersReducedMotion } from './ui/dom';
+import { listenControl } from './ui/listen';
 import { parseTab, tabbedPanel, type PanelTab, type TabSpec } from './ui/tabs';
 import { fitLabels, fitText } from './ui/fit';
 import { lensGlass } from './ui/glass';
@@ -2961,6 +2962,24 @@ function liveSpectrumSection(look: NonNullable<typeof live>): HTMLElement {
             : c.caption(r.points.length, r.flagged.length),
         ),
       );
+      // N8: measured points only (flagged ones are never played); a shape-only spectrum plays
+      // its bins, and says so.
+      const L = copy.spectrum.listen;
+      if (r.status === 'measured' || shapeOnly)
+        parts.push(
+          listenControl(
+            `live-${look.at.ra.toFixed(4)},${look.at.dec.toFixed(4)}`,
+            shapeOnly
+              ? binSpectrum(pts).map(([um, flux]) => ({ um, flux }))
+              : pts.map(([um, flux]) => ({ um, flux })),
+            {
+              listen: L.listen,
+              stop: L.stop,
+              name: L.name('the spectrum at this spot'),
+              mapping: shapeOnly ? `${L.mapping} ${L.binned}` : L.mapping,
+            },
+          ),
+        );
     }
     parts.push(h('p', { class: 'hint small' }, c.caveat(r.blendChecked, r.neighbours.length > 0)));
   }
@@ -6935,9 +6954,20 @@ function spectrumSection(id: TargetId): HTMLElement | null {
   if (!d) return null;
   const parts: (Node | null)[] = [h('h3', {}, copy.spectrum.heading)];
   if (d.status === 'measured' && d.exposures.length) {
+    const L = copy.spectrum.listen;
     parts.push(
       spectrumFigure(d.exposures, { x: copy.spectrum.x, y: copy.spectrum.y }),
       h('p', { class: 'hint' }, copy.spectrum.caption),
+      listenControl(
+        `pack-${id}`,
+        d.exposures.map(([um, flux]) => ({ um, flux })),
+        {
+          listen: L.listen,
+          stop: L.stop,
+          name: L.name(`${copy.wanderers[id].name}'s spectrum`),
+          mapping: L.mapping,
+        },
+      ),
     );
   } else {
     parts.push(
