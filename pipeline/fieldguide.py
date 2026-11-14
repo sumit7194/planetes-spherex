@@ -483,10 +483,22 @@ def date_of(mjd: float) -> str:
     return f"{d.day} {d:%B %Y}"
 
 
-def crop(arr: np.ndarray, x: float, y: float, fill) -> np.ndarray:
-    """A CUT x CUT square centred on (x, y), padded with `fill` off the box."""
-    out = np.full((CUT, CUT), fill, dtype=arr.dtype)
+def crop_origin(shape, x: float, y: float) -> tuple[int, int]:
+    """The CUT x CUT square around (x, y), moved to stay inside the box when the box is big
+    enough (a centred crop near the box's edge would be mostly empty)."""
+    h, w = shape
     xi, yi = int(round(x)) - CUT // 2, int(round(y)) - CUT // 2
+    if w >= CUT:
+        xi = min(max(xi, 0), w - CUT)
+    if h >= CUT:
+        yi = min(max(yi, 0), h - CUT)
+    return xi, yi
+
+
+def crop(arr: np.ndarray, x: float, y: float, fill) -> np.ndarray:
+    """A CUT x CUT square around (x, y) (see crop_origin), padded with `fill` off the box."""
+    out = np.full((CUT, CUT), fill, dtype=arr.dtype)
+    xi, yi = crop_origin(arr.shape, x, y)
     h, w = arr.shape
     for j in range(CUT):
         for i in range(CUT):
@@ -513,7 +525,8 @@ def photo_panel(name: str, path: str, x: float, y: float, mark_names, caption: s
     masked = crop(mask_of(e, FIT_REJECT).astype(np.uint8), x, y, 1)
     p = dict(write_panel(name, img, mark, masked), caption=caption, alt=alt)
     if ring:
-        p["ring"] = [CUT // 2 + (x - round(x)), CUT // 2 + (y - round(y))]
+        ox, oy = crop_origin(e["img"].shape, x, y)
+        p["ring"] = [x - ox, y - oy]
     return p
 
 
@@ -575,8 +588,8 @@ def blend_marks(img, all_late, man, mjd, c0) -> list[dict]:
     w0855 = [x for x in tl if x.get("slug") == "w0855"][0]
     tx, ty = to_px(*catalogs.propagate(dict(ra=w0855["ra"], dec=w0855["dec"], pmra=w0855["pmra"],
                                             pmdec=w0855["pmdec"], epoch=w0855["epoch"]), yr))
-    off = c0 - CUT // 2 + 0.5  # grid pixel -> panel pixel (the panel starts at round(c0) - 16)
-    off = round(c0) - CUT // 2
+    # Grid pixel -> panel pixel: the panel starts where crop() starts it.
+    off = crop_origin(all_late.shape, c0, c0)[0]
     return [dict(kind="light", x=lx - off, y=ly - off), dict(kind="neighbour", x=nx - off, y=ny - off),
             dict(kind="target", x=tx - off, y=ty - off)]
 
@@ -612,6 +625,30 @@ def export() -> None:
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
                     detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
         panels=panels))
+
+    # 1b. Cosmic ray or one-off glitch (Physics' re-pick: no NONFUNC/HOT, no SOURCE, no Gaia; flag-only).
+    rp = json.loads((CACHE / "fieldguide_repick.json").read_text())
+    rc = json.loads((CACHE / "fieldguide_repick_confirm.json").read_text())["cosmic_same_sky"]
+    c = rp["cosmic"]["chosen"]
+    if c:
+        other = other_photo(c, [], lambda sn: sn < 3)
+        panels = [photo_panel("hit-a", c["path"], c["x"], c["y"], ("TRANSIENT",),
+                              f"{date_of(c['mjd'])}: flagged", f"{date_of(c['mjd'])}: a transient-flagged patch, outlined", True)]
+        if other:
+            o, ox, oy = other
+            panels.append(photo_panel("hit-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same sky",
+                                      f"{date_of(o['mjd'])}: the same sky, nothing there", True))
+        d, lam = det_line(c["det"], c["lam"])
+        cards.append(dict(
+            id="cosmic-ray", section="not-in-sky", title="Cosmic ray or one-off glitch",
+            looksLike="a new source that appears once", label="flagged",
+            evidence=[f"Flagged as a transient (TRANSIENT) by the pipeline, over {c['npix']} pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch",
+                      f"Nothing there in {rc['nothing']} of {rc['n']} other photos of the same sky within 5 days",
+                      "No known source or asteroid at that place"],
+            howToTell="Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",
+            source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
+                        detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
+            panels=panels))
 
     # 2. Persistence (flag-only; Physics to sign).
     c = sel["kinds"]["persistence"]["chosen"]
@@ -678,6 +715,30 @@ def export() -> None:
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
                     detector=d, **{"lambda": lam}, at=f"{ra:.5f},{dec:.5f}"),
         panels=panels))
+
+    # 4b. A flag on a real star (Physics' re-pick: the star seen in >= 2 other photos, light within x2).
+    h_ = rp["star_hit"]["chosen"]
+    if h_:
+        g = h_["gaia"]
+        # The second photo looks at the star's catalogue place (its motion is a few mas/yr).
+        other = other_photo(dict(h_, ra=g["ra"], dec=g["dec"]), [], lambda sn: sn >= 5)
+        panels = [photo_panel("flagstar-a", h_["path"], h_["x"], h_["y"], ("TRANSIENT",),
+                              f"{date_of(h_['mjd'])}: flagged", f"{date_of(h_['mjd'])}: a flagged pixel on a catalogued star, outlined", True)]
+        if other:
+            o, ox, oy = other
+            panels.append(photo_panel("flagstar-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same star",
+                                      f"{date_of(o['mjd'])}: the same star, no flag", True))
+        d, lam = det_line(h_["det"], h_["lam"])
+        cards.append(dict(
+            id="flag-on-star", section="in-sky", title="A flag on a real star",
+            looksLike="a glitch, so not real", label="confirmed",
+            evidence=[f"Flagged as a transient (TRANSIENT) on {h_['npix']} pixel; Gaia DR3 {g['id']} (G {g['G']:.1f}) lies {g['sep_px']:.1f} pixels away",
+                      f"The same star shows in {h_['star_seen_in']} other photos of the same detector, about as bright (here {h_['here_excess'] / h_['star_median_excess']:.1f}× its usual brightness there)",
+                      "A flag marks pixels to treat with care. It doesn’t mean the source is fake: this is a catalogued star."],
+            howToTell="Check the catalogues and the other photos before dismissing a flagged source: a flag can sit on a real star.",
+            source=dict(photos=[h_["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(h_["mjd"]),
+                        detector=d, **{"lambda": lam}, at=f"{h_['ra']:.5f},{h_['dec']:.5f}"),
+            panels=panels))
 
     # 5. A blend: WISE 0855 and its G 16.3 neighbour (the pack's own stacks; measured centres).
     pk = HERE.parent / "public" / "data" / "packs" / "dr1qr3" / "w0855"

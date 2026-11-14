@@ -9,11 +9,11 @@
    "looksLike": "a new point of light",
    "label": "flagged",
    "evidence": [
-    "Flagged NONFUNC (not working) and TRANSIENT by the pipeline",
-    "About 23,052 MJy/sr in one pixel, while the pixels around it read about 0.4",
+    "Flagged by the pipeline as not working (NONFUNC) and transient (TRANSIENT)",
+    "About 23,052 MJy/sr in one pixel, about 58,170 times its neighbours (about 0.4)",
     "Nothing there in 18 of 18 other photos of the same sky within 5 days"
    ],
-   "howToTell": "A real source shows in the other photos of the same spot; a bad pixel shows in one.",
+   "howToTell": "A real source stays with the sky, so it shows in other photos of the same spot. A bad pixel stays with the detector, so other photos of the same spot don’t show it.",
    "source": {
     "photos": [
      "2025W45_2A_0308_3",
@@ -52,14 +52,64 @@
    ]
   },
   {
+   "id": "cosmic-ray",
+   "section": "not-in-sky",
+   "title": "Cosmic ray or one-off glitch",
+   "looksLike": "a new source that appears once",
+   "label": "flagged",
+   "evidence": [
+    "Flagged as a transient (TRANSIENT) by the pipeline, over 12 pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch",
+    "Nothing there in 14 of 14 other photos of the same sky within 5 days",
+    "No known source or asteroid at that place"
+   ],
+   "howToTell": "Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",
+   "source": {
+    "photos": [
+     "2025W49_1A_0280_2",
+     "2025W49_1A_0280_3"
+    ],
+    "date": "2 December 2025",
+    "detector": "detector D5 (3.8–4.4 µm)",
+    "lambda": "4.08 µm",
+    "at": "248.00169,66.58035"
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "hit-a.f32",
+     "mark": "hit-a.mark.u8",
+     "masked": "hit-a.masked.u8",
+     "caption": "2 December 2025: flagged",
+     "alt": "2 December 2025: a transient-flagged patch, outlined",
+     "ring": [
+      21.166666666666668,
+      2.9166666666666665
+     ]
+    },
+    {
+     "size": 32,
+     "image": "hit-b.f32",
+     "mark": "hit-b.mark.u8",
+     "masked": "hit-b.masked.u8",
+     "caption": "2 December 2025: the same sky",
+     "alt": "2 December 2025: the same sky, nothing there",
+     "ring": [
+      22.041111870276495,
+      2.7385450969638896
+     ]
+    }
+   ]
+  },
+  {
    "id": "persistence",
    "section": "not-in-sky",
    "title": "An afterglow on the detector",
    "looksLike": "a faint new source",
    "label": "flagged",
    "evidence": [
-    "Flagged PERSIST by the pipeline: light left on the detector by something bright it saw before",
-    "Nothing there in 16 of 16 other photos of the same sky within 5 days"
+    "Flagged as an afterglow (PERSIST): the pipeline’s flag for light left on the detector by something bright it saw before",
+    "Nothing there in 16 of 16 other photos of the same sky within 5 days",
+    "The earlier photo that left it isn’t among the photos we have, so the bright source itself can’t be shown"
    ],
    "howToTell": "If it isn’t in the other photos of the same spot and carries a persistence flag, it’s the detector remembering, not the sky.",
    "source": {
@@ -106,8 +156,8 @@
    "looksLike": "a strange blob or a spike",
    "label": "confirmed",
    "evidence": [
-    "Barnard’s Star, Gaia DR3 G 8.2: far brighter than SPHEREx can measure",
-    "Flagged BLOOM and OVERFLOW at its centre (84 pixels) and HALO around it (130 pixels)",
+    "Barnard’s Star, Gaia DR3 G 8.2: far brighter at its centre than SPHEREx can measure",
+    "Flagged at its centre as saturated (BLOOM, OVERFLOW; 84 pixels) and around it as a bright star’s halo (HALO; 130 pixels)",
     "Its light is real; only the centre’s numbers can’t be trusted"
    ],
    "howToTell": "A blob on a bright catalogued star with saturation flags is the star itself, not something new.",
@@ -126,7 +176,7 @@
      "image": "sat-a.f32",
      "mark": "sat-a.mark.u8",
      "masked": "sat-a.masked.u8",
-     "caption": "saturated centre",
+     "caption": "outlined: saturation (BLOOM, OVERFLOW)",
      "alt": "Barnard's Star: the saturated centre outlined"
     },
     {
@@ -134,7 +184,7 @@
      "image": "sat-b.f32",
      "mark": "sat-b.mark.u8",
      "masked": "sat-b.masked.u8",
-     "caption": "its halo",
+     "caption": "outlined: halo (HALO)",
      "alt": "Barnard's Star: the halo flags outlined"
     }
    ]
@@ -171,7 +221,7 @@
      "alt": "8 September 2025: an ordinary star, ringed",
      "ring": [
       16.389580125153543,
-      16.234752010171405
+      17.234752010171405
      ]
     },
     {
@@ -183,7 +233,56 @@
      "alt": "8 September 2025: the same star again",
      "ring": [
       16.220069265755,
-      15.763940997412192
+      17.763940997412192
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-on-star",
+   "section": "in-sky",
+   "title": "A flag on a real star",
+   "looksLike": "a glitch, so not real",
+   "label": "confirmed",
+   "evidence": [
+    "Flagged as a transient (TRANSIENT) on 1 pixel; Gaia DR3 4472811789965981184 (G 17.7) lies 1.1 pixels away",
+    "The same star shows in 2 other photos of the same detector, about as bright (here 1.4× its usual brightness there)",
+    "A flag marks pixels to treat with care. It doesn’t mean the source is fake: this is a catalogued star."
+   ],
+   "howToTell": "Check the catalogues and the other photos before dismissing a flagged source: a flag can sit on a real star.",
+   "source": {
+    "photos": [
+     "2025W33_2C_0386_4",
+     "2025W34_2B_0030_3"
+    ],
+    "date": "16 August 2025",
+    "detector": "detector D6 (4.4–5 µm)",
+    "lambda": "4.45 µm",
+    "at": "269.36253,4.70014"
+   },
+   "panels": [
+    {
+     "size": 32,
+     "image": "flagstar-a.f32",
+     "mark": "flagstar-a.mark.u8",
+     "masked": "flagstar-a.masked.u8",
+     "caption": "16 August 2025: flagged",
+     "alt": "16 August 2025: a flagged pixel on a catalogued star, outlined",
+     "ring": [
+      7.0,
+      21.0
+     ]
+    },
+    {
+     "size": 32,
+     "image": "flagstar-b.f32",
+     "mark": "flagstar-b.mark.u8",
+     "masked": "flagstar-b.masked.u8",
+     "caption": "21 August 2025: the same star",
+     "alt": "21 August 2025: the same star, no flag",
+     "ring": [
+      7.575776141382789,
+      21.944970683228803
      ]
     }
    ]
@@ -195,9 +294,9 @@
    "looksLike": "one object, maybe a new one",
    "label": "confirmed",
    "evidence": [
-    "WISE 0855 and a Gaia star (G 16.3) lie 6.4″ apart: about one SPHEREx pixel (6.15″)",
-    "At 1.1–1.6 µm the light is centred 0.7″ or less from the star",
-    "At 4.4–5 µm it moves to 3.5″ from the star and 2.9″ from WISE 0855’s predicted place"
+    "On 1 May 2026, WISE 0855’s predicted place and a Gaia star (G 16.3) are 6.4″ apart, about one SPHEREx pixel (6.15″); in November 2025 they were 9.5″ apart, because WISE 0855 moves",
+    "From the short colour to the long one, the light moves off the star, towards WISE 0855’s place",
+    "Light centre: within 0.7″ of the star at 1.1–1.6 µm; 3.5″ from it and 2.9″ from WISE 0855 at 4.4–5 µm (centres good to about 1″)"
    ],
    "howToTell": "If a catalogued star sits within a pixel or two, the spot is a blend: look at its colours, as “Two colours” does on WISE 0855’s page.",
    "source": {
@@ -217,9 +316,22 @@
      "masked": "blend-d2.masked.u8",
      "caption": "D2 · 1.1–1.6 µm",
      "alt": "WISE 0855's spot in D2 · 1.1–1.6 µm, May 2026 stack",
-     "ring": [
-      15.5,
-      15.5
+     "marks": [
+      {
+       "kind": "light",
+       "x": 16.69441605326646,
+       "y": 16.307957188075648
+      },
+      {
+       "kind": "neighbour",
+       "x": 16.596001720093504,
+       "y": 16.347395563295855
+      },
+      {
+       "kind": "target",
+       "x": 15.93703041514927,
+       "y": 15.536230779676178
+      }
      ]
     },
     {
@@ -229,9 +341,22 @@
      "masked": "blend-d6.masked.u8",
      "caption": "D6 · 4.4–5 µm",
      "alt": "WISE 0855's spot in D6 · 4.4–5 µm, May 2026 stack",
-     "ring": [
-      15.5,
-      15.5
+     "marks": [
+      {
+       "kind": "light",
+       "x": 16.25134860025495,
+       "y": 15.895058985376323
+      },
+      {
+       "kind": "neighbour",
+       "x": 16.596001720093504,
+       "y": 16.347395563295855
+      },
+      {
+       "kind": "target",
+       "x": 15.93703041514927,
+       "y": 15.536230779676178
+      }
      ]
     }
    ]
