@@ -68,9 +68,12 @@ import {
   DIFF_LIMIT,
   diffGradient,
   difference,
+  inSigma,
   renderDifference,
   strictLook,
 } from './render/difference';
+import { differenceFilm, type DifferenceFrame, type FilmInput } from './data/live/film';
+import { targetPlaceAt, type PassPlaces } from './app/targetPlace';
 import { NEAR_DEG, SkyView, type CatalogueStar, type Figure, type Lantern } from './render/sky';
 import { sharedStretch, type Stretch } from './render/stretch';
 import { parseGlow } from './render/milkyway';
@@ -937,6 +940,12 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     return;
   }
+  // In a series, D is "what changed".
+  if (free && series && series.changed !== null && !e.repeat && (e.key === 'd' || e.key === 'D')) {
+    series.toggleChanged();
+    e.preventDefault();
+    return;
+  }
   if (free && current && !e.repeat && (e.key === 'd' || e.key === 'D')) {
     if (differencing) endDifference();
     else void showDifference();
@@ -1302,54 +1311,26 @@ async function startLiveRange(look: LiveLook): Promise<void> {
 function watchLiveRange(job: LiveRange): void {
   stopReveal?.();
   const frames = job.frames;
-  const tiles = frames.map((f) => f.tile);
-  lens.setTiles(tiles, sharedStretch(tiles.map((t) => t.pixels)));
-  let i = 0;
-  let timer = 0;
-  const showFrame = () => {
-    const f = frames[i];
-    lens.show(i);
-    if (f)
-      lensLabel.replaceChildren(
-        h(
-          'span',
-          {},
-          copy.watch.frame(i + 1, frames.length, dayMonthYear(f.mjd), fixed(f.lambdaUm)),
-        ),
-      );
-  };
-  const pause = () => {
-    window.clearInterval(timer);
-    if (series) series.paused = true;
-  };
-  const play = () => {
-    window.clearInterval(timer);
-    timer = window.setInterval(() => {
-      i = (i + 1) % frames.length;
-      showFrame();
-    }, 500);
-    if (series) series.paused = false;
-  };
-  series = {
-    paused: true,
-    step: (delta) => {
-      pause();
-      i = (i + delta + frames.length) % frames.length;
-      showFrame();
-      drawSeriesBar();
-    },
-    toggle: () => {
-      if (series?.paused) play();
-      else pause();
-      drawSeriesBar();
-    },
-  };
-  stopReveal = pause;
   job.playing = true;
-  showFrame();
-  if (!prefersReducedMotion()) play();
+  const play = runSeries({
+    tiles: frames.map((f) => f.tile),
+    film: frames.map((f) => ({
+      tile: f.tile,
+      mjd: f.mjd,
+      lambdaUm: f.lambdaUm,
+      bandwidthUm: f.bandwidthUm,
+      detector: f.photo.det,
+      // References at the same scan orientation cancel steady stars better (Physics' test).
+      orientationDeg: f.photo.paDeg,
+    })),
+    label: (i) => {
+      const f = frames[i];
+      return f
+        ? copy.watch.frame(i + 1, frames.length, dayMonthYear(f.mjd), fixed(f.lambdaUm))
+        : '';
+    },
+  });
   render();
-  drawSeriesBar();
   // Known asteroids at each photo's own time.
   const grid = lookGrid();
   void moversOn(
@@ -1358,7 +1339,8 @@ function watchLiveRange(job: LiveRange): void {
     grid.size,
     grid.scaleArcsec,
   ).then((marks) => {
-    if (liveRange === job && job.playing && marks !== 'failed') lens.setOverlay({ movers: marks });
+    if (liveRange === job && job.playing && series === play && marks !== 'failed')
+      play.setMovers(marks);
   });
 }
 
@@ -1412,7 +1394,11 @@ function liveRangeSection(look: LiveLook): HTMLElement | null {
       : '';
     parts.push(h('p', { class: 'hint' }, span, ' ', c.drift));
     if (job.playing)
-      parts.push(seriesBar, h('div', { class: 'actions' }, button(c.back, leaveLiveRange)));
+      parts.push(
+        seriesBar,
+        filmNote,
+        h('div', { class: 'actions' }, button(c.back, leaveLiveRange)),
+      );
     else
       parts.push(
         h(
@@ -2537,7 +2523,7 @@ function showWords(): Node[] {
   if (state.room === 'watch') {
     const watch: (HTMLElement | null)[] = [eyebrow, h('h2', {}, w.name)];
     watch.push(colourWindows(current.pack, playColour, watching));
-    if (watching !== null) watch.push(seriesBar, seriesMeta);
+    if (watching !== null) watch.push(seriesBar, filmNote, seriesMeta);
     watch.push(coaddSection(current.pack));
     return watch.filter((x): x is HTMLElement => x !== null);
   }
@@ -3146,7 +3132,43 @@ type OverlaySource = {
   at_season: Record<string, [number, number, number, number]>;
   target: boolean;
 };
-type OverlayFile = { gaia_dr3?: OverlaySource[]; catwise2020?: OverlaySource[] };
+type OverlayFile = {
+  gaia_dr3?: OverlaySource[];
+  catwise2020?: OverlaySource[];
+  season_mean_mjd?: Record<string, number>;
+};
+
+/** Loads a wanderer's overlay file once (null if missing); the cache below fills as it lands. */
+const overlayLoads = new Map<TargetId, Promise<OverlayFile | null>>();
+function loadOverlay(id: TargetId): Promise<OverlayFile | null> {
+  let p = overlayLoads.get(id);
+  if (!p) {
+    p = fetch(`${import.meta.env.BASE_URL}data/overlays/overlay_${id}.json`)
+      // Python writes missing values as NaN, which isn't JSON; read it as null.
+      .then((r) => (r.ok ? r.text() : null))
+      .then((t) => (t ? (JSON.parse(t.replace(/\bNaN\b/g, 'null')) as OverlayFile) : null))
+      .catch(() => null);
+    overlayLoads.set(id, p);
+  }
+  return p;
+}
+
+/**
+ * The target's own row as places per pass, for targetPlaceAt. Some files mark more than one row
+ * as the target (RW Aur's A and B; a CatWISE neighbour), so take the one closest to the grid
+ * centre, which is the target's own position.
+ */
+function passPlaces(file: OverlayFile | null): PassPlaces | null {
+  if (!file?.season_mean_mjd) return null;
+  const offset = (r: OverlaySource) => {
+    const at = Object.values(r.at_season);
+    return at.reduce((a, v) => a + Math.hypot(v[2], v[3]), 0) / Math.max(1, at.length);
+  };
+  const rows = [...(file.gaia_dr3 ?? []), ...(file.catwise2020 ?? [])].filter((r) => r.target);
+  const row = rows.sort((a, b) => offset(a) - offset(b))[0];
+  return row ? { seasonMjd: file.season_mean_mjd, atSeason: row.at_season } : null;
+}
+
 /** Physics' catalogue overlay files, by wanderer (null while loading, or if missing). */
 const overlays = new Map<TargetId, OverlayFile | null>();
 let overlayOn = { gaia: false, catwise: false };
@@ -3170,10 +3192,7 @@ function overlayMarks(file: OverlayFile, seasons: number[]): NonNullable<LensOve
 function overlaySection(id: TargetId): HTMLElement | null {
   if (!overlays.has(id)) {
     overlays.set(id, null);
-    void fetch(`${import.meta.env.BASE_URL}data/overlays/overlay_${id}.json`)
-      // Python writes missing values as NaN, which isn't JSON; read it as null.
-      .then((r) => (r.ok ? r.text() : null))
-      .then((t) => (t ? (JSON.parse(t.replace(/\bNaN\b/g, 'null')) as OverlayFile) : null))
+    void loadOverlay(id)
       .then((d) => {
         overlays.set(id, d);
         if ('target' in state.place && state.place.target === id) render();
@@ -3318,7 +3337,16 @@ let watching: number | null = null;
 /** The photo of the series on screen, ringed in the dock. */
 let seriesPhoto: string | null = null;
 /** The series being watched: step it by hand, or let it play (never on its own under reduced motion). */
-let series: { step: (delta: number) => void; paused: boolean; toggle: () => void } | null = null;
+let series: {
+  step: (delta: number) => void;
+  paused: boolean;
+  toggle: () => void;
+  /** Whether the "what changed" film is on (null: too few photos for one). */
+  changed: boolean | null;
+  toggleChanged: () => void;
+  setMovers: (m: MoverMark[][]) => void;
+  redraw: () => void;
+} | null = null;
 const seriesBar = h('div', { class: 'series-bar actions', role: 'group' });
 const seriesMeta = h('details', { class: 'why photo-meta' });
 
@@ -3352,71 +3380,209 @@ async function playColour(detector: number): Promise<void> {
     .sort((a, b) => a.mjd - b.mjd);
   const tiles = await Promise.all(frames.map((f) => photoTile(pack, f)));
   if (watching !== detector || current?.pack !== pack) return;
-  lens.setTiles(tiles, sharedStretch(tiles.map((t) => t.pixels)));
   // No arrows over a series: they belong to the two compared looks.
   lens.setOverlay({ measured: undefined, predicted: undefined, arrowProgress: 0 });
+  const g = pack.manifest.grid;
+  const id = pack.manifest.target.id as TargetId;
+  // Where the catalogue puts the wanderer at each photo's time, for the "what changed" film.
+  const places = await loadOverlay(id).then((file) => passPlaces(file));
+  if (watching !== detector || current?.pack !== pack) return;
+  const play = runSeries({
+    tiles,
+    film: frames.map((f, k) => ({
+      tile: tiles[k] as Tile,
+      mjd: f.mjd,
+      lambdaUm: f.lambdaUm,
+      bandwidthUm: f.bandwidthUm,
+      detector: f.detector,
+    })),
+    label: (i) => {
+      const f = frames[i];
+      return f
+        ? copy.watch.frame(i + 1, frames.length, dayMonthYear(f.mjd), fixed(f.lambdaUm))
+        : '';
+    },
+    onFrame: (i) => {
+      const f = frames[i];
+      const t = tiles[i];
+      seriesPhoto = f?.id ?? null;
+      renderBand();
+      if (f && t) drawPhotoMeta(id, f, t, i);
+    },
+    targetAt: places
+      ? frames.map((f) => targetPlaceAt(places, f.mjd, g.pixelScaleArcsec))
+      : undefined,
+  });
   // Known asteroids at each photo's own time, once SkyBoT answers.
   runMovers = null;
-  const g = pack.manifest.grid;
   void moversOn(
     g.centre,
     frames.map((f) => f.mjd),
     g.size,
     g.pixelScaleArcsec,
   ).then((marks) => {
-    if (watching !== detector || current?.pack !== pack) return;
+    if (watching !== detector || current?.pack !== pack || series !== play) return;
     runMovers = marks;
-    if (marks !== 'failed') lens.setOverlay({ movers: marks });
-    showFrame();
+    if (marks !== 'failed') play.setMovers(marks);
+    play.redraw();
   });
+}
+
+/** A playing series' "what changed" film, made on first asking and kept with the series. */
+interface FilmPanel {
+  frame: DifferenceFrame;
+  ok: boolean;
+  tile: Tile;
+  image: HTMLCanvasElement;
+}
+
+interface SeriesSource {
+  tiles: Tile[];
+  /** The same photos as the film needs them: date, colour, band width, detector. */
+  film: FilmInput[];
+  /** The lens label for photo i. */
+  label: (i: number) => string;
+  /** Anything else to update for photo i (Watch: the dock ring and the photo's details). */
+  onFrame?: ((i: number) => void) | undefined;
+  /** The catalogue's place for the target at each photo's time (the five only). */
+  targetAt?: ({ east: number; north: number } | null)[] | undefined;
+}
+
+/**
+ * Plays a series in the lens: one shared stretch, hard cuts at 2 per second, looping until
+ * paused, never on its own under reduced motion; Earlier/Later step it (and ← →). "Show what
+ * changed" swaps in each photo minus the same spot on other dates near its colour (Physics'
+ * film, src/data/live/film.ts), drawn like the show's difference: grey ±5σ, hatched where
+ * unusable. Returns the series, so late answers (SkyBoT) can check it's still the one playing.
+ */
+function runSeries(src: SeriesSource): NonNullable<typeof series> {
+  const n = src.tiles.length;
+  const stretch = sharedStretch(src.tiles.map((t) => t.pixels));
   let i = 0;
   let timer = 0;
+  let film: FilmPanel[] | null = null;
+  let movers: MoverMark[][] | null = null;
+  const overlay = () => lens.setOverlay({ movers, target: src.targetAt ?? null });
   const showFrame = () => {
-    const f = frames[i];
     lens.show(i);
-    seriesPhoto = f?.id ?? null;
-    renderBand();
-    const t = tiles[i];
-    if (f && t) drawPhotoMeta(pack.manifest.target.id, f, t, i);
-    if (f)
-      lensLabel.replaceChildren(
-        h(
-          'span',
-          {},
-          copy.watch.frame(i + 1, frames.length, dayMonthYear(f.mjd), fixed(f.lambdaUm)),
-        ),
-      );
+    const panel = s.changed ? film?.[i] : undefined;
+    lensLabel.replaceChildren(
+      panel
+        ? h(
+            'span',
+            { class: 'look-pill diff-pill' },
+            `${src.label(i)} · ${panel.ok ? copy.film.pill : copy.film.none}`,
+          )
+        : h('span', {}, src.label(i)),
+    );
+    filmFrameLine.textContent = panel ? filmFrameText(panel) : '';
+    src.onFrame?.(i);
   };
   const pause = () => {
     window.clearInterval(timer);
-    if (series) series.paused = true;
+    s.paused = true;
   };
   const play = () => {
     window.clearInterval(timer);
     timer = window.setInterval(() => {
-      i = (i + 1) % frames.length;
+      i = (i + 1) % n;
       showFrame();
     }, 500);
-    if (series) series.paused = false;
+    s.paused = false;
   };
-  series = {
+  const fill = () => {
+    if (s.changed && film) lens.setRendered(film.map((x) => ({ tile: x.tile, image: x.image })));
+    else lens.setTiles(src.tiles, stretch);
+    overlay();
+  };
+  const s: NonNullable<typeof series> = {
     paused: true,
+    // Needs a few other dates to compare with.
+    changed: n >= 4 ? false : null,
     step: (delta) => {
       pause();
-      i = (i + delta + frames.length) % frames.length;
+      i = (i + delta + n) % n;
       showFrame();
       drawSeriesBar();
     },
     toggle: () => {
-      if (series?.paused) play();
+      if (s.paused) play();
       else pause();
       drawSeriesBar();
     },
+    toggleChanged: () => {
+      if (s.changed === null) return;
+      film ??= makeFilm(src);
+      s.changed = !s.changed;
+      fill();
+      showFrame();
+      drawFilmNote(s.changed, !!src.targetAt);
+      drawSeriesBar();
+    },
+    setMovers: (m) => {
+      movers = m;
+      overlay();
+    },
+    redraw: showFrame,
   };
+  series = s;
+  drawFilmNote(false, false);
+  fill();
   stopReveal = pause;
   showFrame();
   if (!prefersReducedMotion()) play();
   drawSeriesBar();
+  return s;
+}
+
+/** The film for a series: each photo minus its other-date, nearest-colour reference, in σ. */
+function makeFilm(src: SeriesSource): FilmPanel[] {
+  const frames = differenceFilm(src.film);
+  return frames.map((frame, k) => {
+    const size = src.tiles[k]?.size ?? 0;
+    const d = frame.ok ? inSigma(`film-${k}`, size, frame.pixels) : null;
+    const tile: Tile = d?.tile ?? {
+      id: `film-${k}`,
+      size,
+      pixels: new Float32Array(size * size).fill(NaN),
+      flags: new Uint8Array(size * size),
+    };
+    return { frame, ok: !!d, tile, image: renderDifference(tile) };
+  });
+}
+
+/** Under the series bar while the film shows: the key, Physics' words, and this photo's references. */
+const filmNote = h('div', { class: 'film-note diff-key' });
+const filmFrameLine = h('p', { class: 'hint film-frame' });
+
+function filmFrameText(p: FilmPanel): string {
+  if (!p.ok) return copy.film.noRefs;
+  const f = p.frame;
+  return copy.film.refs(
+    f.refCount,
+    f.maxDlamSteps.toFixed(1),
+    monthYear(f.refMeanMjd),
+    f.sameOrientation,
+  );
+}
+
+function drawFilmNote(on: boolean, target: boolean): void {
+  if (!on) {
+    filmNote.replaceChildren();
+    return;
+  }
+  filmNote.replaceChildren(
+    h(
+      'div',
+      { class: 'diff-scale' },
+      h('span', {}, copy.film.fainter(DIFF_LIMIT)),
+      h('i', { style: `background: ${diffGradient()}`, 'aria-hidden': 'true' }),
+      h('span', {}, copy.film.brighter(DIFF_LIMIT)),
+    ),
+    filmFrameLine,
+    h('p', { class: 'hint' }, copy.film.label),
+    ...(target ? [h('p', { class: 'hint' }, copy.film.target)] : []),
+  );
 }
 
 /** Earlier · Play/Pause · Later for the series being watched; updated in place, so focus stays. */
@@ -3440,6 +3606,11 @@ function drawSeriesBar(): void {
     button(s.paused ? copy.watch.play : copy.watch.pause, () => s.toggle()),
     button(copy.watch.later, () => s.step(1)),
   );
+  if (s.changed !== null) {
+    const b = button(s.changed ? copy.film.photos : copy.film.show, () => s.toggleChanged());
+    b.setAttribute('aria-pressed', String(s.changed));
+    seriesBar.append(b);
+  }
   if (focused >= 0) (seriesBar.children[focused] as HTMLElement | undefined)?.focus();
 }
 

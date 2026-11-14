@@ -115,6 +115,27 @@ export function difference(early: Tile, late: Tile, mask = STRICT_MASK): Differe
   };
 }
 
+/**
+ * Any picture of change (MJy/sr, NaN where unusable) in σ units for the grey renderer: the
+ * median taken off, σ = 1.4826·MAD of the usable pixels. Null when too few are usable.
+ */
+export function inSigma(id: string, size: number, values: Float32Array): Difference | null {
+  const n = size * size;
+  const kept = Float64Array.from(values.subarray(0, n)).filter(Number.isFinite);
+  if (kept.length < MIN_PIXELS) return null;
+  const mid = median(kept);
+  const sigma = 1.4826 * median(kept.map((d) => Math.abs(d - mid)));
+  if (!(sigma > 0)) return null;
+  const pixels = new Float32Array(n);
+  let masked = 0;
+  for (let i = 0; i < n; i++) {
+    const v = values[i] ?? NaN;
+    pixels[i] = (v - mid) / sigma;
+    if (!Number.isFinite(v)) masked++;
+  }
+  return { tile: { id, size, pixels, flags: new Uint8Array(n) }, sigma, masked };
+}
+
 /** Grey for no change, white for brighter in the later look, black for fainter. */
 const MID = [92, 97, 110];
 const UP = [246, 247, 250];

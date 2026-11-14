@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Tile } from '../data/pack/load';
 import { FlagMask } from '../data/pack/types';
-import { DIFF_LIMIT, diffColour, difference, strictLook } from './difference';
+import { DIFF_LIMIT, diffColour, difference, inSigma, strictLook } from './difference';
 
 const SIZE = 16;
 function must<T>(x: T | null | undefined): T {
@@ -119,5 +119,25 @@ describe('strictLook', () => {
     );
     expect(Number.isNaN(look.pixels[9])).toBe(true);
     expect(look.pixels[8]).toBe(1);
+  });
+});
+
+describe('inSigma', () => {
+  it('scales a film frame by its own noise, keeping unusable pixels unusable', () => {
+    const size = 10;
+    const values = new Float32Array(size * size).map((_, i) => 5 + ((i % 3) - 1));
+    values[0] = NaN;
+    values[55] = 45; // a bright change: (45 - 5) / σ
+    const d = inSigma('f', size, values);
+    expect(d).not.toBeNull();
+    if (!d) return;
+    expect(d.sigma).toBeCloseTo(1.4826, 6);
+    expect(Number.isNaN(d.tile.pixels[0])).toBe(true);
+    expect(d.masked).toBe(1);
+    expect(d.tile.pixels[55]).toBeGreaterThan(DIFF_LIMIT);
+  });
+
+  it('refuses a frame with too few usable pixels', () => {
+    expect(inSigma('f', 4, new Float32Array(16).fill(1))).toBeNull();
   });
 });

@@ -622,6 +622,24 @@ export const copy = {
     frame: (i: number, n: number, date: string, microns: string) =>
       `Photo ${i} of ${n}, ${date}, ${microns} microns`,
   },
+  /** The "what changed" film on a series (queue #8; method and label reviewed by Physics, 14 Nov). */
+  film: {
+    show: 'Show what changed',
+    photos: 'Show the photos',
+    pill: 'what changed',
+    none: 'not enough other dates in this colour',
+    fainter: (limit: number) => `fainter, −${limit}σ`,
+    brighter: (limit: number) => `+${limit}σ, brighter`,
+    refs: (n: number, steps: string, month: string, sameTurn: boolean) =>
+      `This photo minus the median of ${n} photos from other dates (around ${month}), within ${steps} colour step${steps === '1.0' ? '' : 's'}${sameTurn ? ', taken with SPHEREx turned the same way' : ''}.`,
+    noRefs:
+      'Not enough photos from other dates in this colour to compare this one with, so it is hatched.',
+    /** Physics' required wording, verbatim except "Hatched" for the grey view's masked pixels. */
+    label:
+      'Each photo minus the same spot on other dates, at the nearest colours (within one colour step). Something that moved far shows as a bright spot; a slow mover shows as a dark–bright pair that points the same way on every detector and turns steadily with date. Still bright stars also leave rings and pairs, because the blur changes with colour, so a pair alone is not proof of motion. Hatched = masked (saturated or flagged). A picture, not a measurement.',
+    target:
+      "The lilac cross is where the catalogue puts the star at each photo's time (its motion only), so its own change can be told from other stars'.",
+  },
   search: {
     unreadable: (reason: string) =>
       `We couldn't find that name or read that position (${reason}). Try a name like Vega or Barnard's Star, or a position like 17 57 48 +04 41 36.`,

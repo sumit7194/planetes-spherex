@@ -47,6 +47,12 @@ export interface LensOverlay {
     | { east: number; north: number; dEast: number; dNorth: number; name: string }[][]
     | null
     | undefined;
+  /**
+   * Where the catalogue puts the target at each tile's own time (pack pixels from the centre,
+   * proper motion only), per tile: a small open cross in the predicted colour, so its own change
+   * can be told from other stars' in a "what changed" film.
+   */
+  target?: (Shift | null)[] | null | undefined;
   /** "Spot the mover": where the visitor tapped (pack pixels), drawn as a small cross. */
   guess?: Shift | null | undefined;
   /** Ember ring for a measured move, mist for a show with nothing measured, blue for a look. */
@@ -85,8 +91,8 @@ export class LensView {
   setTiles(tiles: Tile[], stretch: Stretch): void {
     this.#tiles = tiles.map((tile) => ({ tile, image: renderTile(tile, stretch) }));
     this.#current = 0;
-    // Movers belong to the tiles they were placed on.
-    this.#overlay = { ...this.#overlay, movers: null };
+    // Movers and the target's places belong to the tiles they were placed on.
+    this.#overlay = { ...this.#overlay, movers: null, target: null };
     this.draw();
   }
 
@@ -94,7 +100,7 @@ export class LensView {
   setRendered(entries: { tile: Tile; image: HTMLCanvasElement }[]): void {
     this.#tiles = entries;
     this.#current = 0;
-    this.#overlay = { ...this.#overlay, movers: null };
+    this.#overlay = { ...this.#overlay, movers: null, target: null };
     this.draw();
   }
 
@@ -178,6 +184,34 @@ export class LensView {
 
     const movers = o.movers?.[this.#current];
     if (movers?.length) drawMovers(ctx, c, k, movers, t.predicted, t.night);
+
+    const at = o.target?.[this.#current];
+    if (at) {
+      // Four short arms with a gap in the middle, so the pixels under it stay visible.
+      const x = c - at.east * k;
+      const y = c - at.north * k;
+      const r0 = Math.max(4, k * 1.1);
+      const r1 = Math.max(9, k * 2.4);
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const) {
+        ctx.moveTo(x + dx * r0, y + dy * r0);
+        ctx.lineTo(x + dx * r1, y + dy * r1);
+      }
+      // A dark edge first, so the cross reads on white, grey and hatched pixels alike.
+      const w = Math.max(2.5, k * 0.22);
+      ctx.strokeStyle = rgba(t.night, 0.85);
+      ctx.lineWidth = w + 3;
+      ctx.stroke();
+      ctx.strokeStyle = t.predicted;
+      ctx.lineWidth = w;
+      ctx.stroke();
+    }
 
     if (o.guess) {
       // The visitor's tap: a cross in the text colour (theirs, not a measurement).
