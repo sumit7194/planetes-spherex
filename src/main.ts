@@ -19,7 +19,14 @@ import {
   WANDERERS,
   pastPlace,
 } from './app/targets';
-import { planCandidates, probeChoice, type LiveCandidate, type LookPlan } from './app/live';
+import {
+  clearestDetector,
+  pairDetectors,
+  planCandidates,
+  probeChoice,
+  type LiveCandidate,
+  type LookPlan,
+} from './app/live';
 import { playFlipbook, playReveal, showRevealStill } from './app/reveal';
 import {
   predictionLabel,
@@ -41,6 +48,7 @@ import {
   type SkyPosition,
 } from './data/coords';
 import {
+  apertureFlux,
   findPhotos,
   helperActive,
   liveSpectrum,
@@ -111,6 +119,7 @@ import {
   spectrumFigure,
   svg,
   thumbnail,
+  wavelengthColour,
   type SpectrumPoint,
 } from './ui/figures';
 import {
@@ -205,6 +214,12 @@ let live: {
   stretch: Stretch | null;
   done: boolean;
   abort: AbortController;
+  /** The probed photos, so another colour can be planned without probing again. */
+  probed: LookProbed | null;
+  /** Which colour range the look shows and why (Physics + Viewer, 14 Nov); null before chosen. */
+  colour: LookColour | null;
+  /** True while each colour's pair is read to find where the centre shows clearest. */
+  choosingColour: boolean;
 } | null = null;
 /** A live look (`typeof live` right after its `= null` would narrow to null). */
 type LiveLook = Parameters<typeof finishLook>[0];
@@ -1881,13 +1896,21 @@ async function eachLimited<T>(
  * (headers and the wavelength table only, ~50 kB each), and plan the fair same-colour set from
  * those. The first two passes are probed first; the rest only if they hold no fair pair.
  */
+/** What a look's colour choice needs again: every probed photo and the spot's pass facts. */
+interface LookProbed {
+  candidates: LiveCandidate<LivePhoto>[];
+  meta: { total: number; firstMjd: number; lastMjd: number; seasons: number };
+}
+
 async function planLiveLook(
   at: SkyPosition,
   signal: AbortSignal,
   onProbe: (done: number, total: number, of: number) => void,
-): Promise<{ plan: LookPlan<LivePhoto>; photos: LivePhoto[] }> {
+): Promise<{ plan: LookPlan<LivePhoto>; photos: LivePhoto[]; probed: LookProbed | null }> {
   const photos = await findPhotos(at);
-  return { plan: await planFrom(photos, at, signal, onProbe), photos };
+  const probed: { value: LookProbed | null } = { value: null };
+  const plan = await planFrom(photos, at, signal, onProbe, probed);
+  return { plan, photos, probed: probed.value };
 }
 
 async function planFrom(
@@ -1895,6 +1918,7 @@ async function planFrom(
   at: SkyPosition,
   signal: AbortSignal,
   onProbe: (done: number, total: number, of: number) => void,
+  probed: { value: LookProbed | null } = { value: null },
 ): Promise<LookPlan<LivePhoto>> {
   if (!photos.length) return { kind: 'none' };
   const pass = passesOf(photos);
@@ -1945,6 +1969,7 @@ async function planFrom(
     plan = planCandidates(candidates, meta);
   }
   signal.removeEventListener('abort', stop);
+  probed.value = { candidates, meta };
   return plan;
 }
 
@@ -2276,7 +2301,14 @@ async function surpriseMe(spotIn?: SurpriseSpot): Promise<void> {
   await openLook(at, pick);
 }
 
-async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Promise<void> {
+async function openLook(
+  at: SkyPosition,
+  named: SurpriseSpot | null = null,
+  opts: {
+    detector?: Detector;
+    reuse?: { photos: LivePhoto[]; probed: LookProbed; checked: Set<Detector> };
+  } = {},
+): Promise<void> {
   surprise = named;
   stopReveal?.();
   stopLook();
@@ -2295,6 +2327,9 @@ async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Pro
     stretch: null,
     done: false,
     abort: new AbortController(),
+    probed: null,
+    colour: null,
+    choosingColour: false,
   };
   live = look;
   dispatch({ type: 'goTo', at });
@@ -2305,23 +2340,35 @@ async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Pro
   locator.frameWholeSky(at);
 
   let plan: LookPlan<LivePhoto>;
-  try {
-    const found = await planLiveLook(at, look.abort.signal, (done, total, of) => {
-      if (live !== look) return;
-      look.probe = { done, total, of };
-      const line = words.querySelector('.probing');
-      if (line) line.textContent = copy.look.probing(done, total, of);
-      else render();
-    });
-    plan = found.plan;
-    look.photos = found.photos;
-  } catch {
-    if (live === look)
-      dispatch({ type: 'trouble', reason: navigator.onLine ? 'index-missing' : 'offline' });
-    return;
+  if (opts.reuse) {
+    // Another colour of the same spot: the photos are already probed.
+    look.photos = opts.reuse.photos;
+    look.probed = opts.reuse.probed;
+    plan = planCandidates(look.probed.candidates, look.probed.meta);
+  } else {
+    try {
+      const found = await planLiveLook(at, look.abort.signal, (done, total, of) => {
+        if (live !== look) return;
+        look.probe = { done, total, of };
+        const line = words.querySelector('.probing');
+        if (line) line.textContent = copy.look.probing(done, total, of);
+        else render();
+      });
+      plan = found.plan;
+      look.photos = found.photos;
+      look.probed = found.probed;
+    } catch {
+      if (live === look)
+        dispatch({ type: 'trouble', reason: navigator.onLine ? 'index-missing' : 'offline' });
+      return;
+    }
   }
   if (live !== look) return;
+  if (plan.kind === 'pair' && look.probed)
+    plan = await chooseColour(look, plan, opts.detector, opts.reuse?.checked);
+  if (live !== look) return;
   look.plan = plan;
+  writeUrl();
   if (plan.kind !== 'pair') {
     dispatch({ type: 'indexReady', planned: 0 });
     dispatch({ type: 'seasonsIn', total: plan.kind === 'none' ? 0 : plan.total });
@@ -2336,6 +2383,222 @@ async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Pro
     dispatch({ type: 'frameIn' });
   });
   if (live === look && !look.done) finishLook(look);
+}
+
+/** The colour a look shows: which detector, why, each colour's centre S/N, and which have pairs. */
+interface LookColour {
+  chosen: Detector;
+  why: 'clearest' | 'shortest' | 'chosen';
+  /** Each colour's score: the lower centre S/N of its pair's two photos (null: not measurable). */
+  sn: Map<Detector, number | null>;
+  /** Colours with a fair pair of their own. */
+  pairs: Detector[];
+  /** A colour asked for (by the visitor or a link) that has no fair pair here. */
+  unavailable: Detector | null;
+  /** Colours whose every photo has been checked: "no fair pair" is final only for these. */
+  fullyChecked: Set<Detector>;
+  /** The colour being checked photo by photo just now (its button says so). */
+  checking: Detector | null;
+}
+
+/**
+ * Picks the look's colour (Physics + Viewer, 14 Nov): the visitor's (or link's) choice when it
+ * has a fair pair; else the colour where the source at the spot shows clearest (S/N ≥ 5, both
+ * photos of each colour's pair read through the helper); else the shortest colour with a fair
+ * pair, as before, and the summary says why. Without the helper the reads are too slow to try
+ * six colours first, so it keeps the shortest and lets the visitor choose.
+ */
+async function chooseColour(
+  look: LiveLook,
+  plan: Extract<LookPlan<LivePhoto>, { kind: 'pair' }>,
+  wanted: Detector | undefined,
+  checked: Set<Detector> = new Set(),
+): Promise<LookPlan<LivePhoto>> {
+  const probed = look.probed;
+  if (!probed) return plan;
+  const pairs = pairDetectors(probed.candidates, probed.meta);
+  const sn = new Map<Detector, number | null>();
+  let chosen: Detector | null = null;
+  let why: LookColour['why'] = 'shortest';
+  if (wanted && pairs.includes(wanted)) {
+    chosen = wanted;
+    why = 'chosen';
+  } else if (helperActive() && pairs.length > 1) {
+    look.choosingColour = true;
+    render();
+    const grid = lookGrid();
+    await Promise.all(
+      pairs.map(async (d) => {
+        const p = planCandidates(probed.candidates, probed.meta, d);
+        if (p.kind !== 'pair') return;
+        const frames = await Promise.all(
+          [p.pair.a, p.pair.b].map((c) =>
+            readPhoto(c.hit, look.at, grid.size, grid.scaleArcsec, look.abort.signal).catch(
+              () => null,
+            ),
+          ),
+        );
+        const each = frames.map((f) => {
+          const m = f ? apertureFlux(f.tile) : null;
+          // A flagged or saturated aperture isn't a fair score: that colour is left out.
+          return m && !m.flagged && m.sigma > 0 ? m.flux / m.sigma : null;
+        });
+        sn.set(d, each.some((x) => x === null) ? null : Math.min(...(each as number[])));
+      }),
+    );
+    look.choosingColour = false;
+    chosen = clearestDetector(sn);
+    if (chosen) why = 'clearest';
+  }
+  const final = chosen ? planCandidates(probed.candidates, probed.meta, chosen) : plan;
+  const shown = final.kind === 'pair' ? final : plan;
+  look.colour = {
+    chosen: shown.pair.a.detector as Detector,
+    why,
+    sn,
+    pairs,
+    unavailable: wanted && !pairs.includes(wanted) ? wanted : null,
+    fullyChecked: new Set(checked),
+    checking: null,
+  };
+  return shown;
+}
+
+/**
+ * Checks the colour of every photo of one colour range at the spot (the first plan samples a few
+ * per pass), so "no fair pair" there is final, not a sampling gap (Viewer's third state).
+ */
+async function checkColourFully(look: LiveLook, d: Detector): Promise<void> {
+  const probed = look.probed;
+  if (!probed) return;
+  const have = new Set(probed.candidates.map((c) => c.id));
+  const pass = passesOf(look.photos);
+  const todo = look.photos
+    .map((photo, i) => ({ photo, i }))
+    .filter(({ photo }) => photo.det === d && !have.has(photo.key));
+  await eachLimited(todo, probesAtOnce(), async ({ photo, i }) => {
+    const pr = await probePhoto(photo, look.at, look.abort.signal).catch(() => null);
+    if (!pr || live !== look) return;
+    probed.candidates.push({
+      id: photo.key,
+      detector: d,
+      season: pass[i] ?? 0,
+      mjd: photo.mjd,
+      lambdaUm: pr.lambdaUm,
+      colourUncertain: false,
+      hit: photo,
+    });
+  });
+}
+
+/**
+ * Shows the same spot in another colour: no new probing, a fresh read of that colour's photos.
+ * A colour not yet checked photo by photo is checked first; if it still has no fair pair, it
+ * stays off and says so.
+ */
+async function switchColour(look: LiveLook, d: Detector): Promise<void> {
+  const probed = look.probed;
+  const c = look.colour;
+  if (!probed || !c) return;
+  if (!c.pairs.includes(d) && !c.fullyChecked.has(d)) {
+    c.checking = d;
+    render();
+    await checkColourFully(look, d);
+    if (live !== look) return;
+    c.checking = null;
+    c.fullyChecked.add(d);
+    c.pairs = pairDetectors(probed.candidates, probed.meta);
+    if (!c.pairs.includes(d)) {
+      c.unavailable = d;
+      render();
+      return;
+    }
+  }
+  void openLook(look.at, surprise, {
+    detector: d,
+    reuse: { photos: look.photos, probed, checked: new Set(c.fullyChecked) },
+  });
+}
+
+/** "Colour": six ranges as a radio group, the shown one ringed, those without a fair pair off. */
+function colourRow(look: LiveLook): HTMLElement | null {
+  const c = look.colour;
+  if (!c) return null;
+  const t = copy.look.colour;
+  const rangeText = (d: Detector) => {
+    const [lo, hi] = RANGES[d - 1] ?? [0, 0];
+    return t.range(lo, hi);
+  };
+  const group = h('div', { class: 'colour-row', role: 'radiogroup', 'aria-label': t.label });
+  const buttons: HTMLButtonElement[] = [];
+  RANGES.forEach(([lo, hi], i) => {
+    const d = (i + 1) as Detector;
+    const has = c.pairs.includes(d);
+    // Off only when every photo in it was checked and none make a fair pair.
+    const open = has || !c.fullyChecked.has(d);
+    const on = d === c.chosen;
+    const sn = c.sn.get(d);
+    const busy = c.checking === d;
+    const b = h(
+      'button',
+      {
+        type: 'button',
+        role: 'radio',
+        class: on ? 'on' : '',
+        'aria-checked': String(on),
+        tabindex: on ? '0' : '-1',
+        disabled: !open,
+        'aria-busy': busy ? 'true' : undefined,
+        style: `--swatch:${wavelengthColour(Math.sqrt(lo * hi))}`,
+        'aria-label': has
+          ? t.option(lo, hi, true, sn ?? null)
+          : open
+            ? t.unchecked(lo, hi)
+            : t.option(lo, hi, false, null),
+        title: has
+          ? t.option(lo, hi, true, sn ?? null)
+          : open
+            ? t.unchecked(lo, hi)
+            : t.option(lo, hi, false, null),
+      },
+      busy ? '…' : Math.sqrt(lo * hi).toFixed(1),
+    ) as HTMLButtonElement;
+    b.addEventListener('click', () => {
+      if (!on && open && !c.checking) void switchColour(look, d);
+    });
+    buttons.push(b);
+    group.append(b);
+  });
+  // Arrows move between the colours that can be shown, and show the one landed on.
+  group.addEventListener('keydown', (e) => {
+    if (!['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault();
+    const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+    const order = c.pairs.slice().sort((a, b) => a - b);
+    const at = order.indexOf(c.chosen);
+    const next = order[(at + step + order.length) % order.length];
+    if (next && next !== c.chosen) void switchColour(look, next);
+  });
+  const why =
+    c.why === 'chosen'
+      ? t.whyChosen(rangeText(c.chosen))
+      : c.why === 'clearest'
+        ? t.whyClearest(rangeText(c.chosen))
+        : t.whyShortest(rangeText(c.chosen));
+  return h(
+    'div',
+    { class: 'colour-choice' },
+    h('p', { class: 'colour-label' }, t.label),
+    group,
+    h(
+      'p',
+      { class: 'hint colour-why' },
+      why,
+      c.unavailable ? ` ${t.unavailable(rangeText(c.unavailable))}` : '',
+      c.checking ? ` ${t.checking(rangeText(c.checking))}` : '',
+    ),
+    c.chosen <= 3 ? h('p', { class: 'hint' }, t.cold) : null,
+  );
 }
 
 /** Whether the photos in so far cover two looks, so a comparison can start. */
@@ -3912,6 +4175,8 @@ function lookWords(): HTMLElement[] {
   if (place.kind === 'finding' || !plan) {
     const p = live?.probe;
     out.push(h('h2', {}, copy.look.finding));
+    if (live?.choosingColour)
+      out.push(h('p', { class: 'hint', role: 'status' }, copy.look.colour.choosing));
     if (p)
       out.push(
         h('p', { class: 'hint probing', role: 'status' }, copy.look.probing(p.done, p.total, p.of)),
@@ -3954,6 +4219,8 @@ function lookWords(): HTMLElement[] {
     );
     const lambda = (plan.pair.a.lambdaUm + plan.pair.b.lambdaUm) / 2;
     out.push(fairColourStrip(lambdas, lambda));
+    const row = colourRow(look);
+    if (row) out.push(row);
     if (filling) {
       // Pips fill as each photo arrives.
       out.push(
@@ -5591,6 +5858,8 @@ function writeUrl(): void {
   } else if ('at' in state.place && state.place.at) {
     q.set('at', `${state.place.at.ra.toFixed(5)},${state.place.at.dec.toFixed(5)}`);
     if (surprise) q.set('spot', slug(surprise.name));
+    // The colour shown, so a shared link shows what its sender saw.
+    if (live?.colour) q.set('det', String(live.colour.chosen));
   }
   history.replaceState(null, '', `?${q}`);
 }
@@ -5677,6 +5946,8 @@ if (wanted)
 else if (wantedAt) {
   // A shared surprise keeps its name and line, if the spot is still in the list.
   const spot = q.get('spot');
+  const det = Number(q.get('det'));
+  const wantedDet = Number.isInteger(det) && det >= 1 && det <= 6 ? (det as Detector) : undefined;
   void (spot ? loadSurprises() : Promise.resolve([])).then((list) =>
     openLook(
       wantedAt,
@@ -5685,6 +5956,7 @@ else if (wantedAt) {
         (x) =>
           slug(x.name) === spot && separationDeg(wantedAt, { ra: x.ra, dec: x.dec }) * 3600 < 5,
       ) ?? null,
+      wantedDet ? { detector: wantedDet } : {},
     ),
   );
 }

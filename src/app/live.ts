@@ -47,11 +47,13 @@ export type LookPlan<H> =
 export function planCandidates<H>(
   candidates: LiveCandidate<H>[],
   meta: { total: number; firstMjd: number; lastMjd: number; seasons: number },
+  /** Only this colour range (the visitor's choice, or the clearest one): its own fair pair. */
+  onlyDetector?: Detector,
 ): LookPlan<H> {
   const { total, firstMjd, lastMjd, seasons } = meta;
   const tries: [number, number][] = [];
   for (let a = 0; a < seasons; a++) for (let b = a + 1; b < seasons; b++) tries.push([a, b]);
-  const detectors: Detector[] = [1, 2, 3, 4, 5, 6];
+  const detectors: Detector[] = onlyDetector ? [onlyDetector] : [1, 2, 3, 4, 5, 6];
   for (const [a, b] of tries) {
     let pair: SameColourPair | null = null;
     for (const d of detectors) {
@@ -136,4 +138,37 @@ export function probeChoice(
   const out: number[] = [];
   for (let k = 0; k < per; k++) for (const g of picks) if (k < g.length) out.push(g[k] ?? 0);
   return out;
+}
+
+/** The colour ranges (detectors) that have a fair pair of their own. */
+export function pairDetectors<H>(
+  candidates: LiveCandidate<H>[],
+  meta: { total: number; firstMjd: number; lastMjd: number; seasons: number },
+): Detector[] {
+  return ([1, 2, 3, 4, 5, 6] as Detector[]).filter(
+    (d) => planCandidates(candidates, meta, d).kind === 'pair',
+  );
+}
+
+/** A centre source counts as clear at this S/N in a fixed aperture (Physics, 14 Nov). */
+export const CLEAR_SN = 5;
+
+/**
+ * The colour where the source at the spot shows clearest (Physics, 14 Nov): each colour's score
+ * is the lower S/N of its pair's two photos (the source must show in both looks); the best wins
+ * if it clears CLEAR_SN. Null when none does: the look then keeps the shortest colour with a
+ * fair pair, and says so. Ties go to the shorter colour.
+ */
+export function clearestDetector(scores: Map<Detector, number | null>): Detector | null {
+  let best: Detector | null = null;
+  let bestSn = -Infinity;
+  for (const d of [1, 2, 3, 4, 5, 6] as Detector[]) {
+    const sn = scores.get(d);
+    if (sn === null || sn === undefined || !Number.isFinite(sn)) continue;
+    if (sn > bestSn) {
+      best = d;
+      bestSn = sn;
+    }
+  }
+  return best !== null && bestSn >= CLEAR_SN ? best : null;
 }

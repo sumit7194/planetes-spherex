@@ -3160,3 +3160,57 @@ span[data-fit='1'] {
     animation: none;
   }
 }
+
+/* Choosing a live look's colour range (Physics + Viewer, 14 Nov): six segments under the colour
+   bar, each filled with its wavelength's colour; the shown one ringed in starlight. */
+.colour-choice {
+  margin: 10px 0 4px;
+}
+.colour-label {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--quiet);
+}
+.colour-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.colour-row button {
+  min-height: 30px;
+  padding: 4px 0;
+  border: 1px solid var(--dusk-line);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--swatch) 22%, transparent);
+  color: var(--starlight);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.colour-row button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--swatch) 40%, transparent);
+}
+.colour-row button.on {
+  background: color-mix(in srgb, var(--swatch) 55%, transparent);
+  box-shadow: 0 0 0 2px var(--starlight);
+  font-weight: 600;
+}
+.colour-row button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.colour-row button:focus-visible {
+  outline: 2px solid var(--look);
+  outline-offset: 2px;
+}
+.colour-why {
+  margin-top: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .colour-row button {
+    transition: none;
+  }
+}

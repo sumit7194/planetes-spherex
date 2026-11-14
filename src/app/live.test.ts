@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Detector } from '../data/colour/cwave';
-import { planCandidates, probeChoice, type LiveCandidate } from './live';
+import {
+  clearestDetector,
+  pairDetectors,
+  planCandidates,
+  probeChoice,
+  type LiveCandidate,
+} from './live';
 
 /** A probed photo: detector d sees 1 µm × d (easy to reason about); passes split at day 200. */
 let n = 0;
@@ -66,5 +72,54 @@ describe('probeChoice', () => {
     // Four of the twenty in pass 0 (evenly spread), and both single photos of pass 1, taken
     // round-robin across the three (pass, detector) groups.
     expect(pick.map((i) => photos[i]?.mjd)).toEqual([2, 100, 101, 7, 12, 17]);
+  });
+});
+
+describe('choosing the colour', () => {
+  it('plans one chosen colour on its own, and lists which colours have a fair pair', () => {
+    const c = [photo(100, 5), photo(101, 1), photo(300, 5), photo(302, 1), photo(150, 3)];
+    const plan = planCandidates(c, meta(c), 5);
+    expect(plan.kind === 'pair' && plan.pair.a.detector).toBe(5);
+    expect(planCandidates(c, meta(c), 3).kind).toBe('no-pair');
+    expect(pairDetectors(c, meta(c))).toEqual([1, 5]);
+  });
+
+  it('takes the clearest colour only when it clears S/N 5; ties go to the shorter colour', () => {
+    const s = (e: [Detector, number | null][]) => new Map<Detector, number | null>(e);
+    expect(
+      clearestDetector(
+        s([
+          [1, 2],
+          [5, 25],
+          [6, 22],
+        ]),
+      ),
+    ).toBe(5);
+    expect(
+      clearestDetector(
+        s([
+          [1, 3],
+          [5, 4.9],
+        ]),
+      ),
+    ).toBeNull();
+    expect(
+      clearestDetector(
+        s([
+          [2, 8],
+          [4, 8],
+        ]),
+      ),
+    ).toBe(2);
+    expect(
+      clearestDetector(
+        s([
+          [1, null],
+          [3, Number.NaN],
+          [6, 6],
+        ]),
+      ),
+    ).toBe(6);
+    expect(clearestDetector(s([]))).toBeNull();
   });
 });

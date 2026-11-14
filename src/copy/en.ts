@@ -463,6 +463,26 @@ export const copy = {
   },
   look: {
     passes: (n: number) => `${n} pass${n === 1 ? '' : 'es'}`,
+    /** Choosing the look's colour range (Physics + Viewer, 14 Nov). */
+    colour: {
+      label: 'Colour',
+      range: (lo: number, hi: number) => `${lo}–${hi} µm`,
+      option: (lo: number, hi: number, has: boolean, sn: number | null) =>
+        has
+          ? `${lo} to ${hi} microns${sn !== null ? `, the source at your spot at signal-to-noise ${Math.round(sn)}` : ''}`
+          : `${lo} to ${hi} microns: no fair pair here`,
+      choosing: 'Finding the colour where your spot shows clearest…',
+      whyClearest: (range: string) =>
+        `Shown at ${range}, where the source at your spot is clearest.`,
+      whyShortest: (range: string) =>
+        `Shown at ${range}: nothing clear sits at your spot, so this is the shortest colour with a fair pair. Pick another above.`,
+      whyChosen: (range: string) => `Shown at ${range}, as chosen.`,
+      unavailable: (range: string) => `There's no fair pair at ${range} here.`,
+      cold: 'Cold objects such as brown dwarfs show best at 3–5 µm.',
+      unchecked: (lo: number, hi: number) =>
+        `${lo} to ${hi} microns: not every photo checked yet; choosing it checks them`,
+      checking: (range: string) => `Checking every photo at ${range}…`,
+    },
     passesWhen: (n: number, months: string) => `${n} pass${n === 1 ? '' : 'es'} (${months})`,
     /** Known asteroids in a live look's photos (SkyBoT, IMCCE), 14 Nov. */
     movers: {
