@@ -664,6 +664,13 @@ sky.onSelect = (id) => void go(id as TargetId);
 // Anywhere else on the sky is real and clickable: a tap opens a look at that spot (near a
 // wanderer, its show), the same as typing the position.
 sky.onSkyTap = (at) => {
+  // N7: on the tour's last step, a click on the sky is the visitor taking over. The tour ends
+  // into that spot, and focus goes to where they landed (Viewer). A drag isn't a click (sky.ts).
+  const fromTour = state.room === 'learn' && TOUR_TRY[tourStep] === 'sky';
+  if (fromTour) {
+    endTour();
+    focusLandingUntil = performance.now() + 15000;
+  }
   const near = WANDERERS.find((w) => w.ready && separationDeg(w.at, at) < NEAR_WANDERER_DEG);
   if (near) void go(near.id);
   else void openLook(at);
@@ -3056,9 +3063,11 @@ function drawTrueScale(show: Show): void {
 
 /* ---------- hold to compare: spring-loaded, one detector, position only ---------- */
 
+let holdT0 = 0;
 function holdStart(): void {
   // Holding during the reveal ends it: the visitor has seen enough to want to compare.
   if (!takeLens() || !current) return;
+  holdT0 = performance.now();
   const pair = stackPair(current.pack, 'one-detector', current.show.seasons);
   if (!pair) return;
   leaveDifference();
@@ -3083,6 +3092,8 @@ function holdEnd(): void {
   lens.show(1);
   lensLabel.textContent = copy.show.allColours;
   dispatch({ type: 'holdEnd' });
+  // The tour that waits (N7): a real hold, not a tap, counts as trying it.
+  if (performance.now() - holdT0 >= 500) tourTried('hold');
 }
 
 /** Photos already read, per pack and photo id: the difference and the colour pictures share them. */
@@ -5120,7 +5131,9 @@ function renderWords(): Node[] {
     // its spectrum, so that one stays.
     if ('target' in place) {
       const spectrum = place.target === 'epsind-b' ? spectrumSection(place.target) : null;
-      return spectrum ? [tourCard(), spectrum] : [tourCard()];
+      // N7: WISE 0855's Two colours, once the visitor chose it from the tour.
+      const shift = place.target === 'w0855' && colourShiftOn ? colourShiftBlock() : null;
+      return [tourCard(), spectrum, shift].filter((x): x is HTMLElement => x !== null);
     }
   }
   return showWords();
@@ -6153,8 +6166,39 @@ const TOUR_ACTS: (() => void)[] = [
   },
 ];
 
+/**
+ * N7, the tour that waits (Viewer's design, 15 Nov): three steps offer one thing to try. The
+ * tour notices it, says what was seen, and never blocks Next or Skip, never acts for the visitor
+ * (no auto-play), and after 20 s of nothing shows a quiet static hint. The same under reduced
+ * motion.
+ */
+type TryKind = 'hold' | 'shift' | 'sky';
+const TOUR_TRY: Partial<Record<number, TryKind>> = { 4: 'hold', 5: 'shift', 8: 'sky' };
+let tourDone = false;
+/** Set when the tour ends into a spot: render() moves focus to where the visitor landed. */
+let focusLandingUntil = 0;
+let tourWaiting = false;
+let tourIdle = 0;
+function tourTried(kind: TryKind): void {
+  if (state.room !== 'learn' || TOUR_TRY[tourStep] !== kind || tourDone) return;
+  tourDone = true;
+  tourWaiting = false;
+  globalThis.clearTimeout(tourIdle);
+  render();
+}
+
 function runTourStep(i: number): void {
   tourStep = Math.max(0, Math.min(TOUR_ACTS.length - 1, i));
+  tourDone = false;
+  tourWaiting = false;
+  colourShiftOn = false;
+  globalThis.clearTimeout(tourIdle);
+  if (TOUR_TRY[tourStep])
+    tourIdle = globalThis.setTimeout(() => {
+      if (state.room !== 'learn' || tourDone) return;
+      tourWaiting = true;
+      render();
+    }, 20000);
   try {
     TOUR_ACTS[tourStep]?.();
   } finally {
@@ -6165,6 +6209,7 @@ function runTourStep(i: number): void {
 }
 
 function endTour(): void {
+  globalThis.clearTimeout(tourIdle);
   leaveLearn();
   dispatch({ type: 'setRoom', room: 'play' });
 }
@@ -6249,7 +6294,14 @@ function tourCard(): HTMLElement {
       h('span', { 'aria-hidden': 'true' }, copy.tour.title),
       dots,
     ),
-    h('p', { class: 'tour-line' }, steps[tourStep] ?? ''),
+    // Once Two colours is open beside the card (N7), the step's line steps down a size so the
+    // figure fits the column at 1280×720 without scrolling.
+    h(
+      'p',
+      { class: tourDone && TOUR_TRY[tourStep] === 'shift' ? 'tour-line compact' : 'tour-line' },
+      steps[tourStep] ?? '',
+    ),
+    tryLine(last),
     // The last step points to the field guide (Viewer).
     tourStep === steps.length - 1
       ? h('p', { class: 'hint' }, h('a', { href: 'fieldguide.html' }, copy.fieldguide.linkShort))
@@ -6257,6 +6309,46 @@ function tourCard(): HTMLElement {
     tourStep === 0 ? h('p', { class: 'hint' }, copy.home.ringNote) : null,
     tourStep === 1 ? rideAlong() : null,
     h('div', { class: 'actions' }, back, next, skip),
+  );
+}
+
+/** The step's one thing to try (N7), announced politely when it changes. */
+function tryLine(last: boolean): HTMLElement | null {
+  const kind = TOUR_TRY[tourStep];
+  if (!kind) return null;
+  const t = copy.tour.tryIt;
+  const parts: (Node | string)[] = [];
+  if (tourDone && kind === 'hold') parts.push(t.barnardDone);
+  else if (tourDone && kind === 'shift') parts.push(t.w0855Done);
+  else if (kind === 'hold') {
+    parts.push(t.barnard, ' ');
+    const hold = h(
+      'button',
+      { type: 'button', class: 'hold' },
+      copy.show.hold,
+      h('kbd', {}, copy.show.holdKey),
+    );
+    hold.addEventListener('pointerdown', holdStart);
+    hold.addEventListener('pointerup', holdEnd);
+    hold.addEventListener('pointerleave', holdEnd);
+    parts.push(hold);
+  } else if (kind === 'shift') {
+    parts.push(t.w0855, ' ');
+    const b = h('button', { type: 'button' }, t.w0855Button);
+    b.addEventListener('click', () => {
+      colourShiftOn = true;
+      tourTried('shift');
+      render();
+    });
+    parts.push(b);
+  } else parts.push(t.sky);
+  return h(
+    'div',
+    { class: 'tour-try', 'aria-live': 'polite' },
+    h('p', {}, ...parts),
+    tourWaiting && !tourDone
+      ? h('p', { class: 'hint' }, last ? t.waitingDone : t.waitingNext)
+      : null,
   );
 }
 
@@ -7528,7 +7620,22 @@ function render(): void {
   const searchHadFocus = document.activeElement === search;
   const caret = [search.selectionStart, search.selectionEnd] as const;
   const colourHadFocus = !!(document.activeElement as HTMLElement | null)?.closest?.('.colour-row');
+  const active = document.activeElement as HTMLElement | null;
+  const landingFree = !active || active === document.body || !!active.dataset['landing'];
   words.replaceChildren(...renderWords());
+  // N7: after the tour ends into a spot, focus lands on where the visitor arrived (the look's
+  // summary, or a page's heading), and stays there as the column is rebuilt (Viewer).
+  // For a short while (the look's column is rebuilt as its photos arrive, sometimes with no
+  // heading), it's re-applied whenever focus is on nothing or on the landing itself, never taken
+  // from something the visitor chose.
+  if (performance.now() < focusLandingUntil && state.place.kind !== 'sky' && landingFree) {
+    const t = words.querySelector<HTMLElement>('.panel-summary, h2');
+    if (t) {
+      t.tabIndex = -1;
+      t.dataset['landing'] = '1';
+      t.focus({ preventScroll: true });
+    }
+  }
   // The colour row keeps the keyboard: it's rebuilt on every render (each photo arriving), so
   // focus returns to the shown colour whenever it was in the row, and after a switch once the
   // new colour is on screen (Viewer, 14 Nov).

@@ -1599,6 +1599,31 @@ canvas.sky.backdrop {
 }
 
 /* The tour's progress: one dot per step, the current one ember. */
+.tour .tour-line.compact {
+  font-size: 18px;
+  max-width: 40ch;
+  margin: 2px 0 4px;
+}
+.tour:has(.tour-line.compact) {
+  margin-bottom: 4px;
+}
+.tour:has(.tour-line.compact) .tour-try p {
+  margin-top: 0;
+}
+.tour:has(.tour-line.compact) .actions {
+  margin: 6px 0 2px;
+}
+.tour:has(.tour-line.compact) ~ .colour-shift-key {
+  margin-bottom: 0;
+}
+/* N7: the one thing to try on a step; its button sits in the line, not in the actions row. */
+.tour .tour-try p {
+  margin: 0.4rem 0 0;
+}
+.tour .tour-try button {
+  margin-inline-start: 0.25rem;
+  vertical-align: baseline;
+}
 .tour .eyebrow {
   display: flex;
   align-items: center;

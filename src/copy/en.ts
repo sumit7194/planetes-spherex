@@ -1150,6 +1150,21 @@ export const copy = {
     next: 'Next',
     skip: 'Skip the tour',
     done: 'Start exploring',
+    /**
+     * N7, the tour that waits (Viewer's design, 15 Nov): on three steps, one small thing to try.
+     * Never blocks; never acts for the visitor; a quiet hint after 20 s.
+     */
+    tryIt: {
+      barnard: 'Try it: hold Space, or press Hold to compare.',
+      barnardDone: "The ring held still; the star jumped north. That's motion.",
+      w0855: 'Try it: choose Two colours.',
+      w0855Button: 'Two colours',
+      w0855Done:
+        'In the long colour (4.4–5 µm) the light moves off the neighbour star, towards WISE 0855, which is much brighter there.',
+      sky: 'Try it: click anywhere in the sky.',
+      waitingNext: '…or press Next to keep going.',
+      waitingDone: '…or press Start exploring.',
+    },
   },
   nav: { backToSky: 'Back to the sky', home: 'Planetes: back to the start', credits: 'Credits' },
   /** Long text: the button under a clamped line or two (src/ui/fit.ts). */
