@@ -38,6 +38,9 @@ import spherex as sx
 
 warnings.simplefilter("ignore")
 HERE = Path(__file__).parent
+# Set from the command line; both off by default (see main()).
+ALLOW_MISSING_CATALOG = False
+FORCE_OVERLAY = False
 OUT = HERE.parent / "public" / "data" / "packs" / "dr1qr3"
 SAT = 1
 REJ = 2
@@ -135,7 +138,14 @@ def write_overlay(slug, t, frames, gaia, catwise, gw, size):
                            catwise="CatWISE2020 (Marocco et al. 2021), via IRSA."),
                notes="Positions moved by proper motion only (no parallax) to each pass's mean photo time. Made during the event.")
     (DATA / "overlays").mkdir(parents=True, exist_ok=True)
-    (DATA / "overlays" / f"overlay_{slug}.json").write_text(json.dumps(doc, separators=(",", ":")))
+    path = DATA / "overlays" / f"overlay_{slug}.json"
+    # Never replace a catalogue with an empty one unless forced by hand (Physics, 15 Nov).
+    if path.exists() and not FORCE_OVERLAY:
+        old = json.loads(path.read_text().replace("NaN", "null"))
+        for name, rows in (("gaia_dr3", g), ("catwise2020", c)):
+            if not rows and old.get(name):
+                raise SystemExit(f"{slug}: {name} would go from {len(old[name])} rows to 0; overlay not written (--force-overlay to allow)")
+    path.write_text(json.dumps(doc, separators=(",", ":")))
 
 
 def write_spectrum(slug, t, spec, gaia, gw):
@@ -271,14 +281,29 @@ async def main_async(slug: str, size: int, conc: int):
     # Measurements (new, during the event): see measure.py.
     catalog, catwise = [], []
     rad = size * bp.PIX / 3600 * 0.75
+    # A catalogue service down must stop the build, never quietly become "0 rows": Gaia feeds the
+    # still-star measurements and both feed the overlay (Physics, 15 Nov; an IRSA outage emptied
+    # three overlays' CatWISE). --allow-missing-catalog goes on without them, by hand only.
     try:
         catalog = catalogs.gaia_dr3(ra, dec, rad, gmax=19.5)
     except Exception as ex:  # noqa: BLE001
-        print("gaia skipped", repr(ex)[:100])
+        if not ALLOW_MISSING_CATALOG:
+            raise SystemExit(f"{slug}: Gaia query failed ({repr(ex)[:120]}); stopped before writing anything")
+        print("gaia skipped (allowed by hand)", repr(ex)[:100])
     try:
         catwise = catalogs.catwise2020(ra, dec, rad, w2max=17.0)
     except Exception as ex:  # noqa: BLE001
-        print("catwise skipped", repr(ex)[:100])
+        if not ALLOW_MISSING_CATALOG:
+            raise SystemExit(f"{slug}: CatWISE query failed ({repr(ex)[:120]}); stopped before writing anything")
+        print("catwise skipped (allowed by hand)", repr(ex)[:100])
+    # An answer with no rows where the committed overlay has some is also refused, before anything
+    # is written (an empty answer can mean a half-working service).
+    old_path = DATA / "overlays" / f"overlay_{slug}.json"
+    if old_path.exists() and not FORCE_OVERLAY:
+        old = json.loads(old_path.read_text().replace("NaN", "null"))
+        for name, rows in (("gaia_dr3", catalog), ("catwise2020", catwise)):
+            if not rows and old.get(name):
+                raise SystemExit(f"{slug}: {name} answered 0 rows (the overlay has {len(old[name])}); stopped before writing anything (--force-overlay to allow)")
     meas = measure.measure_target(t, frames, arrays, stacks, out, gw, size, catalog, spec)
     (out / "measurements.json").write_text(json.dumps(meas, indent=1))
     write_spectrum(slug, t, spec, catalog, gw)
@@ -306,7 +331,13 @@ def main():
     ap.add_argument("slug")
     ap.add_argument("--size", type=int, default=64)
     ap.add_argument("--conc", type=int, default=20)
+    ap.add_argument("--allow-missing-catalog", action="store_true",
+                    help="go on when Gaia or CatWISE can't be reached (by hand only)")
+    ap.add_argument("--force-overlay", action="store_true",
+                    help="write an overlay even if a catalogue goes to 0 rows (by hand only)")
     a = ap.parse_args()
+    global ALLOW_MISSING_CATALOG, FORCE_OVERLAY
+    ALLOW_MISSING_CATALOG, FORCE_OVERLAY = a.allow_missing_catalog, a.force_overlay
     asyncio.run(main_async(a.slug, a.size, a.conc))
 
 
