@@ -855,11 +855,17 @@ export class SkyView {
    * shows (riding, stepping out), so the stars stay registered with them; eased between.
    */
   #stereoK = 1;
+  /** The current change of projection: a fixed 400 ms ease-in-out from its start (Viewer). */
+  #stereoEase = { from: 1, to: 1, t0: 0 };
   #stepStereo(): void {
     const target =
       this.#entry === 'inside' && !this.#riding && this.#near <= 0 && this.#nearGoal <= 0 ? 1 : 0;
-    const k = this.#stereoK + (target - this.#stereoK) * 0.25;
-    this.#stereoK = Math.abs(k - target) < 0.01 ? target : k;
+    const now = performance.now();
+    if (target !== this.#stereoEase.to)
+      this.#stereoEase = { from: this.#stereoK, to: target, t0: now };
+    const k = Math.min(1, (now - this.#stereoEase.t0) / 400);
+    const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    this.#stereoK = this.#stereoEase.from + (this.#stereoEase.to - this.#stereoEase.from) * e;
   }
 
   #drawFrame(): void {
@@ -930,6 +936,10 @@ export class SkyView {
     if (this.marks) {
       for (const { name, p } of named) {
         const box = { x: p.x + 7 * u, y: p.y, w: ctx.measureText(name).width, h: 14 * u };
+        // Not cut off at the screen's edges (the wide view reaches them now; Viewer).
+        const edge = 12 * u;
+        if (box.x < edge || box.y < edge || box.x + box.w > w - edge || box.y + box.h > h - edge)
+          continue;
         if (this.#taken.some((q) => overlaps(q, box))) continue;
         this.#taken.push(box);
         ctx.fillText(name, box.x, p.y + 12 * u);

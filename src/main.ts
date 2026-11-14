@@ -4814,6 +4814,8 @@ function markKey(kind: 'sky' | 'motion' | 'status' | 'look' | 'watch'): HTMLElem
 function renderBand(): void {
   drawBand();
   fitText(band);
+  // The band's height changes (rows arrive, a typed row): the sky's quiet zones follow it.
+  requestAnimationFrame(refocus);
 }
 
 function drawBand(): void {
