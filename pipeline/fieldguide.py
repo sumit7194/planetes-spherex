@@ -406,6 +406,9 @@ def confirm() -> None:
 
 
 SATURATION = ("OVERFLOW", "NONLINEAR", "BLOOM")
+# HALO is the files' "transient halo" flag (around cosmic-ray hits), so it is not excluded unless
+# Physics decides otherwise (the header says so; found 15 Nov when excluding it removed every hit).
+HALO_EXCLUDES = False
 BARNARD = (269.4463, 4.7682)  # its 2026 place; boxes were cut around it
 
 
@@ -811,7 +814,7 @@ def repick() -> None:
                 hits.append(dict(rec, gaia=dict(id=g["id"], G=g["mag"], ra=g["ra"], dec=g["dec"],
                                                pmra=g["pmra"], pmdec=g["pmdec"], epoch=g["epoch"],
                                                sep_px=g["sep_px"])))
-            elif not (r["touches"]["badpx"] or r["touches"]["halo"] or r["touches"]["near_sat"]):
+            elif not (r["touches"]["badpx"] or r["touches"]["near_sat"] or (HALO_EXCLUDES and r["touches"]["halo"])):
                 # Cosmic ray: no SOURCE, no NONFUNC/HOT pixel, no Gaia star (Physics' re-pick).
                 cosmic.append(rec)
         if i % 3000 == 0:
