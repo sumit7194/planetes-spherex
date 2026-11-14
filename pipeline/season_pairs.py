@@ -7,7 +7,9 @@ the five targets' packs), for each pair of seasons:
      5 robust sigma, away from edges, not saturated or flagged).
   2. Fit each source's position (2-D Gaussian on a 7 x 7 box, free background) in each season's
      stack, per detector.
-  3. Remove the common shift (the median of all sources' shifts: pointing or registration).
+  3. Remove the common shift per detector: the median shift of sources matched to Gaia stars
+     moving < 50 mas/yr (Physics: so a crowd of real movers can't bias it; all sources if fewer
+     than 3 match). The removed shift is reported per detector.
   4. Sources inside a bright star's glare (a saturated blob of >= 6 px; radius 3*sqrt(area),
      6-16 px) are vetoed:
      a bright mover's moving halo drags a faint neighbour's fitted position along with it (seen
@@ -96,6 +98,22 @@ def fit(img: np.ndarray, x0: float, y0: float, r=3):
     return xi + res.x[1], yi + res.x[2]
 
 
+def quiet_gaia(slug: str, n: int, season: int):
+    """Grid pixels of Gaia stars moving < 50 mas/yr at a season's mean epoch (overlay file)."""
+    path = Path(__file__).parent.parent / "public" / "data" / "overlays" / f"overlay_{slug}.json"
+    if not path.exists():
+        return []
+    d = json.loads(path.read_text().replace("NaN", "null"))
+    c = (n - 1) / 2
+    out = []
+    for r in d.get("gaia_dr3", []):
+        pm = np.hypot(r.get("pmra_mas_yr") or 0, r.get("pmdec_mas_yr") or 0)
+        at = r.get("at_season", {}).get(str(season))
+        if at and pm < 50 and not r.get("target"):
+            out.append((c - at[2] / PIX, c + at[3] / PIX))
+    return out
+
+
 def search(slug: str):
     m, stacks = load(slug)
     n = m["grid"]["size"]
@@ -118,6 +136,8 @@ def search(slug: str):
         return any(3 < np.hypot(x - bx, y - by) < r for bx, by, r in blobs)
 
     vetoed = sum(1 for x, y, _ in srcs if in_glare(x, y))
+    yy_g, xx_g = np.mgrid[0:n, 0:n]
+    not_searched = float(np.mean([in_glare(x, y) or sat_any[y, x] for y, x in zip(yy_g.ravel(), xx_g.ravel())]))
     srcs = [s_ for s_ in srcs if not in_glare(s_[0], s_[1])]
     c = (n - 1) / 2
     out = []
@@ -135,12 +155,17 @@ def search(slug: str):
                     per.setdefault(i, {})[d] = (pb[0] - pa[0], pb[1] - pa[1])
         if not per:
             continue
-        # common shift per detector, then each source's residual shift
+        # common shift per detector, from Gaia-quiet stars, then each source's residual shift
+        quiet = quiet_gaia(slug, n, a)
+        is_quiet = {i for i, (x, y, _) in enumerate(srcs) if any(np.hypot(x - qx, y - qy) < 1.5 for qx, qy in quiet)}
+        removed = {}
         for d in dets:
-            v = np.array([s[d] for s in per.values() if d in s])
+            vq = np.array([s[d] for i, s in per.items() if d in s and i in is_quiet])
+            v = vq if len(vq) >= 3 else np.array([s[d] for s in per.values() if d in s])
             if len(v) < 3:
                 continue
             common = np.median(v, axis=0)
+            removed[d] = dict(px=[round(float(common[0]), 3), round(float(common[1]), 3)], fromGaiaQuiet=len(vq) >= 3, n=len(v))
             for s in per.values():
                 if d in s:
                     s[d] = (s[d][0] - common[0], s[d][1] - common[1])
@@ -162,7 +187,8 @@ def search(slug: str):
                                   detectors=len(per[i]), significance=round(mag / sig, 1), peak=round(float(peak), 2)))
         cands.sort(key=lambda r: -r["significance"])
         target = next((k for k, r in enumerate(cands) if r["fromCentrePx"] < 3), None)
-        out.append(dict(seasons=[a, b], years=round(dt, 2), sources=len(srcs), glareVetoed=vetoed, measured=len(mean),
+        out.append(dict(seasons=[a, b], years=round(dt, 2), sources=len(srcs), glareVetoed=vetoed,
+                        notSearchedFraction=round(not_searched, 3), commonShiftRemoved=removed, measured=len(mean),
                         steadyScatterPx=round(float(sig), 3), candidates=cands[:8],
                         targetRank=None if target is None else target + 1, nCandidates=len(cands)))
     return out
@@ -178,7 +204,7 @@ def main():
         for r in res[slug]:
             top = r["candidates"][0] if r["candidates"] else None
             print(f"{slug:9s} seasons {r['seasons']} ({r['years']} yr): {r['sources']} sources, {r['measured']} measured, "
-                  f"glare-vetoed {r['glareVetoed']}, steady scatter {r['steadyScatterPx']} px, {r['nCandidates']} candidates; target rank {r['targetRank']}; "
+                  f"glare-vetoed {r['glareVetoed']} (not searched {r['notSearchedFraction']:.0%}), common shift from Gaia-quiet {sum(v['fromGaiaQuiet'] for v in r['commonShiftRemoved'].values())}/{len(r['commonShiftRemoved'])} dets, max {max([abs(x) for v in r['commonShiftRemoved'].values() for x in v['px']] or [0]):.3f} px, steady scatter {r['steadyScatterPx']} px, {r['nCandidates']} candidates; target rank {r['targetRank']}; "
                   f"top {top and (top['fromCentrePx'], top['shiftPx'], top['arcsecPerYr'], top['significance'])}")
     Path(a.out).write_text(json.dumps(res, indent=1))
 
