@@ -477,6 +477,8 @@ export const copy = {
       whyShortest: (range: string) =>
         `Shown at ${range}: nothing clear sits at your spot, so this is the shortest colour with a fair pair. Pick another colour to look.`,
       whyChosen: (range: string) => `Shown at ${range}, as chosen.`,
+      whySaturated: (range: string) =>
+        `Shown at ${range}: the star at your spot is so bright it saturates SPHEREx's detector in every colour, so no colour can be scored; this is the shortest colour with a fair pair. Pick another colour to look.`,
       unavailable: (range: string) => `There's no fair pair at ${range} here.`,
       cold: 'Cold objects such as brown dwarfs show best at 3–5 µm.',
       /** Physics' blend line (14 Nov): text only, never changes the colour picked. */
@@ -852,6 +854,9 @@ export const copy = {
     copied: 'Link copied',
     openFull: 'Open in Planetes',
     aladin: 'Open in Aladin Lite',
+    wiseview: 'Open in WiseView',
+    wiseviewTitle:
+      "The same spot in WISE's photos from 2010 on (WiseView, Backyard Worlds): a longer span of years than SPHEREx's",
   },
   /** Catalogue overlays (checklist C6), from Physics' overlay files: catalogue, not SPHEREx. */
   overlay: {
@@ -1146,6 +1151,27 @@ export const copy = {
         source:
           "Gaia DR3 (ESA), fetched one sky patch at a time through our helper from ESA's Gaia archive and kept near you for next time; only the patch's number is sent",
         terms: 'Labelled as Gaia, not SPHEREx',
+      },
+      {
+        what: 'This spot in WISE photos',
+        source:
+          "WiseView (Backyard Worlds), the tool the challenge names as a model: WISE's photos from 2010 on, a longer span than SPHEREx's. Linked from each look; only the position is sent.",
+        terms: 'Linked, not embedded',
+        link: 'http://byw.tools/wiseview',
+      },
+      {
+        what: 'Explore SPHEREx yourself',
+        source:
+          "IRSA's SPHEREx Data Explorer (search, cutouts, its own spectrum tool), the Moving Object Search Tool for asteroids, and IRSA's SPHEREx tutorial notebooks for reading these files in Python",
+        terms: 'NASA/IPAC IRSA',
+        link: 'https://caltech-ipac.github.io/irsa-tutorials/spherex/',
+      },
+      {
+        what: "Canada's NEOSSat (not used here)",
+        source:
+          "The Canadian Space Agency's NEOSSat watches asteroids and near-Earth space; its photos are in the Canadian Astronomy Data Centre (CADC), with a Python tutorial. Planetes doesn't use them yet: CADC's search didn't answer when we tried during the event.",
+        terms: 'CSA open data',
+        link: 'https://data.asc-csa.gc.ca/dataset/neossat',
       },
       {
         what: 'Star names',

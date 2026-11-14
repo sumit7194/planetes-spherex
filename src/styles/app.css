@@ -3214,3 +3214,8 @@ span[data-fit='1'] {
     transition: none;
   }
 }
+
+/* Aladin and WiseView sit in the actions row as two plain links. */
+.out-links {
+  display: contents;
+}

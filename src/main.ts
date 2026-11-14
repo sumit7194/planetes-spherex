@@ -2406,6 +2406,8 @@ interface LookColour {
   fullyChecked: Set<Detector>;
   /** The colour being checked photo by photo just now (its button says so). */
   checking: Detector | null;
+  /** Every scored colour's aperture was saturated: too bright to score, not "nothing there". */
+  saturated: boolean;
   /** Physics' blend check: the nearest Gaia star (G < 19) within 2 px; undefined until Gaia answers. */
   blend?: { g: number; sepArcsec: number } | null | undefined;
 }
@@ -2430,6 +2432,7 @@ async function chooseColour(
   let pairs = pairDetectors(probed.candidates, probed.meta);
   const sn = new Map<Detector, number | null>(scored);
   const fully = new Set(checked);
+  const saturatedIn = new Set<Detector>();
   // Known stars near the spot (Physics' blend check): asked now, answered whenever; it changes
   // only the words, never the colour shown.
   const gaia = gaiaNear(look.at, 15, look.abort.signal).catch(() => null);
@@ -2452,6 +2455,7 @@ async function chooseColour(
     const grid = lookGrid();
     await Promise.all(
       pairs.map(async (d) => {
+        if (sn.has(d)) return;
         const p = planCandidates(probed.candidates, probed.meta, d);
         if (p.kind !== 'pair') return;
         const frames = await Promise.all(
@@ -2463,6 +2467,9 @@ async function chooseColour(
         );
         const each = frames.map((f) => {
           const m = f ? apertureFlux(f.tile) : null;
+          // A saturated core is blank in the photo, so the aperture gives no number at all:
+          // read the saturation flag on the centre pixels themselves.
+          if (f && centreSaturated(f.tile)) saturatedIn.add(d);
           // A flagged or saturated aperture isn't a fair score: that colour is left out.
           return m && !m.flagged && m.sigma > 0 ? m.flux / m.sigma : null;
         });
@@ -2483,6 +2490,7 @@ async function chooseColour(
     unavailable: wanted && !pairs.includes(wanted) ? wanted : null,
     fullyChecked: fully,
     checking: null,
+    saturated: why === 'shortest' && pairs.length > 0 && pairs.every((d) => saturatedIn.has(d)),
   };
   const colour = look.colour;
   const year = 2000 + ((shown.pair.a.mjd + shown.pair.b.mjd) / 2 - 51544.5) / 365.25;
@@ -2529,6 +2537,17 @@ async function checkColourFully(look: LiveLook, d: Detector): Promise<boolean> {
   // "Every photo checked" only if every check answered: a busy helper mustn't make "no fair
   // pair" look final.
   return failed === 0 && live === look;
+}
+
+/** Whether any pixel within 2.5 px of a tile's centre is flagged saturated. */
+function centreSaturated(tile: Tile): boolean {
+  const n = tile.size;
+  const c = (n - 1) / 2;
+  for (let y = Math.floor(c - 2.5); y <= Math.ceil(c + 2.5); y++)
+    for (let x = Math.floor(c - 2.5); x <= Math.ceil(c + 2.5); x++)
+      if (Math.hypot(x - c, y - c) <= 2.5 && (tile.flags[y * n + x] ?? 0) & FlagMask.saturated)
+        return true;
+  return false;
 }
 
 /** The colour the keyboard should land on once the row is rebuilt (0: none). */
@@ -2629,7 +2648,9 @@ function colourRow(look: LiveLook): HTMLElement | null {
       ? t.whyChosen(rangeText(c.chosen))
       : c.why === 'clearest'
         ? t.whyClearest(rangeText(c.chosen))
-        : t.whyShortest(rangeText(c.chosen));
+        : c.saturated
+          ? t.whySaturated(rangeText(c.chosen))
+          : t.whyShortest(rangeText(c.chosen));
   return h(
     'div',
     { class: 'colour-choice' },
@@ -5349,11 +5370,26 @@ function copyLinkButton(): HTMLElement {
 function aladinLink(at: { ra: number; dec: number }): HTMLElement {
   const target = `${at.ra.toFixed(5)} ${at.dec >= 0 ? '+' : ''}${at.dec.toFixed(5)}`;
   const url = `https://aladin.cds.unistra.fr/AladinLite/?target=${encodeURIComponent(target)}&fov=0.25`;
-  return h(
+  const aladin = h(
     'a',
     { class: 'quiet-link', href: url, target: '_blank', rel: 'noopener' },
     copy.share.aladin,
   );
+  // WiseView (the challenge's model): WISE's own photos of the same spot from 2010 on, a longer
+  // time span than SPHEREx's, which shows slow movers better. It reads #ra=&dec= and fills the
+  // rest with its defaults; only the position is sent.
+  const wise = h(
+    'a',
+    {
+      class: 'quiet-link',
+      href: `http://byw.tools/wiseview#ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&size=176`,
+      target: '_blank',
+      rel: 'noopener',
+      title: copy.share.wiseviewTitle,
+    },
+    copy.share.wiseview,
+  );
+  return h('span', { class: 'out-links' }, aladin, wise);
 }
 
 /** "RA 17h 57m 48s, Dec +4° 41′ 00″" for the eyebrow: the same format as the echo and readout. */
