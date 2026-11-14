@@ -100,12 +100,18 @@ export function photoCounts(basis: string[]): number[] {
 
 /** A short name for a prediction's source: "Gaia DR3 proper motion + parallax", say. */
 export function predictionLabel(source: string): string {
+  const px = /parallax/i.test(source) ? ' + parallax' : '';
+  // ε Indi B isn't in Gaia: its prediction is ε Indi A's motion, which B shares (Viewer, 14 Nov).
+  if (/Gaia DR3/i.test(source) && /Indi A|shared motion/i.test(source))
+    return `Gaia DR3 motion of ε Indi A (which B shares)${px}`;
   const catalogue = /CatWISE/i.test(source)
     ? 'CatWISE2020'
     : /Gaia DR3/i.test(source)
       ? 'Gaia DR3'
-      : 'catalogue';
-  return `${catalogue} proper motion${/parallax/i.test(source) ? ' + parallax' : ''}`;
+      : /Luhman\s*&\s*Esplin\s*2016/i.test(source)
+        ? 'Luhman & Esplin 2016'
+        : 'catalogue';
+  return `${catalogue} proper motion${px}`;
 }
 
 /** Seasons that have an all-colour stack, in order (0, 1, 2 for a three-pass pack). */

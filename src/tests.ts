@@ -91,34 +91,44 @@ function fiveRow(id: TargetId, pack: LoadedPack | null): HTMLElement {
         'div',
         { class: 'test-name' },
         h('h3', {}, copy.wanderers[id].name),
-        // The challenge's words, unless they're just the name again.
-        f.quote.replace(/[’']/g, "'") === copy.wanderers[id].name.replace(/[’']/g, "'")
-          ? null
-          : h('q', {}, f.quote),
+        // The challenge's own words only where they add meaning (ε Indi B's "a pair…").
+        f.quote ? h('q', {}, f.quote) : null,
+        h('p', { class: 'hard' }, f.hard),
+        h(
+          'p',
+          { class: 'links' },
+          h('a', { href: `./?target=${id}` }, t.open),
+          h('a', { href: `./?entry=inside&at=${at}` }, t.tryLive),
+        ),
       ),
       h('div', { class: 'cell', 'data-label': t.columns.seen }, t.seen[eye] ?? ''),
       h(
         'div',
         { class: 'cell', 'data-label': t.columns.measured },
         h('span', { class: m.done ? 'dot measured' : 'dot', 'aria-hidden': 'true' }),
-        h('span', {}, ...m.lines.map((l) => h('span', { class: 'line' }, l))),
+        h(
+          'span',
+          {},
+          ...(m.done ? m.lines : [t.notMeasuredSee]).map((l) => h('span', { class: 'line' }, l)),
+        ),
       ),
-      h('div', { class: 'cell', 'data-label': t.columns.limit }, f.limit),
-    ),
-    h(
-      'details',
-      {},
-      h('summary', {}, t.checkLabel),
-      h('p', {}, h('b', {}, `${t.hardLabel}: `), f.hard),
-      h('p', {}, h('b', {}, `${t.liveLabel}: `), f.live),
-      f.earlier ? h('p', {}, h('b', {}, `${t.earlierLabel}: `), f.earlier) : null,
       h(
-        'p',
-        { class: 'links' },
-        h('a', { href: `./?target=${id}` }, t.open),
-        h('a', { href: `./?entry=inside&at=${at}` }, t.tryLive),
+        'div',
+        { class: 'cell limit', 'data-label': t.columns.limit },
+        h(
+          'span',
+          {},
+          h('span', { class: 'line' }, f.limit),
+          h(
+            'span',
+            { class: 'line live' },
+            h('b', {}, `${CHALLENGE_AT[id] ? t.liveAtChallenge : t.liveAtCatalogue}: `),
+            f.live,
+          ),
+        ),
       ),
     ),
+    f.earlier ? h('p', { class: 'earlier' }, h('b', {}, `${t.earlierLabel}: `), f.earlier) : null,
   );
 }
 

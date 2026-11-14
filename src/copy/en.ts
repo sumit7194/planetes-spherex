@@ -850,8 +850,9 @@ export const copy = {
     },
     columns: { seen: 'Seen in the photos', measured: 'Measured', limit: 'Limit' },
     hardLabel: 'What makes it hard',
-    liveLabel: 'The live tool at the challenge’s position',
-    checkLabel: 'The check behind it',
+    liveAtChallenge: 'The live tool at the challenge’s position',
+    liveAtCatalogue: 'The live tool at its catalogue position',
+    notMeasuredSee: 'Not measured (see Limit).',
     earlierLabel: 'An earlier test',
     open: 'Open its page',
     tryLive: 'Try the live tool there',
@@ -870,10 +871,10 @@ export const copy = {
     notMeasured: (why: string) => `No: ${why}`,
     five: {
       barnard: {
-        quote: 'Barnard’s Star',
+        quote: '',
         hard: 'The fastest-moving star in the sky (about 10″ a year), and bright enough to saturate SPHEREx’s detectors.',
         limit:
-          'Its centre is saturated, so its place comes from its image as a whole; its brightness isn’t measured.',
+          'Its centre is saturated, so its place comes from its image as a whole; its brightness isn’t measured. Its east component carries a method effect of about 0.1 pixel (0.6″), beyond its quoted error (east alone: ± 2.6″).',
         live: 'Opens 361 photos in 3 passes, compared at 0.86 µm.',
       },
       'epsind-b': {
@@ -884,27 +885,26 @@ export const copy = {
         live: 'Opens 467 photos in 4 passes, compared at 0.75 µm, where brown dwarfs are faint.',
       },
       w0855: {
-        quote:
-          'WISE 0855 (a fast-moving brown dwarf Right Ascension 08h55m10.831s, declination -7d14m42.53s)',
+        quote: '',
         hard: 'One of the coldest brown dwarfs known: almost invisible at SPHEREx’s shorter wavelengths. And the position given is its 2010 place, 2.1′ from where it is now.',
         limit:
           'Its first pass (May 2025) has too few usable photos, so only the half-year pair gives a number.',
         live: 'At the challenge’s exact position: 258 photos in 3 passes, compared at 1.02 µm, where WISE 0855 is too faint to see, and the star now sits 2.1′ off-centre, at the edge of the 4′ close-up. The live tool alone doesn’t show it there; its page (and Enter in the search, which says so) uses 3–5 µm and its present place.',
       },
       'rw-aur': {
-        quote: 'variable stars RW Aurigae and R Draconis',
+        quote: '',
         hard: 'A young star whose brightness flickers, and bright enough to saturate SPHEREx.',
         limit:
-          'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light. An earlier pre-registered test on the previous release saw the same dimming but couldn’t confirm it (details in “The check behind it”).',
+          'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light. An earlier pre-registered test on the previous release saw the same dimming but couldn’t confirm it (see below).',
         live: 'Opens 335 photos in 3 passes, compared at 1.62 µm. A live look shows the photos; it doesn’t measure brightness.',
         earlier:
           'An earlier pre-registered test, on the previous data release (QR2), saw the same dimming (about 42% and 50% in two colour ranges) but could not confirm it: one range’s change was under 5 times its error, and one comparison star changed more than RW Aurigae. The new measurement uses a different check (a steady bright star measured the same way) and passes it.',
       },
       'r-dra': {
-        quote: 'variable stars RW Aurigae and R Draconis',
+        quote: '',
         hard: 'A giant star that brightens and fades over about eight months, bright enough to saturate SPHEREx, in one of the fields SPHEREx photographs most often.',
         limit:
-          'Not measured: its glare reaches the comparison stars in its field. A re-check with comparison stars farther out is running.',
+          'Its glare reaches the comparison stars in its field, which vary by 34% between passes, so the method can’t be checked here. A re-check with comparison stars farther out is running.',
         live: 'Opens 2,500 photos in 3 passes (a deep field; the look picks a few), compared at 0.82 µm. A live look doesn’t measure brightness.',
       },
     } as Record<

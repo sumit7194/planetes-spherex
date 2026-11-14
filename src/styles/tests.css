@@ -98,6 +98,27 @@
   background: var(--measured);
   border: 1.5px solid var(--measured);
 }
+.test .hard {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--quiet) !important;
+}
+.test .links {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+.test .cell .line + .line {
+  margin-top: 8px;
+}
+.test .live {
+  font-size: 13px;
+}
+.test .earlier {
+  margin: 10px 0 0;
+  font-size: 13px;
+  padding-left: 12px;
+  border-left: 2px solid var(--dusk-line);
+}
 .test details {
   margin-top: 8px;
 }

@@ -161,6 +161,14 @@ describe('what a move was measured on', () => {
       predictionLabel('Gaia DR3 4472…, proper motion propagated … plus parallax (+0.167 px)'),
     ).toBe('Gaia DR3 proper motion + parallax');
     expect(predictionLabel('CatWISE2020 proper motion')).toBe('CatWISE2020 proper motion');
+    // The packs' own sources (Viewer, 14 Nov): name the real catalogue, and never imply Gaia
+    // measured ε Indi B (it's A's motion, which B shares).
+    expect(predictionLabel('Luhman & Esplin 2016 proper motion plus parallax')).toBe(
+      'Luhman & Esplin 2016 proper motion + parallax',
+    );
+    expect(
+      predictionLabel('Gaia DR3 (Epsilon Indi A, shared motion) proper motion plus parallax'),
+    ).toBe('Gaia DR3 motion of ε Indi A (which B shares) + parallax');
   });
 });
 
