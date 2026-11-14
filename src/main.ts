@@ -607,9 +607,8 @@ let starTipSeq = 0;
 // Mouse only (touch keeps tap = look), on the sky, not during a Surprise flight.
 const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
 sky.starTipsAllowed = () => finePointer.matches && state.place.kind === 'sky' && !surpriseFlight;
-/** Hipparcos places are for J1991.25: today's place, by the star's proper motion. */
-const HIPPARCOS_EPOCH = 1991.25;
-sky.onStarTap = (at, pm) => sky.onSkyTap(placeAt(at, pm[0], pm[1], HIPPARCOS_EPOCH, NOW_YEAR));
+// Stars are moved to today when the catalogue loads, so a star's own place is today's.
+sky.onStarTap = (at) => sky.onSkyTap(at);
 sky.onStarRest = (s) => {
   const seq = ++starTipSeq;
   if (!s) {
@@ -652,7 +651,7 @@ sky.onStarRest = (s) => {
   const giveUp = window.setTimeout(() => {
     if (seq === starTipSeq && passes.textContent === t.checking) passes.remove();
   }, 1000);
-  findPhotos(placeAt(s.at, s.pm[0], s.pm[1], HIPPARCOS_EPOCH, NOW_YEAR))
+  findPhotos(s.at)
     .then((photos) => {
       if (seq !== starTipSeq) return;
       passes.textContent = photos.length ? t.passes(passesText(photos.map((p) => p.mjd))) : t.none;
@@ -666,9 +665,19 @@ sky.onStarRest = (s) => {
 
 sky.setLanterns(lanterns);
 locator.setLanterns(lanterns.map((l) => ({ ...l, label: '' })));
+/** Hipparcos places are for J1991.25. */
+const HIPPARCOS_EPOCH = 1991.25;
 void fetch(`${import.meta.env.BASE_URL}catalog/bright-stars-v9.json`)
   .then((r) => r.json() as Promise<{ stars: CatalogueStar[] }>)
   .then((c) => {
+    // Every star at today's place, once: Hipparcos places are for J1991.25, and the bright,
+    // nearby stars move most (Arcturus ~80″ since then), which shows at the close-up's 4′. The
+    // dots, figures, names, tips and clicks then all agree (Viewer, 14 Nov). The proper
+    // motions are spent here, so they're zeroed.
+    c.stars = c.stars.map(([ra, dec, v, bv, hip, pa, pd]): CatalogueStar => {
+      const p = placeAt({ ra, dec }, pa ?? 0, pd ?? 0, HIPPARCOS_EPOCH, NOW_YEAR);
+      return hip === undefined ? [p.ra, p.dec, v, bv] : [p.ra, p.dec, v, bv, hip, 0, 0];
+    });
     sky.setStars(c.stars);
     locator.setStars(c.stars);
     catalogueStars = c.stars;
