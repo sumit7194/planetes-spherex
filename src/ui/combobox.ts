@@ -42,7 +42,7 @@ export function combobox(
     active: (o: ComboOption | null) => void;
     choose: (o: ComboOption | null) => void;
     status: (n: number) => string;
-    labels: { field: string; list: string };
+    labels: { field: string; list: string; hint: string };
   },
 ): Combobox {
   const listId = `search-list-${++uid}`;
@@ -55,14 +55,16 @@ export function combobox(
   const footerEl = h('p', { class: 'combo-footer', id: `${listId}-hint` });
   const pop = h('div', { class: 'combo-pop', hidden: true }, list, footerEl);
   const live = h('p', { class: 'visually-hidden', role: 'status' });
-  const el = h('div', { class: 'combo' }, input, pop, live);
+  // The field's description, always there (the footer hint shows only while the field is empty).
+  const hint = h('p', { class: 'visually-hidden', id: `${listId}-desc` }, on.labels.hint);
+  const el = h('div', { class: 'combo' }, input, pop, live, hint);
   input.setAttribute('role', 'combobox');
   input.setAttribute('aria-autocomplete', 'list');
   input.setAttribute('aria-expanded', 'false');
   input.setAttribute('aria-controls', listId);
   // A short name; the long hint stays a description (Viewer: the title was its only name).
   input.setAttribute('aria-label', on.labels.field);
-  input.setAttribute('aria-describedby', `${listId}-hint`);
+  input.setAttribute('aria-describedby', `${listId}-desc`);
 
   let options: ComboOption[] = [];
   let active = -1;

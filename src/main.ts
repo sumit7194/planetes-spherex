@@ -1231,7 +1231,11 @@ const combo = combobox(search, {
     setTimeout(opt.go, 0);
   },
   status: copy.home.find.count,
-  labels: { field: copy.home.find.label, list: copy.home.find.results },
+  labels: {
+    field: copy.home.find.label,
+    list: copy.home.find.results,
+    hint: copy.home.find.footer,
+  },
 });
 const searchBox = combo.el;
 
