@@ -1226,6 +1226,7 @@ export class SkyView {
     colour: string,
     align: 'left' | 'center',
     priority = false,
+    halo = false,
   ): boolean {
     const ctx = this.#ctx;
     const w = ctx.measureText(text).width;
@@ -1234,8 +1235,15 @@ export class SkyView {
     if (!priority && this.#taken.some((q) => overlaps(q, box))) return false;
     if (priority) this.#reserve(box);
     else this.#taken.push(box);
-    ctx.fillStyle = colour;
     ctx.textAlign = align;
+    if (halo) {
+      // A night halo, as the lantern labels have, so small text reads over a busy map.
+      ctx.strokeStyle = rgba(this.#t.night, 0.8);
+      ctx.lineWidth = 3 * u;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(text, x, y);
+    }
+    ctx.fillStyle = colour;
     ctx.fillText(text, x, y);
     ctx.textAlign = 'left';
     return true;
@@ -1304,15 +1312,32 @@ export class SkyView {
       }
       return;
     }
-    // The flat map: hours along the equator, every 2h, and Dec along the central meridian.
-    for (let ra = 0; ra < 360; ra += 30) {
-      const p = this.project({ ra, dec: 0 });
-      if (p) this.#gridLabel(raText(ra, 3600), p.x, p.y - 3 * u, u, ink, 'center');
-    }
+    // The flat map is small and full of figure names (Viewer, 14 Nov): only seven labels, in a
+    // brighter ink with a night halo. Hours 0h, 6h, 12h, 18h on the equator (kept just inside
+    // the rim), and +60°, 0°, −60° on the central meridian (0° once, where the lines cross).
+    const strong = rgba(this.#t.mist, 0.85);
+    const a = this.#axis();
+    const half = (this.#flatSize().w * this.#flat.zoom) / 2;
     const mid = this.#flat.pan + 180;
-    for (const dec of [-60, -30, 30, 60]) {
+    for (const dec of [60, 0, -60]) {
       const p = this.project({ ra: mid, dec });
-      if (p) this.#gridLabel(decText(dec, 3600), p.x + 3 * u, p.y - 3 * u, u, ink, 'left');
+      if (p)
+        this.#gridLabel(
+          decText(dec, 3600),
+          p.x + 4 * u,
+          p.y - 4 * u,
+          u,
+          strong,
+          'left',
+          false,
+          true,
+        );
+    }
+    for (const ra of [0, 90, 180, 270]) {
+      const p = this.project({ ra, dec: 0 });
+      if (!p) continue;
+      const x = Math.max(a.x - half + 18 * u, Math.min(a.x + half - 18 * u, p.x));
+      this.#gridLabel(raText(ra, 3600), x, p.y + 14 * u, u, strong, 'center', false, true);
     }
   }
 
