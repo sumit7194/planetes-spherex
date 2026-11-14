@@ -399,16 +399,23 @@ export class SkyView {
     // size is 3.4 r wide (#flatSize), so r is set from the width it should have.
     if (this.#entry === 'flat' && this.#focus && this.#quiet.length) {
       const dpr = w / Math.max(1, this.canvas.getBoundingClientRect().width);
-      let top = 0;
-      let bottom = h;
-      for (const q of this.#quiet) {
-        if (q.y + q.h < h * 0.25) top = Math.max(top, q.y + q.h);
-        else if (q.y > h * 0.6 && q.w > w * 0.5) bottom = Math.min(bottom, q.y);
-      }
+      const { top, bottom } = this.#flatFrame();
       const width = Math.min(w - 48 * dpr, 2 * (bottom - top) - 24 * dpr);
       return { x: w / 2, y: (top + bottom) / 2, r: width / 3.4 };
     }
     return this.#focus ?? { x: w / 2, y: h / 2, r: Math.min(w, h) / 2 };
+  }
+
+  /** The canvas between the page's header and its band: where the flat map can be seen. */
+  #flatFrame(): { left: number; right: number; top: number; bottom: number } {
+    const { width: w, height: h } = this.canvas;
+    let top = 0;
+    let bottom = h;
+    for (const q of this.#quiet) {
+      if (q.y + q.h < h * 0.25) top = Math.max(top, q.y + q.h);
+      else if (q.y > h * 0.6 && q.w > w * 0.5) bottom = Math.min(bottom, q.y);
+    }
+    return { left: 0, right: w, top, bottom };
   }
 
   setLanterns(lanterns: Lantern[]): void {
@@ -1016,7 +1023,15 @@ export class SkyView {
     // Inside, they're the lowest priority: after every other label has its place.
     if (inside) this.#gridLabels(u);
     if (detail) this.#aim(u);
-    if (this.#entry === 'flat') this.#featherFlat();
+    if (this.#entry === 'flat') {
+      this.#featherFlat();
+      // The edge labels sit on the feathered rim: their places were taken early (names give
+      // way to them), their text is drawn after the feather so it isn't faded with the rim.
+      const late = this.#lateLabels;
+      this.#lateLabels = [];
+      this.#ctx.font = `${11 * u}px ${this.#fontSans}`;
+      for (const l of late) this.#gridLabel(l.text, l.x, l.y, u, l.ink, l.align, true, true);
+    }
   }
 
   /**
@@ -1381,8 +1396,8 @@ export class SkyView {
   /**
    * Labels for the grid (Sumit, 14 Nov: "what's the point of the grid lines if there are no
    * markers?"). Inside the sky: Dec on the open sky's left edge, RA (hours) just above the band,
-   * a few each, never over the page or another label. On the flat map: RA along the equator and
-   * Dec along the central meridian, small and inside the map.
+   * a few each, never over the page or another label. On the flat map: the same, on the map's
+   * edges (#flatEdgeLabels).
    */
   #gridLabels(u: number): void {
     if (!this.marks) return;
@@ -1471,34 +1486,76 @@ export class SkyView {
           );
       }
     }
-    // The flat map is small and full of figure names (Viewer, 14 Nov): only seven labels, in a
-    // brighter ink with a night halo. Hours 0h, 6h, 12h, 18h on the equator (kept just inside
-    // the rim), and +60°, 0°, −60° on the central meridian (0° once, where the lines cross).
-    const strong = rgba(this.#t.mist, 0.85);
-    const a = this.#axis();
-    const half = (this.#flatSize().w * this.#flat.zoom) / 2;
-    const mid = this.#flat.pan + 180;
-    for (const dec of [60, 0, -60]) {
-      const p = this.project({ ra: mid, dec });
-      if (p)
-        this.#gridLabel(
-          decText(dec, 3600),
-          p.x + 4 * u,
-          p.y - 4 * u,
-          u,
-          strong,
-          'left',
-          false,
-          true,
-        );
+    // On the edges, as a world map is labelled (Sumit, 14 Nov: "why not at edges?"); the map
+    // now fills the page, so the centre-line labels it had when small only sat in the way.
+    // Dec where each parallel first meets the left of what's visible, RA where each meridian
+    // meets the bottom: the map's own rim at full size, the screen's edge once zoomed in (as
+    // the inside view does). Brighter ink with a night halo, over the feathered rim.
+    this.#flatEdgeLabels(u, rgba(this.#t.mist, 0.85));
+  }
+
+  #flatEdgeLabels(u: number, ink: string): void {
+    const f = this.#flatFrame();
+    const pad = 6 * u;
+    const fr = {
+      left: f.left + pad,
+      right: f.right - pad,
+      top: f.top + 14 * u,
+      bottom: f.bottom - pad,
+    };
+    const seen = (p: { x: number; y: number }) =>
+      p.x >= fr.left && p.x <= fr.right && p.y >= fr.top && p.y <= fr.bottom;
+    // The first visible point along a line (t from 0 to 1), refined by halving between samples.
+    const first = (at: (t: number) => { x: number; y: number }, n: number) => {
+      let prev = 0;
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        if (!seen(at(t))) {
+          prev = t;
+          continue;
+        }
+        if (i === 0) return at(0);
+        let lo = prev;
+        let hi = t;
+        for (let k = 0; k < 12; k++) {
+          const m = (lo + hi) / 2;
+          if (seen(at(m))) hi = m;
+          else lo = m;
+        }
+        return at(hi);
+      }
+      return null;
+    };
+    const { pan } = this.#flat;
+    const placedY: number[] = [];
+    for (const dec of [60, 30, 0, -30, -60]) {
+      // From the map's left rim (λ = +180°) rightwards; `side` keeps the rim on the left.
+      const p = first((t) => {
+        const lambda = 180 - 360 * t;
+        return this.#flatPoint({ ra: pan + 180 + lambda, dec }, lambda >= 0 ? 1 : -1);
+      }, 360);
+      if (!p || placedY.some((y) => Math.abs(y - p.y) < 18 * u)) continue;
+      const text = decText(dec, 3600);
+      const w = this.#ctx.measureText(text).width;
+      this.#taken.push({ x: p.x + 4 * u, y: p.y - 14 * u, w, h: 14 * u });
+      this.#lateLabels.push({ text, x: p.x + 4 * u, y: p.y - 3 * u, ink, align: 'left' });
+      placedY.push(p.y);
     }
-    for (const ra of [0, 90, 180, 270]) {
-      const p = this.project({ ra, dec: 0 });
+    const placed: Box[] = [];
+    for (let ra = 0; ra < 360; ra += 30) {
+      // From the south pole upwards.
+      const p = first((t) => this.#flatPoint({ ra, dec: -90 + 180 * t }), 180);
       if (!p) continue;
-      const x = Math.max(a.x - half + 18 * u, Math.min(a.x + half - 18 * u, p.x));
-      this.#gridLabel(raText(ra, 3600), x, p.y + 14 * u, u, strong, 'center', false, true);
+      const text = raText(ra, 3600);
+      const w = this.#ctx.measureText(text).width;
+      const box = { x: p.x - w / 2 - 6 * u, y: p.y - 18 * u, w: w + 12 * u, h: 16 * u };
+      if (placed.some((q) => overlaps(q, box))) continue;
+      this.#taken.push({ x: p.x - w / 2, y: p.y - 16 * u, w, h: 14 * u });
+      this.#lateLabels.push({ text, x: p.x, y: p.y - 5 * u, ink, align: 'center' });
+      placed.push(box);
     }
   }
+  #lateLabels: { text: string; x: number; y: number; ink: string; align: 'left' | 'center' }[] = [];
 
   /** Under the caption: where the aim is, as the search box would take it. */
   #centreReadout(u: number, y: number): void {
@@ -2602,9 +2659,19 @@ export class SkyView {
    */
   #focusWeight(p: { x: number; y: number }): number {
     const a = this.#axis();
+    const f = this.#pointerFocus;
+    if (this.#entry === 'flat') {
+      // The flat map shows the whole sky at once, so a wide disc lit most of it (Sumit, 14 Nov:
+      // "too crowded"). Figures follow the mouse in a small disc (a figure shows when its middle
+      // is within ~27° at full size, less when zoomed in); the map's centre means nothing here, so its
+      // disc only stands in when there's no mouse (touch), and gives way as the mouse arrives.
+      const r = a.r * 0.5;
+      const centre = (1 - f.a) * (1 - smooth((Math.hypot(p.x - a.x, p.y - a.y) / r - 0.45) / 0.55));
+      const pointer = f.a * (1 - smooth((Math.hypot(p.x - f.x, p.y - f.y) / r - 0.3) / 0.45));
+      return Math.max(centre, pointer);
+    }
     const r = this.#entry === 'inside' ? a.r : a.r * 1.2;
     const centre = 1 - smooth((Math.hypot(p.x - a.x, p.y - a.y) / r - 0.45) / 0.55);
-    const f = this.#pointerFocus;
     const pointer = f.a * (1 - smooth((Math.hypot(p.x - f.x, p.y - f.y) / r - 0.22) / 0.3));
     return Math.max(centre, pointer);
   }
