@@ -200,25 +200,38 @@ def measure_at(row: dict, ra: float, dec: float) -> dict | None:
                 off_px=math.hypot(cx - x, cy - y))
 
 
-def line_fit(pts: list[dict]) -> dict:
-    """Straight line in time to the positions (arcsec, tangent plane at the first point), with errors
-    from the scatter (at least the 0.25 px floor per position, Physics)."""
-    ra0, dec0 = pts[0]["ra"], pts[0]["dec"]
-    t = np.array([p["mjd"] for p in pts]) * 24  # hours
-    t = t - t.mean()
-    X = np.array([(p["ra"] - ra0) * math.cos(math.radians(dec0)) * 3600 for p in pts])
-    Y = np.array([(p["dec"] - dec0) * 3600 for p in pts])
-    A = np.vstack([np.ones_like(t), t]).T
-    out = {}
-    for name, v in (("x", X), ("y", Y)):
-        coef, *_ = np.linalg.lstsq(A, v, rcond=None)
-        resid = v - A @ coef
-        dof = max(len(v) - 2, 1)
-        s = max(float(np.sqrt((resid ** 2).sum() / dof)), 0.25 * PIX)
-        cov = s ** 2 * np.linalg.inv(A.T @ A)
-        out[name] = (float(coef[1]), float(math.sqrt(cov[1, 1])))
-    return dict(rate_x=out["x"][0], err_x=out["x"][1], rate_y=out["y"][0], err_y=out["y"][1],
-                span_h=float(t.max() - t.min()))
+def tangent(ra: float, dec: float, ra0: float, dec0: float) -> np.ndarray:
+    """Arcsec east and north of (ra0, dec0) (small fields)."""
+    return np.array([((ra - ra0 + 540) % 360 - 180) * math.cos(math.radians(dec0)) * 3600, (dec - dec0) * 3600])
+
+
+def motion(pts: list[dict], cap_arcsec: float) -> dict:
+    """The amended motion test (PLAN.md, 15 Nov): measured positions against SkyBoT's corrected
+    place at each photo's own time, after one shared offset capped at SkyBoT's 1-sigma error."""
+    ra0, dec0 = pts[0]["pred_ra"], pts[0]["pred_dec"]
+    meas = np.array([tangent(p["ra"], p["dec"], ra0, dec0) for p in pts])
+    pred = np.array([tangent(p["pred_ra"], p["pred_dec"], ra0, dec0) for p in pts])
+    res = meas - pred
+    off = res.mean(axis=0)
+    n_off = float(np.linalg.norm(off))
+    used = off if n_off <= cap_arcsec else off * cap_arcsec / n_off
+    after = res - used
+    sigma = max(0.25 * PIX, float(np.sqrt((after ** 2).sum(axis=1).mean() / 2)))
+    agree = bool(np.all(np.linalg.norm(after, axis=1) <= 3 * sigma))
+    vis = np.array([p["obs"].rsplit("_", 1)[0] for p in pts])
+    first = vis == vis[np.argmin([p["mjd"] for p in pts])]
+    D = meas[~first].mean(axis=0) - meas[first].mean(axis=0)
+    Dp = pred[~first].mean(axis=0) - pred[first].mean(axis=0)
+    sD = sigma * math.sqrt(1 / first.sum() + 1 / (~first).sum())
+    nonzero = float(np.linalg.norm(D) / sD)
+    ratio = float(np.linalg.norm(D) / np.linalg.norm(Dp))
+    ang = abs((math.degrees(math.atan2(D[1], D[0]) - math.atan2(Dp[1], Dp[0])) + 180) % 360 - 180)
+    ok = nonzero >= 3 and agree and abs(ratio - 1) <= 0.3 and ang <= 20
+    return dict(ok=bool(ok), offset_arcsec=[round(float(x), 2) for x in off], offset_used=[round(float(x), 2) for x in used],
+                cap_arcsec=cap_arcsec, sigma_arcsec=round(sigma, 2),
+                worst_residual_sigma=round(float(np.linalg.norm(after, axis=1).max() / sigma), 2),
+                displacement_arcsec=round(float(np.linalg.norm(D)), 1), skybot_arcsec=round(float(np.linalg.norm(Dp)), 1),
+                nonzero_sigma=round(nonzero, 1), ratio=round(ratio, 3), angle_deg=round(ang, 1))
 
 
 def search() -> None:
@@ -237,17 +250,22 @@ def search() -> None:
                 for o in sb.get(key, []):
                     n = NUM_(o)
                     if n and V_(o) <= VMAX and not str(o.get("Class", "")).startswith("NEA"):
-                        objs.setdefault(n, (o, bucket(r["mjd"])))
-            for n, (o, t0) in objs.items():
+                        objs.setdefault(n, {})[bucket(r["mjd"])] = o
+            for n, recs in objs.items():
+                # Each photo uses SkyBoT's answer for its own quarter-day bucket where there is one.
+                def pr(r, recs=recs):
+                    t0 = min(recs, key=lambda t: abs(t - r["mjd"]))
+                    return predicted(recs[t0], t0, r)
+                o = next(iter(recs.values()))
                 counts["numbered V<=18 in a revisited field"] += 1
-                p0, p1 = predicted(o, t0, photos[0]), predicted(o, t0, photos[-1])
+                p0, p1 = pr(photos[0]), pr(photos[-1])
                 move = fg.sep_deg(*p0, *p1) * 3600 / PIX
                 if move < MIN_MOVE_PX:
                     continue
                 counts[f"moves >= {MIN_MOVE_PX} px between the visits"] += 1
                 pts, gone = [], []
                 for r in photos:
-                    pra, pdec = predicted(o, t0, r)
+                    pra, pdec = pr(r)
                     m = measure_at(r, pra, pdec)
                     if m and m["sn"] >= SN_MIN and m["off_px"] <= MATCH_PX and m["profile"] >= 3:
                         pts.append(dict(m, pred_ra=pra, pred_dec=pdec))
@@ -262,40 +280,32 @@ def search() -> None:
                 if stars:
                     continue
                 counts["no Gaia star within 2 px"] += 1
-                # Moved, not a star: each measured place is empty in the other visit's photos.
+                # Moved, not a star: each measured place is empty in the other visit's photos. Only
+                # measurable photos (FIT_REJECT masked, >= 5 of 9 usable) count as a check.
                 for p in pts:
                     other = [r for r in photos if r["obs"].rsplit("_", 1)[0] != p["obs"].rsplit("_", 1)[0]]
-                    ms = [measure_at(r, p["ra"], p["dec"]) for r in other]
-                    gone.append(all(m_ is None or m_["sn"] < SN_GONE for m_ in ms) and any(m_ for m_ in ms))
+                    ms = [m_ for m_ in (measure_at(r, p["ra"], p["dec"]) for r in other) if m_]
+                    gone.append(bool(ms) and all(m_["sn"] < SN_GONE for m_ in ms))
                 if not all(gone):
+                    near.append(dict(num=n, name=o.get("Name"), V=V_(o), failed="not empty in the other visit"))
                     continue
                 counts["each place empty in the other visit"] += 1
-                fit = line_fit(pts)
-                dra, ddec = DRA_(o), DDEC_(o)
-                rate = math.hypot(fit["rate_x"], fit["rate_y"])
-                err = math.hypot(fit["err_x"], fit["err_y"])
-                nonzero = rate / err
-                diff = math.hypot((fit["rate_x"] - dra) / fit["err_x"], (fit["rate_y"] - ddec) / fit["err_y"])
-                sk = math.hypot(dra, ddec)
-                ang = abs((math.degrees(math.atan2(fit["rate_y"], fit["rate_x"]) - math.atan2(ddec, dra) * 180 / math.pi
-                           + 180) % 360 - 180))
-                ok = nonzero >= 3 and diff <= 3 * math.sqrt(2) and abs(rate - sk) / sk <= 0.3 and ang <= 20
-                rec = dict(num=n, name=o.get("Name"), V=V_(o), cls=o.get("Class"),
-                           err_arcsec=ERR_(o), field=[f["ra"], f["dec"]],
-                           visits=[a[0], b[0]], det=a[1], gap_h=round(dh, 2), move_px=round(move, 1),
-                           fit=fit, skybot_rate=[dra, ddec], nonzero_sigma=round(nonzero, 1),
-                           diff_sigma=round(diff, 2), angle_deg=round(ang, 1), passed=ok, points=pts)
-                if ok:
-                    counts["motion: nonzero >= 3 sigma, agrees with SkyBoT"] += 1
+                cap = ERR_(o) if ERR_(o) > 0 else 1.0
+                mo = motion(pts, cap)
+                rec = dict(num=n, name=o.get("Name"), V=V_(o), cls=o.get("Class"), err_arcsec=ERR_(o),
+                           field=[f["ra"], f["dec"]], visits=[a[0], b[0]], det=a[1], gap_h=round(dh, 2),
+                           move_px=round(move, 1), motion=mo, passed=mo["ok"], points=pts)
+                if mo["ok"]:
+                    counts["motion agrees with SkyBoT (amended test)"] += 1
                     passed.append(rec)
                 else:
-                    near.append({k: rec[k] for k in ("num", "name", "V", "nonzero_sigma", "diff_sigma", "angle_deg")})
+                    near.append(dict(num=n, name=o.get("Name"), V=V_(o), failed="motion", motion=mo))
     passed.sort(key=lambda r: r["V"])
     out = dict(window_h=WINDOW_H, counts=dict(counts), passed=passed, near_misses=near[:30])
     (CACHE / "asteroid_search.json").write_text(json.dumps(out, indent=1, default=float))
     print(json.dumps(dict(counts), indent=1))
     for r in passed[:5]:
-        print(r["num"], r["name"], r["V"], r["visits"], r["det"], r["gap_h"], r["nonzero_sigma"], r["diff_sigma"])
+        print(r["num"], r["name"], r["V"], r["visits"], r["det"], r["gap_h"], r["motion"])
 
 
 if __name__ == "__main__":

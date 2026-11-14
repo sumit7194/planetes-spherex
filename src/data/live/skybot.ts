@@ -3,9 +3,12 @@
  * cone search (https://ssp.imcce.fr/webservices/skybot/), which answers browser requests.
  *
  * SPHEREx photos are minutes apart and asteroids move arcseconds per minute, so ask once per
- * photo time, not per pass. The observer is the Earth's centre (IAU code 500): SPHEREx orbits
- * about 700 km up, which moves a main-belt asteroid by well under an arcsecond but can move a
- * near-Earth object by several SPHEREx pixels.
+ * photo time, not per pass. The observer is the Earth's centre (IAU code 500). SPHEREx is about
+ * 7,070 km from it (Earth's radius plus ~700 km), so a main-belt asteroid at 1.5 AU can appear
+ * up to ~6.6″ (~1 px) from SkyBoT's place, in a direction that turns with SPHEREx's ~98 min
+ * orbit; a near-Earth object can be several pixels off. (Corrected 15 Nov: this said "well under
+ * an arcsecond", from using the altitude instead of the distance from Earth's centre. The N5
+ * search corrects for it with the header's X_SC/Y_SC/Z_SC; the app doesn't yet.)
  *
  * Written during the event (14 Nov 2026).
  */

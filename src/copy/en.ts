@@ -1058,7 +1058,7 @@ export const copy = {
     photosShort: 'photos',
     detectorShort: 'detector',
     checkAsteroids: (names: string[]) =>
-      `Known asteroids (SkyBoT, at the photos' dates): ${names.length ? names.join(', ') : 'none within 9″'}`,
+      `Known asteroids (SkyBoT, at the photos' dates): ${names.length ? names.join(', ') : 'none within 9″'}. SkyBoT's places are for Earth's centre; seen from SPHEREx, a main-belt asteroid can sit up to about 1 pixel from them.`,
     checkStars: (cat: string, names: string[]) =>
       `${cat}, moved to each look's date: ${names.length ? names.join(', ') : 'none within 9″'}`,
     checkFlags: (artefacts: string[]) =>
