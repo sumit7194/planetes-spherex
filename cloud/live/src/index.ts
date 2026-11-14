@@ -685,7 +685,6 @@ async function handle(request: Request, ctx: ExecutionContext): Promise<Response
     const dec = Number(url.searchParams.get('dec'));
     const size = Math.round(Number(url.searchParams.get('size') ?? 64));
     const scale = Number(Number(url.searchParams.get('scale') ?? 6.15).toFixed(3));
-    const mjd = Number(url.searchParams.get('mjd') ?? 0);
     if (!KEY_RE.test(key) || key.split('/').some((s) => s === '.' || s === '..'))
       return bad('key must be a SPHEREx L2 file key (dr1/... or qr3/...)');
     if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
@@ -725,7 +724,9 @@ async function handle(request: Request, ctx: ExecutionContext): Promise<Response
     const t0 = Date.now();
     // Compute exactly what the cache key names (rounded position and scale).
     const centre = { ra: Number(ra.toFixed(6)) % 360, dec: Number(dec.toFixed(6)) };
-    const photo = photoOf(key, mjd);
+    // The date comes only from the file's header (MJD-AVG), never the request: a caller's mjd
+    // must not end up in a stored answer (security review, 15 Nov).
+    const photo = photoOf(key, 0);
     let res: Response;
     try {
       if (route === '/v1/native') {
