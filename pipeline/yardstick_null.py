@@ -80,20 +80,63 @@ def run_field(field: dict) -> list[dict]:
     return res
 
 
-def summary():
+def summary(seed: int = 20261114):
+    """The N-A numbers, counted as fixed with Physics (14 Nov, night) before the pooled list was read:
+    - the threshold uses ALL field-pairs that have >= 2 detectors (the search's own minimum);
+      the >= 3-detector split is descriptive only;
+    - T = the k-th highest pooled consistentSignificance, k = floor(N_pairs / 100); a candidate
+      needs significance > T, so the null leaves at most k - 1 false candidates (<= 1 per 100);
+    - the expected count at T is shown with its Poisson 95% range;
+    - pairs of one field share sources, so the tail's fields are listed and T is bootstrapped by
+      field (resample fields, 2,000 draws)."""
+    from scipy.stats import chi2
     rows = [json.loads(line) for line in RESULTS.read_text().splitlines()] if RESULTS.exists() else []
     pairs = [r for r in rows if r.get("detectors", 0) >= 2]
-    fields = {r["field"] for r in rows}
-    sig = sorted((s for r in pairs for s in r["consistentSignificance"]), reverse=True)
-    top = sorted((max(r["consistentSignificance"], default=0) for r in pairs), reverse=True)
-    print(f"{len(fields)} fields, {len(rows)} field-pairs ({len(pairs)} with >= 2 detectors)")
-    print(f"  candidates at today's 5x: {sum(r['nCandidates'] for r in pairs)} in {sum(r['nCandidates'] > 0 for r in pairs)} field-pairs")
-    print(f"  steady scatter px: median {np.median([r['steadyScatterPx'] for r in pairs]):.3f}" if pairs else "")
-    print(f"  per field-pair max significance, top 10: {top[:10]}")
-    if pairs:
-        k = max(1, len(pairs) // 100)  # the threshold that leaves <= 1 per 100 field-pairs above it
-        print(f"  threshold for <= 1 per 100 field-pairs (sources counted, {len(pairs)} pairs): "
-              f"just above {sig[k - 1] if len(sig) >= k else 0} (the {k}th highest of {len(sig)})")
+    fields = sorted({r["field"] for r in rows})
+    print(f"{len(fields)} fields, {len(rows)} field-pairs ({len(pairs)} with >= 2 detectors, "
+          f"{sum(r['detectors'] >= 3 for r in pairs)} with >= 3)")
+    if not pairs:
+        return
+    print(f"  candidates at the old 5x: {sum(r['nCandidates'] for r in pairs)} in {sum(r['nCandidates'] > 0 for r in pairs)} field-pairs")
+    sc = np.array([r["steadyScatterPx"] for r in pairs])
+    print(f"  steady scatter px: median {np.median(sc):.3f}, 10-90% {np.percentile(sc, 10):.3f}-{np.percentile(sc, 90):.3f}")
+    pooled = sorted(((v, r["field"], r["detectors"]) for r in pairs for v in r["consistentSignificance"]), reverse=True)
+    k = max(1, len(pairs) // 100)
+    if len(pooled) < k:
+        print(f"  only {len(pooled)} consistent sources; k = {k}")
+        return
+    T = pooled[k - 1][0]
+    lo, hi = chi2.ppf(0.025, 2 * k) / 2, chi2.ppf(0.975, 2 * (k + 1)) / 2
+    print(f"  threshold T = {T} (the {k}th highest of {len(pooled)} consistent sources over {len(pairs)} field-pairs); "
+          f"candidates need > T; expected count at T ~{k} (Poisson 95% {lo:.1f}-{hi:.1f})")
+    print(f"  top {min(2 * k, len(pooled))}: " + ", ".join(f"{v} {f} ({d} det)" for v, f, d in pooled[:2 * k]))
+    from collections import Counter
+    tail = Counter(f for _, f, _ in pooled[:k])
+    print(f"  fields in the top {k}: {dict(tail)}" + ("  <- one field holds more than one" if max(tail.values()) > 1 else ""))
+    t3 = sorted((v for r in pairs if r["detectors"] >= 3 for v in r["consistentSignificance"]), reverse=True)
+    print(f"  >= 3-detector pairs (descriptive): {sum(v > T for v in t3)} above T")
+    by_field = {f: [r for r in pairs if r["field"] == f] for f in {r["field"] for r in pairs}}
+    names = sorted(by_field)
+    rng = np.random.default_rng(seed)
+    ts = []
+    for _ in range(2000):
+        pick = rng.choice(names, len(names))
+        ps = [r for f in pick for r in by_field[f]]
+        vals = sorted((v for r in ps for v in r["consistentSignificance"]), reverse=True)
+        kk = max(1, len(ps) // 100)
+        ts.append(vals[kk - 1] if len(vals) >= kk else 0.0)
+    print(f"  T bootstrapped by field (2,000): median {np.median(ts):.2f}, 95% {np.percentile(ts, 2.5):.2f}-{np.percentile(ts, 97.5):.2f}")
+    # Order and timing, so a reader sees the pause at the helper's daily cap selected nothing.
+    order = []
+    for f in fields:
+        z = OUT / f"{f}_halves.npz"
+        if z.exists():
+            order.append((z.stat().st_mtime, f))
+    order.sort()
+    log = OUT / "na_order.txt"
+    import datetime as dt
+    log.write_text("".join(f"{dt.datetime.fromtimestamp(t, dt.timezone.utc).isoformat(timespec='seconds')} {f}\n" for t, f in order))
+    print(f"  read order and UTC times: {log.name} ({len(order)} fields)")
 
 
 def main():
