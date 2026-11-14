@@ -122,24 +122,27 @@ def num(x) -> float:
 
 
 def radec(o: dict) -> tuple[float, float]:
-    """SkyBoT's RA (h or deg) and Dec, in degrees."""
-    ra = o.get("RA") or o.get("RA(h)")
-    dec = o.get("DEC") or o.get("DE(deg)")
-    if isinstance(ra, str) and ":" in ra:
-        h, m, s = (float(p) for p in ra.split(":"))
-        ra = 15 * (h + m / 60 + s / 3600)
-    if isinstance(dec, str) and ":" in dec:
-        sg = -1 if dec.strip().startswith("-") else 1
-        d, m, s = (abs(float(p)) for p in dec.split(":"))
-        dec = sg * (d + m / 60 + s / 3600)
-    return float(ra), float(dec)
+    """SkyBoT's 'RA (hms)' and 'DEC (dms)' ("08 44 41.1394", "+18 06 52.192"), in degrees."""
+    h, m, sec = (float(x) for x in str(o["RA (hms)"]).split())
+    ds = str(o["DEC (dms)"]).strip()
+    d, dm, dsec = (abs(float(x)) for x in ds.split())
+    sg = -1 if ds.startswith("-") else 1
+    return 15 * (h + m / 60 + sec / 3600), sg * (d + dm / 60 + dsec / 3600)
+
+
+# SkyBoT's JSON field names (checked against a real answer, 15 Nov).
+V_ = lambda o: num(o.get("VMag (mag)"))  # noqa: E731
+DRA_ = lambda o: num(o.get("dRA (arcsec/h)"))  # noqa: E731  (RA rate x cos Dec)
+DDEC_ = lambda o: num(o.get("dDEC (arcsec/h)"))  # noqa: E731
+DG_ = lambda o: num(o.get("dg (ua)"))  # noqa: E731
+ERR_ = lambda o: num(o.get("Err (arcsec)"))  # noqa: E731
+NUM_ = lambda o: str(o.get("Num") or "").strip()  # noqa: E731  (absent for unnumbered objects)
 
 
 def place_at(o: dict, t0: float, t: float) -> tuple[float, float]:
     """SkyBoT's place moved linearly (its ″/h rates) from the bucket time t0 to t."""
     ra, dec = radec(o)
-    dra = num(o.get("dRA") or o.get("dRAcosDec"))  # arcsec/h, RA*cos(Dec)
-    ddec = num(o.get("dDEC") or o.get("dDec"))
+    dra, ddec = DRA_(o), DDEC_(o)
     dh = (t - t0) * 24
     return ra + dra * dh / 3600 / math.cos(math.radians(dec)), dec + ddec * dh / 3600
 
@@ -175,7 +178,7 @@ def sc_pos(row: dict) -> np.ndarray:
 def predicted(o: dict, t0: float, row: dict) -> tuple[float, float]:
     """SkyBoT's place at this photo's time, as SPHEREx sees it."""
     ra, dec = place_at(o, t0, row["mjd"])
-    return from_spherex(ra, dec, num(o.get("Dg") or o.get("Dg(ua)")), row)
+    return from_spherex(ra, dec, DG_(o), row)
 
 
 def measure_at(row: dict, ra: float, dec: float) -> dict | None:
@@ -232,8 +235,8 @@ def search() -> None:
             for r in photos:
                 key = f"{round(f['ra'], 4)},{round(f['dec'], 4)},{round(f['radius'], 3)},{bucket(r['mjd'])}"
                 for o in sb.get(key, []):
-                    n = str(o.get("Num") or o.get("Number") or "").strip()
-                    if n and n != "-" and num(o.get("V") or o.get("Mv")) <= VMAX:
+                    n = NUM_(o)
+                    if n and V_(o) <= VMAX and not str(o.get("Class", "")).startswith("NEA"):
                         objs.setdefault(n, (o, bucket(r["mjd"])))
             for n, (o, t0) in objs.items():
                 counts["numbered V<=18 in a revisited field"] += 1
@@ -251,7 +254,7 @@ def search() -> None:
                 visits_hit = {p["obs"].rsplit("_", 1)[0] for p in pts}
                 if len(pts) < 3 or len(visits_hit) < 2:
                     if pts:
-                        near.append(dict(num=n, name=o.get("Name"), V=num(o.get("V") or o.get("Mv")), n=len(pts)))
+                        near.append(dict(num=n, name=o.get("Name"), V=V_(o), n=len(pts)))
                     continue
                 counts["S/N>=5 within 1.5 px in >= 3 photos over 2 visits"] += 1
                 stars = [g for g in f["gaia"] for p in pts
@@ -268,8 +271,7 @@ def search() -> None:
                     continue
                 counts["each place empty in the other visit"] += 1
                 fit = line_fit(pts)
-                dra = num(o.get("dRA") or o.get("dRAcosDec"))
-                ddec = num(o.get("dDEC") or o.get("dDec"))
+                dra, ddec = DRA_(o), DDEC_(o)
                 rate = math.hypot(fit["rate_x"], fit["rate_y"])
                 err = math.hypot(fit["err_x"], fit["err_y"])
                 nonzero = rate / err
@@ -278,8 +280,8 @@ def search() -> None:
                 ang = abs((math.degrees(math.atan2(fit["rate_y"], fit["rate_x"]) - math.atan2(ddec, dra) * 180 / math.pi
                            + 180) % 360 - 180))
                 ok = nonzero >= 3 and diff <= 3 * math.sqrt(2) and abs(rate - sk) / sk <= 0.3 and ang <= 20
-                rec = dict(num=n, name=o.get("Name"), V=num(o.get("V") or o.get("Mv")), cls=o.get("Class"),
-                           err_arcsec=num(o.get("ErrPos") or o.get("Err(arcsec)")), field=[f["ra"], f["dec"]],
+                rec = dict(num=n, name=o.get("Name"), V=V_(o), cls=o.get("Class"),
+                           err_arcsec=ERR_(o), field=[f["ra"], f["dec"]],
                            visits=[a[0], b[0]], det=a[1], gap_h=round(dh, 2), move_px=round(move, 1),
                            fit=fit, skybot_rate=[dra, ddec], nonzero_sigma=round(nonzero, 1),
                            diff_sigma=round(diff, 2), angle_deg=round(ang, 1), passed=ok, points=pts)
