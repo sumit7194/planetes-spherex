@@ -634,6 +634,8 @@ def export() -> None:
     conf = json.loads((CACHE / "fieldguide_confirm.json").read_text())
     named_ = json.loads((CACHE / "fieldguide_named.json").read_text())
     sel = json.loads((CACHE / "fieldguide_select.json").read_text())
+    # The counts shown come from the masked-aperture audit (Physics, 15 Nov), not confirm().
+    au = json.loads((CACHE / "fieldguide_audit.json").read_text())
     cards = []
 
     def det_line(det, lam):
@@ -656,7 +658,7 @@ def export() -> None:
         evidence=["Flagged by the pipeline as permanently unusable (NONFUNC) and as a jump during the exposure (TRANSIENT)",
                   f"About {c['excess']:,.0f} MJy/sr in one pixel, about {c['excess'] / c['bk']:,.0f} times its neighbours (about {c['bk']:.1f})"
                   if c["bk"] > 0 else f"About {c['excess']:,.0f} MJy/sr in one pixel, while the pixels around it read about {c['bk']:.1f}",
-                  f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
+                  f"Nothing there in {au['bad-pixel']['nothing_sn_lt3']} of {au['bad-pixel']['measurable']} other photos of the same sky within 5 days"],
         howToTell="A real source stays with the sky, so it shows in other photos of the same spot. A bad pixel stays with the detector, so other photos of the same spot don’t show it.",
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
                     detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
@@ -685,7 +687,7 @@ def export() -> None:
                        if c["npix"] <= 5 else
                        f"Flagged by the pipeline as a jump during the exposure (TRANSIENT), over {c['npix']} pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch"),
                       "The pipeline also flags a ring of pixels around each hit (HALO)",
-                      f"Nothing there in {rc['nothing']} of {rc['n']} other photos of the same sky within 5 days",
+                      f"Nothing there in {au['cosmic-ray']['nothing_sn_lt3']} of {au['cosmic-ray']['measurable']} other photos of the same sky within 5 days",
                       "No known source or asteroid at that place"],
             howToTell="Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",
             source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
@@ -707,7 +709,7 @@ def export() -> None:
         id="persistence", section="not-in-sky", title="An afterglow on the detector",
         looksLike="a faint new source", label="flagged",
         evidence=["Flagged as an afterglow (PERSIST): the pipeline’s flag for light left on the detector by something bright it saw before",
-                  f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days",
+                  f"Nothing there in {au['persistence']['nothing_sn_lt3']} of {au['persistence']['measurable']} other photos of the same sky within 5 days",
                   "The earlier photo that left it isn’t among the photos we have, so the bright source itself can’t be shown"],
         howToTell="If it isn’t in the other photos of the same spot and carries a persistence flag, it’s the detector remembering, not the sky.",
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
@@ -749,8 +751,10 @@ def export() -> None:
         looksLike="exactly what it is", label="confirmed",
         evidence=[f"Gaia DR3 {c['gaia']['id']}, G {c['gaia']['G']:.1f}, within 1 pixel",
                   f"S/N {c['sn']:.0f}; no artefact flags; no other Gaia star within 3 pixels",
-                  ("Also seen in another photo of the same spot (S/N "
-                   f"{other[0]['m']['sn']:.0f})") if other else "Not checked in another photo"],
+                  (f"Seen in all {au['ordinary-star']['any_window']['something_sn_ge5']} other photos of the same spot; in the one shown, "
+                   f"S/N {au['ordinary-star']['other']['m']['sn']:.0f}, its light spread over {au['ordinary-star']['other']['m']['profile']} pixels, as a star's is")
+                  if au['ordinary-star']['any_window']['something_sn_ge5'] == au['ordinary-star']['any_window']['measurable']
+                  else (f"Seen in {au['ordinary-star']['any_window']['something_sn_ge5']} of {au['ordinary-star']['any_window']['measurable']} other photos of the same spot")],
         howToTell="A catalogued star that shows in every photo of the spot is just a star.",
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
                     detector=d, **{"lambda": lam}, at=f"{ra:.5f},{dec:.5f}"),
@@ -829,6 +833,77 @@ def export() -> None:
         note="Draft wording; Physics signs the labels and evidence before this is pushed.",
         rules="prereg/fieldguide/PLAN.md", cards=cards), indent=1, ensure_ascii=False))
     print(len(cards), "cards;", sorted(p_.name for p_ in OUT.iterdir())[:20])
+
+
+def measure_masked(e: dict, x: float, y: float) -> dict | None:
+    """measure() with FIT_REJECT pixels left out of the 3x3 aperture too (Physics, 15 Nov: the
+    star-hit card passed on lone NONFUNC spikes because the aperture wasn't masked). Also counts
+    the aperture's pixels above background + 3 sigma (a real source shows a profile: >= 3).
+    None if off the box, too little background, or fewer than 5 of the 9 pixels usable."""
+    img = e["img"].astype(float)
+    h, w = img.shape
+    xi, yi = int(round(x)), int(round(y))
+    if not (1 <= xi < w - 1 and 1 <= yi < h - 1):
+        return None
+    yy, xx = np.mgrid[0:h, 0:w]
+    d = np.maximum(np.abs(xx - xi), np.abs(yy - yi))
+    bad = mask_of(e, FIT_REJECT) | ~np.isfinite(img)
+    ring = (d >= 4) & (d <= 9) & ~bad
+    if ring.sum() < 20:
+        return None
+    bk = float(np.median(img[ring]))
+    sd = 1.4826 * float(np.median(np.abs(img[ring] - bk)))
+    core = (d <= 1) & ~bad
+    if core.sum() < 5 or not sd > 0:
+        return None
+    v = img[core] - bk
+    return dict(sn=round(float(v.sum()) / (sd * math.sqrt(core.sum())), 2), usable=int(core.sum()),
+                profile=int((v > 3 * sd).sum()), masked=int(((d <= 1) & bad).sum()))
+
+
+def audit() -> None:
+    """Physics' check (15 Nov) of every card's photometry claim with the aperture masked."""
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    sel = json.loads((CACHE / "fieldguide_select.json").read_text())
+    rp = json.loads((CACHE / "fieldguide_repick.json").read_text())
+    named_ = json.loads((CACHE / "fieldguide_named.json").read_text())
+
+    def same_sky(c, ra, dec, days=5.0):
+        rows = []
+        for row in idx["rows"]:
+            if row["det"] != c["det"] or row["obs"] == c["obs"] or sep_deg(row["ra"], row["dec"], ra, dec) > 0.3:
+                continue
+            if abs(row["mjd"] - c["mjd"]) > days:
+                continue
+            e = pickle.loads((CACHE / row["path"]).read_bytes())
+            w = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+            px, py = w.all_world2pix(ra, dec, 0)
+            m = measure_masked(e, float(px) - e["x0"], float(py) - e["y0"])
+            rows.append(dict(obs=row["obs"], dt=round(row["mjd"] - c["mjd"], 3), m=m))
+        ok = [r for r in rows if r["m"]]
+        return dict(n_photos=len(rows), measurable=len(ok), nothing_sn_lt3=sum(r["m"]["sn"] < 3 for r in ok),
+                    something_sn_ge5=sum(r["m"]["sn"] >= 5 for r in ok), rows=rows)
+
+    out = {}
+    for kind, c in (("bad-pixel", sel["kinds"]["hot-or-dead-pixel"]["chosen"]),
+                    ("persistence", sel["kinds"]["persistence"]["chosen"]),
+                    ("cosmic-ray", rp["cosmic"]["chosen"])):
+        out[kind] = same_sky(c, c["ra"], c["dec"])
+    c = named_["control"]["chosen"]
+    e = pickle.loads((CACHE / c["path"]).read_bytes())
+    ra, dec = sky_of(e, c["x"], c["y"])
+    here = measure_masked(e, c["x"], c["y"])
+    other = other_photo(dict(c, ra=ra, dec=dec), [], lambda sn: sn >= 5)
+    om = None
+    if other:
+        e2 = pickle.loads((CACHE / other[0]["path"]).read_bytes())
+        om = dict(obs=other[0]["obs"], m=measure_masked(e2, other[1], other[2]))
+    out["ordinary-star"] = dict(here=here, other=om, any_window=same_sky(c, ra, dec, days=1e9))
+    (CACHE / "fieldguide_audit.json").write_text(json.dumps(out, indent=1, default=float))
+    for k, v in out.items():
+        print(k, json.dumps({kk: vv for kk, vv in v.items() if kk != "rows"} if "rows" in v else
+                            {kk: (vv if kk != "any_window" else {a_: b_ for a_, b_ in vv.items() if a_ != "rows"}) for kk, vv in v.items()},
+                            default=str))
 
 
 def repick() -> None:
@@ -915,4 +990,4 @@ def repick() -> None:
 
 if __name__ == "__main__":
     {"index": index, "search": search, "select": select, "confirm": confirm,
-     "named": named, "export": export, "repick": repick}[sys.argv[1]]()
+     "named": named, "export": export, "repick": repick, "audit": audit}[sys.argv[1]]()

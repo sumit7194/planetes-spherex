@@ -121,7 +121,7 @@
    "label": "flagged",
    "evidence": [
     "Flagged as an afterglow (PERSIST): the pipeline’s flag for light left on the detector by something bright it saw before",
-    "Nothing there in 16 of 16 other photos of the same sky within 5 days",
+    "Nothing there in 15 of 15 other photos of the same sky within 5 days",
     "The earlier photo that left it isn’t among the photos we have, so the bright source itself can’t be shown"
    ],
    "howToTell": "If it isn’t in the other photos of the same spot and carries a persistence flag, it’s the detector remembering, not the sky.",
@@ -203,7 +203,7 @@
    "evidence": [
     "Gaia DR3 156431337512370816, G 15.5, within 1 pixel",
     "S/N 50; no artefact flags; no other Gaia star within 3 pixels",
-    "Also seen in another photo of the same spot (S/N 48)"
+    "Seen in all 54 other photos of the same spot; in the one shown, S/N 51, its light spread over 5 pixels, as a star's is"
    ],
    "howToTell": "A catalogued star that shows in every photo of the spot is just a star.",
    "source": {
