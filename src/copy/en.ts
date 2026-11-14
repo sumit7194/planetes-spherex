@@ -874,7 +874,7 @@ export const copy = {
         quote: '',
         hard: 'The fastest-moving star in the sky (about 10″ a year), and bright enough to saturate SPHEREx’s detectors.',
         limit:
-          'Its centre is saturated, so its place comes from its image as a whole; its brightness isn’t measured. Its east component carries a method effect of about 0.1 pixel (0.6″), beyond its quoted error (east alone: ± 2.6″).',
+          'Its centre is saturated, so its place comes from its image as a whole; its brightness isn’t measured. Its east component (± 2.6″ on its own) also carries a method effect of about 0.1 pixel (0.6″) that isn’t included in that error.',
         live: 'Opens 361 photos in 3 passes, compared at 0.86 µm.',
       },
       'epsind-b': {
@@ -973,7 +973,7 @@ export const copy = {
       'Barnard’s Star’s headline pair is a year apart (passes 1 and 3): the half-year pairs were marked not reliable after its edge fit’s offset was seen to flip with the scan direction.',
       'WISE 0855: fitted together with its G 16.3 neighbour, after the all-colour picture showed the neighbour pulling its centre.',
       'R Draconis “not measurable yet”: set after its flagged area was seen to exceed the star-image model’s reach in every detector.',
-      'Barnard’s Star’s east component: a later check found a method effect of about 0.1 pixel in east, beyond its quoted 0.05; no number was changed, and it is said next to that number.',
+      'Barnard’s Star’s east component: a later check found a method effect of about 0.1 pixel in east, not included in its quoted error; no number was changed, and it is said next to that number.',
     ],
     afterDesigned:
       'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the fast-mover search’s thresholds, its fake-mover yardstick, and the check that fakes are found like real asteroids, all fixed on other sky first.',
