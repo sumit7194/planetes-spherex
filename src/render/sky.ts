@@ -1013,6 +1013,11 @@ export class SkyView {
    * that week itself brighter. A wash, not dots, so it reads as a surface under the stars.
    */
   #washLayer: HTMLCanvasElement | null = null;
+  /**
+   * How strongly the week on show is painted (1: quiet, for exploring). Learn's first step,
+   * where the week's band IS the point ("a ring of sky at right angles to the Sun"), turns it up.
+   */
+  coverageStrength = 1;
   #washSmall: HTMLCanvasElement | null = null;
 
   /**
@@ -1091,7 +1096,12 @@ export class SkyView {
     // "So far" stays quiet even once the whole sky is painted; the week on show is the news.
     // SPHEREx's own coverage, so the look colour: the week on show a little lighter.
     if (sofar) fill(sofar, this.#t.look, 5000, 0.1 * opts.alpha);
-    fill(now, mixHex(this.#t.look, this.#t.starlight, 0.35), 600, 0.32 * opts.alpha);
+    fill(
+      now,
+      mixHex(this.#t.look, this.#t.starlight, 0.35),
+      600,
+      Math.min(0.8, 0.32 * this.coverageStrength) * opts.alpha,
+    );
     if (!cells) return;
     // Blur by about a third of a cell, on screen pixels.
     const blur = Math.max(2, (cellSum / cells) * 0.35);
@@ -1183,8 +1193,11 @@ export class SkyView {
   /* ---------- riding along SPHEREx's real pointing (Physics' timelines) ---------- */
 
   #timeline: Timeline | null = null;
-  /** Riding: the view follows SPHEREx. On by default; looking around yourself pauses it. */
-  #riding = true;
+  /**
+   * Riding: the view follows SPHEREx. Off by default since 14 Nov (the homepage's sky holds still
+   * for typed spots; riding lives in Learn's first step); looking around yourself pauses it.
+   */
+  #riding = false;
   /** The ride's clock (MJD), or null to start from the exposure nearest the view. */
   #rideMjd: number | null = null;
   #ridePoint: ReturnType<typeof pointingAt> | null = null;
@@ -1280,6 +1293,10 @@ export class SkyView {
    */
   #earthBelow(u: number): void {
     if (this.#entry !== 'inside') return;
+    // Only when the camera is SPHEREx's (riding) or stepping out to the orbit (both in Learn,
+    // since 14 Nov). Looking around yourself is the sky as photographed: Earth would hide up to
+    // a third of it, and could sit right over a spot the visitor typed.
+    if (!this.#riding && this.#near <= 0 && this.#nearGoal <= 0) return;
     const three = this.#near3D();
     if (three) this.#drawNear3D();
     const cam = this.#cameraPos();
@@ -1988,10 +2005,12 @@ export class SkyView {
    */
   /** Wanderers counted as out of view, with a margin either way so none flickers at the edge. */
   #outOfView = new Set<string>();
+  /** The edge chips; off since 14 Nov (the homepage band's rows reach all five). */
+  edgeChips = true;
 
   #edgeChips(u: number): void {
     this.#edges = [];
-    if (this.#entry !== 'inside' || !this.marks) return;
+    if (!this.edgeChips || this.#entry !== 'inside' || !this.marks) return;
     const ctx = this.#ctx;
     const { width: W, height: H } = this.canvas;
     const m = 30 * u;

@@ -51,6 +51,8 @@ import {
   type LiveFrame,
 } from './data/live/dr1qr3';
 import { loadCoverage, type Coverage } from './data/coverage';
+import { passCount, passStarts, weekCounts, type BandFile } from './app/passes';
+import { skyBand, type SkyBand } from './ui/skyBand';
 import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
@@ -167,8 +169,6 @@ const chosenPair = new Map<TargetId, [number, number]>();
 let stopReveal: (() => void) | null = null;
 let holdTimer = 0;
 let searchNote = '';
-/** Whether the viewer has dragged or zoomed the sky yet (the move hint goes after that). */
-let movedSky = false;
 /** A live look at a typed spot: its plan, the photos as they land, and what's shown. */
 let live: {
   at: SkyPosition;
@@ -255,10 +255,15 @@ const entrySwitch = h('div', {
   'aria-label': 'Map style',
 });
 const dial = h('div', { class: 'dial glass', role: 'group', 'aria-label': 'Room' });
+/** Where the search input sits in the header when it isn't in the homepage column. */
+const searchAnchor = document.createComment('search');
 const search = h('input', {
   class: 'search glass',
   type: 'search',
-  placeholder: copy.sky.search,
+  placeholder: copy.home.placeholder,
+  enterkeyhint: 'go',
+  autocomplete: 'off',
+  spellcheck: 'false',
   // Positions are ICRS (J2000): an old B1950 position is up to ~0.7° off by precession alone.
   title: copy.search.frame,
   'aria-description': copy.search.frame,
@@ -284,6 +289,7 @@ const header = h(
   { class: 'top' },
   h('h1', { class: 'wordmark' }, embedded ? openFullLink() : homeLink),
   dial,
+  searchAnchor,
   search,
   schemeSwitch(copy.scheme, copy.scheme.group),
   h('a', { class: 'credits-link', href: 'credits.html' }, copy.nav.credits),
@@ -311,6 +317,8 @@ app.append(header, stage, band);
 lensGlass(app);
 
 const sky = new SkyView(skyCanvas);
+// No edge chips for the five: the homepage band's rows reach all of them (Viewer, 14 Nov).
+sky.edgeChips = false;
 const locator = new SkyView(locatorCanvas);
 const lens = new LensView(lensCanvas);
 // Screen readers hear what the lens shows, not just "Lens": its caption, kept in step.
@@ -402,8 +410,7 @@ for (const entry of ['inside', 'flat'] as const) {
   const b = h('button', { type: 'button', 'data-entry': entry }, copy.sky.entrySwitch[entry]);
   b.addEventListener('click', () => goEntry(entry));
   entrySwitch.append(b);
-  // Between them, "From space": stepping out from SPHEREx to Earth and its orbit.
-  if (entry === 'inside') entrySwitch.append(spaceButton);
+  // "From space" (Earth, the orbit and the ring) lives in Learn, step 1, since 14 Nov.
 }
 spaceButton.addEventListener('click', goSpace);
 for (const [dir, label] of [
@@ -421,14 +428,17 @@ for (const [dir, label] of [
 /** Riding along with SPHEREx (on by default in Look around); dragging or flying pauses it. */
 const rideButton = h('button', { type: 'button', class: 'ride', 'data-ride': '' }, '');
 rideButton.addEventListener('click', () => sky.ride(!sky.riding));
-entrySwitch.append(rideButton);
+// Riding is Learn-only now (step 1, "Ride along"); the button stays for that card's state.
 function markRide(): void {
   rideButton.textContent = sky.riding ? copy.sky.riding.riding : copy.sky.riding.ride;
   rideButton.setAttribute('aria-pressed', String(sky.riding));
   // Riding is motion, so under reduced motion it's off and the control is hidden.
   rideButton.hidden = state.entry !== 'inside' || sky.steppedOut || prefersReducedMotion();
 }
-sky.onRide = () => markRide();
+sky.onRide = () => {
+  markRide();
+  if (state.room === 'learn') render();
+};
 // Under reduced motion stepping out cuts between stills: a short fade joins them.
 sky.onCut = () => crossFade(true);
 
@@ -488,6 +498,7 @@ for (const room of ['play', 'learn', 'watch'] as const) {
   const b = h('button', { type: 'button', 'data-room': room }, copy.rooms[room]);
   b.addEventListener('click', () => {
     if (room !== state.room) leaveDifference();
+    if (state.room === 'learn' && room !== 'learn') leaveLearn();
     if (room !== 'watch' && watching !== null) void playColour(watching);
     if (room === 'watch') watchOpened = true;
     dispatch({ type: 'setRoom', room });
@@ -544,10 +555,6 @@ sky.labels = {
   earth: copy.sky.riding.earth,
 };
 sky.onSelect = (id) => void go(id as TargetId);
-sky.onFirstMove = () => {
-  movedSky = true;
-  if (state.place.kind === 'sky') render();
-};
 // Anywhere else on the sky is real and clickable: a tap opens a look at that spot (near a
 // wanderer, its show), the same as typing the position.
 sky.onSkyTap = (at) => {
@@ -808,7 +815,146 @@ function angleText(arcsec: number): string {
 // Open the connections a live look will use while the visitor is still typing (once a page).
 search.addEventListener('focus', warmUp, { once: true });
 search.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter') return;
+  if (e.key !== 'Enter' || e.isComposing) return;
+  e.preventDefault();
+  // Not inside the keydown: opening a look moves the input from the homepage column to the
+  // header, and moving a focused field mid-event loses keys and autofill (Viewer, 14 Nov).
+  window.clearTimeout(typedTimer);
+  setTimeout(submitSearch, 0);
+});
+
+/* ---------- the homepage search: an echo as you type, the sky turning to the spot ---------- */
+
+/** Under the homepage field: what the typing reads as (a check, or what to type). */
+const searchEcho = h('p', { class: 'search-echo', role: 'status' }, copy.home.echoEmpty);
+/** A complete name or position typed but not yet entered: the band's sixth row. */
+let typed: {
+  key: string;
+  at: SkyPosition;
+  name: string | null;
+  mjds: number[] | null;
+  failed: boolean;
+} | null = null;
+let typedTimer = 0;
+let typedSeq = 0;
+let lastFlown = '';
+let composing = false;
+search.addEventListener('compositionstart', () => (composing = true));
+search.addEventListener('compositionend', () => {
+  composing = false;
+  queueTyped();
+});
+search.addEventListener('input', () => {
+  if (!composing) queueTyped();
+});
+function queueTyped(): void {
+  window.clearTimeout(typedTimer);
+  typedTimer = window.setTimeout(onTyped, 400);
+}
+
+/** What the field holds, if it's complete: one of the five, a named star, or RA and Dec. */
+type Typed = {
+  at: SkyPosition;
+  name: string | null;
+  /** One of the five: Enter opens its page, so the row shows its pack's photos. */
+  id?: TargetId;
+  /** What Enter will do, when it isn't simply "look here". */
+  echo?: string;
+  /** The sixth row's name, when it isn't "Your spot" or the typed name. */
+  title?: string;
+};
+function resolveTyped(value: string): Typed | null {
+  const key = searchKey(value);
+  const id = wandererByName.get(key);
+  const w = id && WANDERERS.find((x) => x.id === id);
+  if (w && id) return { at: w.at, name: copy.wanderers[id].name, id };
+  const star = namedStars.get(key);
+  if (star) return { at: star, name: value.trim() };
+  const parsed = parseSkyPosition(value);
+  if (!parsed.ok) return null;
+  // Next to one of the five, Enter opens its page (submitSearch): say so before Enter, and show
+  // its photos, not "your spot" (the challenge's WISE 0855 coordinates are its 2010 place).
+  const near = WANDERERS.find((x) => separationDeg(x.at, parsed.position) < NEAR_WANDERER_DEG);
+  if (!near?.ready) return { at: parsed.position, name: null };
+  const name = copy.wanderers[near.id].name;
+  const past = pastPlace(near, parsed.position);
+  const moved = past ? angleText(past.movedArcsec) : null;
+  return {
+    at: near.at,
+    name,
+    id: near.id,
+    echo:
+      past && moved
+        ? copy.home.echoPast(name, Math.floor(past.year), moved)
+        : copy.home.echoNear(name),
+    title: moved ? copy.home.spotMoved(name, moved) : name,
+  };
+}
+
+const degText = (v: number) => `${v < 0 ? '−' : ''}${Math.abs(v).toFixed(3)}°`;
+
+function onTyped(): void {
+  const value = search.value.trim();
+  const t = value ? resolveTyped(value) : null;
+  const enter = touchOnly ? copy.home.enterTouch : copy.home.enter;
+  searchEcho.textContent = !value
+    ? copy.home.echoEmpty
+    : !t
+      ? copy.home.echoPartial
+      : t.echo
+        ? t.echo
+        : t.name
+          ? copy.home.echoName(t.name, enter)
+          : copy.home.echoPosition(degText(t.at.ra), degText(t.at.dec), enter);
+  searchEcho.classList.toggle('ok', !!t);
+  if (!t) {
+    if (typed) {
+      typed = null;
+      typedSeq++;
+      if (state.place.kind === 'sky') renderBand();
+    }
+    return;
+  }
+  const key = `${t.at.ra.toFixed(4)},${t.at.dec.toFixed(4)}`;
+  if (typed?.key === key) return;
+  typed = { key, at: t.at, name: t.title ?? t.name, mjds: null, failed: false };
+  const seq = ++typedSeq;
+  if (state.place.kind === 'sky') renderBand();
+  flyToTyped(t.at, key);
+  // One of the five: the same photos as its row (its pack's), so the two counts agree.
+  const own = t.id && bandData?.targets[t.id];
+  if (own) {
+    typed.mjds = own.map((f) => f[0]);
+    if (state.place.kind === 'sky') renderBand();
+    return;
+  }
+  findPhotos(t.at)
+    .then((photos) => {
+      if (seq !== typedSeq || !typed) return;
+      typed.mjds = photos.map((p) => p.mjd);
+    })
+    .catch(() => {
+      if (seq === typedSeq && typed) typed.failed = true;
+    })
+    .finally(() => {
+      if (seq === typedSeq && state.place.kind === 'sky') renderBand();
+    });
+}
+
+/**
+ * The sky turns to a typed spot before Enter: only on a complete name or position, debounced,
+ * never twice to the same place, never on load, and not at all under reduced motion.
+ */
+function flyToTyped(at: SkyPosition, key: string): void {
+  if (key === lastFlown || prefersReducedMotion()) return;
+  if (state.place.kind !== 'sky' || state.room !== 'play' || state.entry !== 'inside') return;
+  if (sky.steppedOut) return;
+  lastFlown = key;
+  void sky.flyTo(at, 20, 1200);
+}
+
+/** Opens what the field holds: one of the five, a named star, or a live look at a position. */
+function submitSearch(): void {
   // A name first: one of the five, or an IAU-named star (a look at its catalogue position).
   const key = searchKey(search.value);
   const wanderer = wandererByName.get(key);
@@ -849,7 +995,7 @@ search.addEventListener('keydown', (e) => {
     searchNote = copy.search.wandererSoon(copy.wanderers[near.id].name);
     render();
   } else void openLook(parsed.position);
-});
+}
 /** The keys, in a native dialog (Esc closes it; focus returns to where it was). */
 const keysDialog = h('dialog', { class: 'keys-dialog', 'aria-labelledby': 'keys-title' });
 function openKeys(): void {
@@ -2254,12 +2400,14 @@ function statusText(id: 'r-dra' | 'rw-aur', pack: LoadedPack): string {
 
 /** Every layer on the sky and its source, one click away (a native disclosure). */
 let legendOpen = false;
-function legend(): HTMLElement {
+function legend(withKey = false): HTMLElement {
   const d = h(
     'details',
     { class: 'legend', open: legendOpen },
     h('summary', {}, copy.legend.title),
     h('ul', {}, ...copy.legend.layers.map((l) => h('li', {}, l))),
+    // On the homepage the marks' key lives here, not in the band (Viewer, 14 Nov).
+    withKey ? markKey('sky') : null,
   );
   // The words re-render on every state change; the legend stays as the viewer left it.
   d.addEventListener('toggle', () => (legendOpen = d.open));
@@ -2477,23 +2625,60 @@ function renderWords(): Node[] {
   return showWords();
 }
 
-/** The landing's three things to do, as chips: a mark, a verb, and a few words under it. */
-function verbChips(): HTMLElement {
-  const v = copy.sky.verbs;
-  const chip = (icon: string, verb: string, sub: string) =>
-    h(
-      'li',
-      {},
-      h('span', { class: `verb-icon ${icon}`, 'aria-hidden': 'true' }),
-      h('span', {}, h('b', {}, verb), h('small', {}, sub)),
-    );
-  return h(
+/**
+ * The homepage column (agreed with Viewer, 14 Nov): the headline, the search field itself
+ * (moved here from the header on the homepage only), its echo, one-click examples, Surprise
+ * me, and a quiet line for clicking the sky. The scale of the survey is the band's sentence.
+ */
+function homeColumn(): HTMLElement[] {
+  const ex = copy.home.examples;
+  const example = (label: string, run: () => void) => {
+    const b = h('button', { type: 'button', class: 'example' }, label);
+    b.addEventListener('click', run);
+    return h('li', {}, b);
+  };
+  // An example types itself, so the visitor sees what a search looks like, then opens.
+  const typeIn = (value: string) => {
+    window.clearTimeout(typedTimer);
+    search.value = value;
+  };
+  const examples = h(
     'ul',
-    { class: 'verbs' },
-    chip('pick', v.pick, v.pickSub),
-    chip('anywhere', touchOnly ? v.anywhereTouch : v.anywhere, v.anywhereSub),
-    movedSky ? null : chip('move', touchOnly ? v.moveTouch : v.move, v.moveSub),
+    { class: 'examples', 'aria-label': copy.home.examplesLabel },
+    example(ex.w0855, () => {
+      typeIn(ex.w0855Value);
+      submitSearch();
+    }),
+    example(ex.barnard, () => {
+      typeIn(copy.wanderers.barnard.name);
+      submitSearch();
+    }),
+    // A second fast mover, which a live look shows well (Mira saturates SPHEREx, and a look
+    // can't measure brightness; Viewer, 14 Nov).
+    example(ex.teegarden, () => {
+      typeIn(ex.teegardenName);
+      void loadSurprises().then((list) => {
+        const spot = list.find((x) => x.name === ex.teegardenName);
+        if (spot) void openLook({ ra: spot.ra, dec: spot.dec }, spot);
+        else submitSearch();
+      });
+    }),
   );
+  const parts: (HTMLElement | null)[] = [
+    h('h2', { class: 'home-headline' }, copy.home.headline),
+    h('div', { class: 'home-search on-sky' }, search, searchEcho),
+    searchNote ? h('p', { class: 'hint search-note', role: 'alert' }, searchNote) : null,
+    h(
+      'div',
+      { class: 'home-try' },
+      h('span', { class: 'home-try-label', 'aria-hidden': 'true' }, copy.home.examplesLabel),
+      examples,
+    ),
+    surpriseButton(),
+    h('p', { class: 'home-quiet' }, touchOnly ? copy.home.quietTouch : copy.home.quiet),
+    legend(true),
+  ];
+  return parts.filter((x): x is HTMLElement => x !== null);
 }
 
 /** Takes the visitor to a famous fast star or variable, for a live look. */
@@ -2515,17 +2700,7 @@ function showWords(): Node[] {
     }
     return [h('h2', {}, copy.watch.pickHeading), h('p', {}, copy.watch.pickHint), pick, legend()];
   }
-  if (place.kind === 'sky') {
-    const parts: (HTMLElement | null)[] = [
-      h('h2', {}, copy.sky.invitation),
-      verbChips(),
-      surpriseButton(),
-      searchNote ? h('p', { class: 'hint' }, searchNote) : null,
-      sweepControl(),
-      legend(),
-    ];
-    return parts.filter((x): x is HTMLElement => x !== null);
-  }
+  if (place.kind === 'sky') return homeColumn();
   if (place.kind === 'trouble') return [h('p', {}, copy.trouble[place.reason])];
   if (!('target' in place)) return lookWords();
   const w = copy.wanderers[place.target];
@@ -3421,14 +3596,32 @@ function overlaySection(id: TargetId): HTMLElement | null {
 let tourStep = 0;
 /** What each step shows: the sky, a flight to the runaway, the shows, then the sky again. */
 const TOUR_ACTS: (() => void)[] = [
+  // "How SPHEREx sees the sky": out to Earth, the orbit and the scanning ring (3D, or the 2D
+  // Earth without WebGL; a cut instead of a flight under reduced motion). Ride along is here.
+  () => {
+    if (state.place.kind !== 'sky') leaveShow();
+    sky.ride(false);
+    goEntry('flat');
+    tourSweep(true);
+  },
+  // "From out here": Earth and SPHEREx's orbit (3D, or the 2D Earth without WebGL). Ride along.
+  () => {
+    if (state.place.kind !== 'sky') leaveShow();
+    tourSweep(false);
+    goSpace();
+  },
   // "The whole sky": the flat all-sky map, wherever the visitor was.
   () => {
     if (state.place.kind !== 'sky') leaveShow();
+    tourSweep(false);
+    sky.ride(false);
     goEntry('flat');
   },
   // Back inside, turning toward the runaway.
   () => {
     if (state.place.kind !== 'sky') leaveShow();
+    tourSweep(false);
+    sky.ride(false);
     void (async () => {
       if (state.entry !== 'inside') await goEntry('inside');
       const w = WANDERERS.find((x) => x.id === 'barnard');
@@ -3456,7 +3649,47 @@ function runTourStep(i: number): void {
 }
 
 function endTour(): void {
+  leaveLearn();
   dispatch({ type: 'setRoom', room: 'play' });
+}
+
+/**
+ * Learn, step 1: the ring is the real weekly coverage, sweeping on the flat map (our own files),
+ * not a drawing. Under reduced motion one week is shown, still.
+ */
+function tourSweep(on: boolean): void {
+  sky.coverageStrength = on ? 2.4 : 1;
+  if (!on) {
+    if (sweep.open) closeWeek();
+    return;
+  }
+  if (!sweep.coverage) return;
+  sweep.open = true;
+  setWeek(sweep.week || 0, false);
+  playSweep();
+}
+
+/** Leaving Learn: riding stops and the view steps back inside (both live in Learn only). */
+function leaveLearn(): void {
+  tourSweep(false);
+  sky.ride(false);
+  if (state.entry === 'inside' && sky.steppedOut) sky.stepOutTo(0);
+}
+
+/** Learn, step 2: ride along with SPHEREx's real pointing (motion, so not under reduced motion). */
+function rideAlong(): HTMLElement | null {
+  if (prefersReducedMotion()) return null;
+  const b = h(
+    'button',
+    { type: 'button', class: 'ride-along', 'aria-pressed': String(sky.riding) },
+    sky.riding ? copy.home.riding : copy.home.rideAlong,
+  );
+  b.addEventListener('click', () => {
+    // Riding is seen from inside: step back in first, then follow the telescope.
+    if (state.entry === 'inside' && sky.steppedOut) sky.stepOutTo(0);
+    sky.ride(!sky.riding);
+  });
+  return h('div', { class: 'actions' }, b);
 }
 
 /** The tour's card in the words column: one sentence, and Back, Next and Skip. */
@@ -3494,6 +3727,8 @@ function tourCard(): HTMLElement {
       dots,
     ),
     h('p', { class: 'tour-line' }, steps[tourStep] ?? ''),
+    tourStep === 0 ? h('p', { class: 'hint' }, copy.home.ringNote) : null,
+    tourStep === 1 ? rideAlong() : null,
     h('div', { class: 'actions' }, back, next, skip),
   );
 }
@@ -4245,9 +4480,33 @@ function drawBand(): void {
   const dock = (middle: HTMLElement | null, key: HTMLElement) =>
     middle ? h('div', { class: 'dock-row' }, middle, key) : key;
   if (place.kind === 'sky') {
+    const rows = homeBand();
+    if (rows) {
+      // Rebuilt on each render: keep the keyboard where it was (a row, the slider, play).
+      const a = document.activeElement as HTMLElement | null;
+      const sel =
+        !a || !band.contains(a)
+          ? null
+          : a.dataset['id']
+            ? `.sb-row[data-id="${a.dataset['id']}"]`
+            : a.classList.contains('sb-slider')
+              ? '.sb-slider'
+              : a.classList.contains('sb-play') || a.classList.contains('sb-close')
+                ? '.sb-play'
+                : a.classList.contains('sb-flat')
+                  ? '.sb-slider'
+                  : null;
+      band.replaceChildren(rows.el);
+      skyBandNow = rows;
+      if (sel) (band.querySelector(sel) as HTMLElement | null)?.focus({ preventScroll: true });
+      markWeekRows();
+      return;
+    }
+    skyBandNow = null;
     band.replaceChildren(dock(weeksFigure(), markKey('sky')), caseRail());
     return;
   }
+  skyBandNow = null;
   if (!current || !('target' in place)) {
     // A live look: its own photos as dots, the compared pair bracketed.
     const plan = live?.plan;
@@ -4280,6 +4539,162 @@ function drawBand(): void {
     ),
     caseRail(place.target),
   );
+}
+
+/* ---------- the homepage band: the five as rows, a typed spot, one week cursor ---------- */
+
+let bandData: BandFile | null = null;
+let skyBandNow: SkyBand | null = null;
+void fetch(`${import.meta.env.BASE_URL}data/band/band.json`)
+  .then((r) => (r.ok ? (r.json() as Promise<BandFile>) : null))
+  .catch(() => null)
+  .then((d) => {
+    bandData = d?.format === 'planetes-band/1' ? d : null;
+    if (bandData && state.place.kind === 'sky') renderBand();
+  });
+
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+const shortMonth = (mjd: number) => {
+  const d = new Date((mjd - 40587) * 86_400_000);
+  return `${SHORT_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+};
+
+function homeBand(): SkyBand | null {
+  const d = bandData;
+  if (!d) return null;
+  const rows = WANDERERS.map((w) => {
+    const frames = d.targets[w.id] ?? [];
+    const passes = passCount(frames.map((f) => f[0]));
+    const status = caseStatus(w.id);
+    const chip = status ? cardChip(w.id, status) : null;
+    // Spoken, not drawn: "moved about 10″ north, measured", "fainter, measured".
+    const chipText = chip?.textContent ?? '';
+    const said =
+      status === 'measured' && chipText.startsWith('≈')
+        ? `${chipText.replace(/^≈\s*/, 'moved about ')}, measured`
+        : chipText;
+    return {
+      id: w.id,
+      name: copy.wanderers[w.id].name,
+      chip,
+      label: copy.home.rowLabel(
+        copy.wanderers[w.id].name,
+        said || copy.card.comingSoon,
+        frames.length,
+        passes,
+      ),
+      frames,
+      disabled: !w.ready,
+    };
+  });
+  const t = typed;
+  const name = t?.name ?? copy.home.spotTitle;
+  const starts = t?.mjds ? passStarts(t.mjds) : [];
+  const line = !t
+    ? d.survey.line
+    : t.failed
+      ? copy.home.spotFailed(name)
+      : !t.mjds
+        ? copy.home.spotLoading(name)
+        : copy.home.spotLine(name, starts.length, starts.map(shortMonth).join(', '), t.mjds.length);
+  const c = sweep.coverage;
+  return skyBand({
+    data: d,
+    rows,
+    spot: t
+      ? {
+          title: t.name ?? copy.home.spotTitle,
+          short: t.mjds
+            ? copy.home.spotPasses(starts.length)
+            : t.failed
+              ? ''
+              : copy.home.spotLooking,
+          counts: t.mjds ? weekCounts(t.mjds, d.weeks) : null,
+        }
+      : null,
+    line,
+    week: sweep.open ? sweep.week : null,
+    weekText: (k) => {
+      const w = d.weeks[k];
+      const cw = c?.meta.weeks[k];
+      if (!w) return '';
+      const from = new Date((w.start - 40587) * 86_400_000);
+      const to = new Date((w.end - 1 - 40587) * 86_400_000);
+      const same = from.getUTCMonth() === to.getUTCMonth();
+      const day = (x: Date) =>
+        `${x.getUTCDate()} ${SHORT_MONTHS[x.getUTCMonth()]} ${x.getUTCFullYear()}`;
+      return copy.home.band.weekText(
+        same ? String(from.getUTCDate()) : day(from).replace(/ \d{4}$/, ''),
+        day(to),
+        cw?.frames ?? 0,
+      );
+    },
+    playing: !!sweep.timer,
+    canPlay: !!c && !prefersReducedMotion(),
+    text: copy.home.band,
+    onOpen: (id) => void go(id as TargetId),
+    onLit: (id) => sky.setLit(id as TargetId | null),
+    onWeek: (k) => {
+      // First use turns the week's photos on (off by default; Viewer, 14 Nov).
+      if (!sweep.coverage) return;
+      sweep.open = true;
+      setWeek(k, false);
+    },
+    onPlay: () => {
+      if (sweep.timer) return stopSweep();
+      if (!sweep.open) {
+        sweep.open = true;
+        sweep.week = 0;
+        setWeek(0, true);
+      }
+      playSweep();
+    },
+    onClose: closeWeek,
+    onFlat: state.entry === 'inside' ? () => switchEntry('flat') : null,
+  });
+}
+
+/** Turns the week's photos off the sky (Esc, or the band's ×). */
+function closeWeek(): void {
+  const hadFocus = band.contains(document.activeElement);
+  sweep.open = false;
+  stopSweep();
+  sky.setCoverage(null);
+  sky.setDate(new Date());
+  skyBandNow?.setWeek(null, false);
+  markWeekRows();
+  if (hadFocus)
+    (band.querySelector('.sb-slider') as HTMLElement | null)?.focus({ preventScroll: true });
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || !sweep.open || state.place.kind !== 'sky' || e.defaultPrevented) return;
+  if (document.querySelector('dialog[open]')) return;
+  if ((e.target as HTMLElement | null)?.closest?.('input, textarea, select')) return;
+  closeWeek();
+});
+
+/** A row lights when its target was photographed in the week shown. */
+function markWeekRows(): void {
+  const c = sweep.coverage;
+  const counts = c && sweep.open ? c.week(sweep.week) : null;
+  for (const row of band.querySelectorAll<HTMLElement>('.sb-row')) {
+    const target = WANDERERS.find((x) => x.id === row.dataset['id']);
+    const pix = c && target ? pixelOf(c.nside, target.at) : undefined;
+    row.classList.toggle('this-week', !!counts && pix !== undefined && (counts[pix] ?? 0) > 0);
+  }
 }
 
 /**
@@ -4401,6 +4816,8 @@ function setWeek(week: number, fromPlay: boolean): void {
   sweepFrames.textContent = copy.sky.sweep.frames(w.frames);
   sky.setCoverage(c, sweep.week);
   sky.setDate(new Date(((w.startMjd + w.endMjd) / 2 - 40587) * 86_400_000));
+  skyBandNow?.setWeek(sweep.open ? sweep.week : null, !!sweep.timer);
+  markWeekRows();
   // The cards answer: a light under that week's band was photographed then.
   const counts = c.week(sweep.week);
   for (const card of band.querySelectorAll<HTMLElement>('.card')) {
@@ -4444,12 +4861,14 @@ function playSweep(): void {
   stopSweep();
   sweepPlay.textContent = copy.sky.sweep.pause;
   sweep.timer = window.setInterval(() => setWeek(sweep.week + 1, true), 450);
+  skyBandNow?.setWeek(sweep.open ? sweep.week : null, true);
 }
 
 function stopSweep(): void {
   if (sweep.timer) window.clearInterval(sweep.timer);
   sweep.timer = 0;
   sweepPlay.textContent = copy.sky.sweep.play;
+  skyBandNow?.setWeek(sweep.open ? sweep.week : null, false);
 }
 
 function toggleSweep(): void {
@@ -4461,49 +4880,6 @@ function toggleSweep(): void {
     sky.setDate(new Date());
   }
   render();
-}
-
-function sweepControl(): HTMLElement | null {
-  const c = sweep.coverage;
-  if (!c) return null;
-  const toggle = h(
-    'button',
-    { type: 'button', class: 'sweep-toggle', 'aria-expanded': String(sweep.open) },
-    sweep.open ? copy.sky.sweep.close : copy.sky.sweep.open,
-  );
-  toggle.addEventListener('click', toggleSweep);
-  if (!sweep.open) return h('section', { class: 'sweep' }, toggle);
-  const placeholder =
-    c.meta.status === 'MEASURED'
-      ? null
-      : h('p', { class: 'hint placeholder' }, copy.sky.sweep.placeholder);
-  return h(
-    'section',
-    { class: 'sweep open' },
-    toggle,
-    placeholder,
-    sweepLabel,
-    sweepFrames,
-    h('div', { class: 'sweep-row' }, sweepPlay, sweepSlider),
-    // A two-swatch key instead of a sentence (the sentence stays for screen readers).
-    h(
-      'p',
-      { class: 'sweep-key', 'aria-label': copy.sky.sweep.soFar },
-      h('i', { class: 'sofar', 'aria-hidden': 'true' }),
-      h('span', { 'aria-hidden': 'true' }, copy.sky.sweep.keySoFar),
-      h('i', { class: 'week', 'aria-hidden': 'true' }),
-      h('span', { 'aria-hidden': 'true' }, copy.sky.sweep.keyWeek),
-    ),
-    h('p', { class: 'hint' }, touchOnly ? copy.sky.sweep.hintTouch : copy.sky.sweep.hint),
-    c.meta.caption && c.meta.status === 'MEASURED'
-      ? h(
-          'details',
-          { class: 'why' },
-          h('summary', {}, copy.sky.sweep.why),
-          h('p', { class: 'hint' }, c.meta.caption),
-        )
-      : null,
-  );
 }
 
 function render(): void {
@@ -4522,7 +4898,16 @@ function render(): void {
   homeLink.setAttribute('aria-label', inShow ? copy.nav.backToSky : copy.nav.home);
   homeLink.title = inShow ? copy.nav.backToSky : copy.nav.home;
   const tabHadFocus = !!(document.activeElement as HTMLElement | null)?.closest?.('.panel-tabs');
+  const searchHadFocus = document.activeElement === search;
+  const caret = [search.selectionStart, search.selectionEnd] as const;
   words.replaceChildren(...renderWords());
+  // The search input lives in the homepage column, and in the header everywhere else.
+  if (!words.contains(search)) searchAnchor.after(search);
+  if (searchHadFocus && document.activeElement !== search) {
+    search.focus({ preventScroll: true });
+    if (caret[0] !== null) search.setSelectionRange(caret[0], caret[1]);
+  }
+  app.classList.toggle('home', words.contains(search));
   if (tabHadFocus)
     (words.querySelector('.panel-tabs [aria-selected="true"]') as HTMLElement | null)?.focus();
   const tabbed = !!words.querySelector('.panel-tabbed');

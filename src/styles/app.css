@@ -2557,3 +2557,341 @@ span[data-fit='1'] {
   border-radius: 6px;
   white-space: nowrap;
 }
+
+/* ---------- the homepage (agreed with Viewer, 14 Nov): search column + band variant D ---------- */
+
+.words .home-headline {
+  font-size: clamp(26px, 2.6vw, 36px);
+  margin: 0 0 14px;
+  max-width: 17em;
+}
+.home-search .search.glass {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  padding: 11px 16px 11px 38px;
+  font-size: 17px;
+  background-position:
+    14px 50%,
+    0 0;
+  background-size:
+    16px 16px,
+    100% 100%;
+}
+.home-search .search.glass:focus-visible {
+  outline: 2px solid var(--look);
+  outline-offset: 2px;
+}
+.words .search-echo {
+  margin: 6px 0 0 16px;
+  font-size: 13px;
+  color: var(--quiet);
+  min-height: 1.3em;
+}
+.words .search-echo.ok {
+  color: var(--look);
+}
+.words .search-note {
+  margin: 6px 0 0 16px;
+  font-size: 13px;
+}
+.home-try {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 0 4px;
+}
+.home-try-label {
+  font: italic 14px var(--serif);
+  color: var(--quiet);
+}
+.examples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.examples .example {
+  border: 1px solid var(--dusk-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--night) 40%, transparent);
+  padding: 5px 12px;
+  font-size: 13.5px;
+  color: var(--starlight);
+}
+.examples .example:hover {
+  border-color: var(--mist);
+}
+#app.home .words .actions {
+  margin-top: 10px;
+}
+.words .home-quiet {
+  font-size: 13px;
+  color: var(--quiet);
+  margin: 2px 0 10px;
+}
+.legend .mark-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--mist);
+}
+
+/* The band: one sentence, five (or six) rows of photos by date, a time axis. */
+.sky-band {
+  --sb-row: 20px;
+  --sb-names: 228px;
+  --sb-rule: color-mix(in srgb, var(--mist) 16%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'line ctl'
+    'rows rows'
+    'axis axis';
+  align-items: center;
+  column-gap: 16px;
+  font-size: 13px;
+}
+.sky-band.with-spot {
+  --sb-row: 17px;
+}
+.sb-head {
+  display: contents;
+}
+.sb-line {
+  grid-area: line;
+  margin: 0 0 4px;
+  color: var(--mist);
+  font-size: 13px;
+  min-width: 0;
+}
+.sb-week {
+  grid-area: ctl;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.sb-week-text {
+  color: var(--look);
+  white-space: nowrap;
+}
+.sb-play,
+.sb-close {
+  border: 1px solid var(--dusk-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--starlight);
+  padding: 2px 12px;
+  font-size: 12.5px;
+}
+.sb-flat {
+  border: 0;
+  background: none;
+  color: var(--look);
+  font-size: 12.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 2px 4px;
+}
+.sb-close {
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 20px;
+}
+.sb-grid {
+  grid-area: rows;
+  display: grid;
+  grid-template-columns: var(--sb-names) minmax(0, 1fr);
+  column-gap: 12px;
+}
+.sb-names {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sb-names li {
+  height: var(--sb-row);
+  display: flex;
+  align-items: center;
+}
+.sb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--starlight);
+  text-align: left;
+  font-size: 12.5px;
+}
+.sb-row:hover,
+.sb-row:focus-visible {
+  background: color-mix(in srgb, var(--dusk) 70%, transparent);
+}
+.sb-row .sb-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sb-row .chip {
+  font-size: 11.5px;
+  white-space: nowrap;
+  color: var(--quiet);
+}
+.sb-row.this-week .sb-name {
+  color: var(--look);
+}
+.sb-spot {
+  justify-content: space-between;
+  padding: 0 4px;
+  color: var(--look);
+  font-size: 12.5px;
+  background: color-mix(in srgb, var(--look) 10%, transparent);
+  border-radius: 4px;
+}
+.sb-spot-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sb-spot-short {
+  white-space: nowrap;
+  color: var(--mist);
+}
+.sb-track {
+  position: relative;
+  min-width: 0;
+}
+.sb-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sb-slider {
+  position: absolute;
+  inset: 0;
+  cursor: ew-resize;
+  touch-action: none;
+  border-radius: 3px;
+}
+.sb-slider:focus-visible {
+  outline: 2px solid var(--look);
+  outline-offset: 2px;
+}
+.sb-cursor {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--look);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--look) 60%, transparent);
+  pointer-events: none;
+}
+.sb-axis-row {
+  grid-area: axis;
+  display: grid;
+  grid-template-columns: var(--sb-names) minmax(0, 1fr);
+  column-gap: 12px;
+}
+.sb-axis {
+  position: relative;
+  height: 16px;
+  color: var(--quiet);
+  font-size: 11px;
+}
+.sb-axis span {
+  position: absolute;
+  top: 2px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.sb-axis span:first-child:not(.end) {
+  transform: none;
+}
+.sb-axis .end {
+  transform: translateX(-100%);
+}
+.sb-axis .seam {
+  color: var(--mist);
+}
+.ride-along[aria-pressed='true'] {
+  border-color: var(--look);
+  color: var(--look);
+}
+
+/* Phones: the search under the header at full width, examples as one scrolling row, and the
+   band's rows compressed (names only; the sentence is the caption). */
+@media (max-width: 600px) {
+  .words .home-headline {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  .home-search .search.glass {
+    max-width: none;
+  }
+  .home-try {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .examples {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .examples .example {
+    white-space: nowrap;
+  }
+  .sky-band {
+    --sb-names: 116px;
+    --sb-row: 18px;
+    grid-template-areas:
+      'line line'
+      'ctl ctl'
+      'rows rows'
+      'axis axis';
+  }
+  /* The status words go, the status dot stays (ember when measured; one colour, one meaning). */
+  .sb-row {
+    justify-content: flex-start;
+  }
+  .sb-row .chip {
+    order: -1;
+    font-size: 0;
+    gap: 0;
+  }
+  .sb-week {
+    justify-content: flex-start;
+  }
+  .sb-axis span:not(.end):not(:first-child) {
+    display: none;
+  }
+  /* The column comes first, under the header, and never wider than the screen (the examples'
+     scrolling row would otherwise prop it open). */
+  #app.home .words {
+    order: -1;
+    width: 100%;
+    min-width: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+  .home-try,
+  .examples {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

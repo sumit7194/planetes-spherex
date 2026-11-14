@@ -132,6 +132,72 @@ export const copy = {
     },
     catalogueNote: 'Background stars, glow and lines: catalogues, not SPHEREx.',
   },
+  /**
+   * The homepage (agreed with Viewer, 14 Nov): the search in the right-hand column, the band as
+   * the five rows (variant D). Headline: what the visitor can do, not a claim about change.
+   */
+  home: {
+    headline: 'Pick any spot in the sky: see how it looked, pass after pass.',
+    placeholder: "A position (RA, Dec) or a star's name",
+    /** Under the field while it's empty: what to type, and the frame (ICRS). */
+    echoEmpty: "RA and Dec in ICRS (J2000), in degrees or hours, or a star's name.",
+    echoPartial: 'Keep typing: a right ascension, then a declination.',
+    echoName: (name: string, enter: string) => `✓ ${name} · ${enter}`,
+    echoPosition: (ra: string, dec: string, enter: string) => `✓ RA ${ra}, Dec ${dec} · ${enter}`,
+    /** A typed spot on a target's past track (the challenge's WISE 0855 coordinates). */
+    echoPast: (name: string, year: number, moved: string) =>
+      `✓ That's where ${name} was in ${year}; it has moved ${moved} since. Enter opens its page.`,
+    /** A typed spot right next to one of the five. */
+    echoNear: (name: string) => `✓ Right by ${name}. Enter opens its page.`,
+    /** The sixth row's name when the spot is one of the five's past places. */
+    spotMoved: (name: string, moved: string) => `${name} (${moved} from your spot)`,
+    enter: 'press Enter',
+    enterTouch: 'press Go',
+    examplesLabel: 'Try',
+    /** The challenge page's own coordinates for WISE 0855 (its 2010 place). */
+    examples: {
+      w0855: "WISE 0855, the challenge's position",
+      w0855Value: '08h55m10.831s −07d14m42.53s',
+      barnard: "Barnard's Star",
+      teegarden: "Teegarden's Star, 5″ a year",
+      teegardenName: "Teegarden's Star",
+    },
+    quiet: 'or click anywhere on the sky · drag to look around',
+    quietTouch: 'or tap anywhere on the sky · drag to look around',
+    /** The band (variant D). */
+    band: {
+      label: 'When SPHEREx photographed them',
+      week: 'Week shown on the sky',
+      noWeek: 'No week shown. Use the arrow keys to show one on the sky.',
+      play: 'Play the weeks',
+      pause: 'Pause',
+      close: 'Stop showing the week',
+      showing: (week: string) => `On the sky: ${week}`,
+      seam: 'DR1 | QR3',
+      /** In Look around the week's band is often behind you: the flat map shows all of it. */
+      flat: 'See it on the flat map',
+      through: (date: string) => `to ${date}`,
+      weekText: (from: string, to: string, n: number) =>
+        `${from} to ${to}, ${n.toLocaleString('en-GB')} photos`,
+    },
+    /** One row's accessible name. */
+    rowLabel: (name: string, status: string, photos: number, passes: number) =>
+      `${name}, ${status}, ${photos} photos in ${passes} ${passes === 1 ? 'pass' : 'passes'}`,
+    spotTitle: 'Your spot',
+    spotLooking: 'looking…',
+    spotPasses: (n: number) => (n === 1 ? '1 pass' : `${n} passes`),
+    spotLine: (name: string, passes: number, months: string, photos: number) =>
+      passes === 0
+        ? `${name}: not photographed in the data released so far (DR1 + QR3).`
+        : `${name}: photographed in ${passes === 1 ? '1 pass' : `${passes} passes`} (${months}), ${photos.toLocaleString('en-GB')} photos.`,
+    spotLoading: (name: string) => `${name}: looking it up in the sky index…`,
+    spotFailed: (name: string) => `${name}: the sky index couldn't be reached just now.`,
+    /** Under Learn's first step: what the blue band is. */
+    ringNote:
+      "The blue band is one week of SPHEREx's photos, from its own records; it moves on as the weeks play.",
+    rideAlong: 'Ride along',
+    riding: 'Riding along',
+  },
   wanderers: {
     barnard: { name: "Barnard's Star", short: 'A runaway star' },
     w0855: { name: 'WISE 0855', short: 'One of the coldest brown dwarfs' },
@@ -459,7 +525,7 @@ export const copy = {
       'Background stars and their names: the Hipparcos catalogue and the IAU, not SPHEREx.',
       'The soft band: the Milky Way, from Gaia star counts, not SPHEREx.',
       'Faint lines: constellation figures, only a guide.',
-      'Blue patches, when shown: where SPHEREx looked that week, from its own photo records.',
+      "Blue, on the sky and on a row of the band: photographed that week, from SPHEREx's own photo records.",
     ],
   },
   /** One status vocabulary, the same word, colour and mark everywhere (UI round, Physics). */
@@ -731,13 +797,15 @@ export const copy = {
     eyebrow: (n: number, of: number) => `A one-minute tour, ${n} of ${of}`,
     title: 'A one-minute tour',
     steps: [
+      'How SPHEREx sees the sky: it scans a ring of sky at right angles to the Sun; as Earth orbits, the ring sweeps the whole sky every six months.',
+      'From out here: Earth, and SPHEREx on its orbit about 660 km up, looking out, away from Earth.',
       'SPHEREx has photographed the whole sky at least twice, in 102 infrared colours.',
       'Between its looks, almost every star holds still. A few nearby ones visibly move, like this runaway.',
       "Barnard's Star moved north between two looks. Watch the ring: it holds still, and the star doesn't.",
       'WISE 0855 is one of the coldest brown dwarfs known, faint and fast. SPHEREx caught it moving west.',
       'ε Indi B is two brown dwarfs in one dot. SPHEREx also measured its light colour by colour: its spectrum is below.',
       "Some stars change brightness instead. RW Aurigae may flicker, but SPHEREx can't confirm it yet, and says so.",
-      "Your turn: pick a light, click anywhere in the sky, or type a position or a star's name.",
+      "Your turn: type a position or a star's name, pick a light, or click anywhere in the sky.",
     ],
     back: 'Back',
     next: 'Next',
