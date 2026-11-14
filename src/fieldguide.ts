@@ -73,9 +73,11 @@ async function drawPanels(card: Card): Promise<HTMLElement[]> {
   const css = getComputedStyle(document.documentElement);
   const flag = css.getPropertyValue('--sky-flag').trim() || '#e0533c';
   const star = css.getPropertyValue('--sky-starlight').trim() || '#efe8dd';
-  const Z = 4;
   return data.map(({ p, img, mark, masked }) => {
     const n = p.size;
+    // Every panel is 128 px across: 32 pixels at 4x (Viewer: at 4x
+    // its three marks merged into one blob); the blend card is 10 pixels at 13x.
+    const Z = Math.max(1, Math.round(128 / n));
     const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
     const c = h('canvas', {
       width: String(n * Z * dpr),
@@ -163,10 +165,20 @@ async function drawPanels(card: Card): Promise<HTMLElement[]> {
         ctx.stroke();
       }
       if (p.ring) {
+        // The card's own thing, kept prominent over busy flag outlines (Viewer): a dark
+        // under-stroke, then starlight.
+        const ring = p.ring;
+        const draw = () => {
+          ctx.beginPath();
+          ctx.arc((ring[0] + 0.5) * Z, (n - 1 - ring[1] + 0.5) * Z, 12, 0, 2 * Math.PI);
+        };
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+        draw();
+        ctx.stroke();
+        ctx.lineWidth = 2;
         ctx.strokeStyle = star;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc((p.ring[0] + 0.5) * Z, (n - 1 - p.ring[1] + 0.5) * Z, 3 * Z, 0, 2 * Math.PI);
+        draw();
         ctx.stroke();
       }
     }

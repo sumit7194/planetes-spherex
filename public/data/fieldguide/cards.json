@@ -83,8 +83,8 @@
      "caption": "12 June 2025: flagged",
      "alt": "12 June 2025: a patch flagged as a jump (TRANSIENT), outlined",
      "ring": [
-      15.5,
-      30.5
+      16.49982875013984,
+      15.500122331316334
      ]
     },
     {
@@ -96,7 +96,7 @@
      "alt": "12 June 2025: the same sky, nothing there",
      "ring": [
       16.47738584191245,
-      30.331925111626106
+      16.331925111626106
      ]
     },
     {
@@ -104,11 +104,11 @@
      "image": "hit-halo.f32",
      "mark": "hit-halo.mark.u8",
      "masked": "hit-halo.masked.u8",
-     "caption": "outlined: halo around the hit (HALO)",
-     "alt": "12 June 2025: the ring of pixels the pipeline flags around the hit, outlined",
+     "caption": "outlined: rings around every hit in this photo (HALO)",
+     "alt": "12 June 2025: the rings of pixels the pipeline flags around every hit in this photo, outlined; this card's hit is circled",
      "ring": [
-      15.5,
-      30.5
+      16.49982875013984,
+      15.500122331316334
      ]
     }
    ]
@@ -244,55 +244,6 @@
    ]
   },
   {
-   "id": "flag-on-star",
-   "section": "in-sky",
-   "title": "A flag on a real star",
-   "looksLike": "a glitch, so not real",
-   "label": "confirmed",
-   "evidence": [
-    "Flagged as a jump during the exposure (TRANSIENT) on 1 pixel; Gaia DR3 4472811789965981184 (G 17.7) lies 1.1 pixels away",
-    "The same star shows in 2 other photos of the same detector, about as bright (here 1.4× its usual brightness there)",
-    "A flag marks pixels to treat with care. It doesn’t mean the source is fake: this is a catalogued star."
-   ],
-   "howToTell": "Check the catalogues and the other photos before dismissing a flagged source: a flag can sit on a real star.",
-   "source": {
-    "photos": [
-     "2025W33_2C_0386_4",
-     "2025W34_2B_0030_3"
-    ],
-    "date": "16 August 2025",
-    "detector": "detector D6 (4.4–5 µm)",
-    "lambda": "4.45 µm",
-    "at": "269.36253,4.70014"
-   },
-   "panels": [
-    {
-     "size": 32,
-     "image": "flagstar-a.f32",
-     "mark": "flagstar-a.mark.u8",
-     "masked": "flagstar-a.masked.u8",
-     "caption": "16 August 2025: flagged",
-     "alt": "16 August 2025: a flagged pixel on a catalogued star, outlined",
-     "ring": [
-      7.0,
-      21.0
-     ]
-    },
-    {
-     "size": 32,
-     "image": "flagstar-b.f32",
-     "mark": "flagstar-b.mark.u8",
-     "masked": "flagstar-b.masked.u8",
-     "caption": "21 August 2025: the same star",
-     "alt": "21 August 2025: the same star, no flag",
-     "ring": [
-      7.575776141382789,
-      21.944970683228803
-     ]
-    }
-   ]
-  },
-  {
    "id": "blend",
    "section": "in-sky",
    "title": "Two sources in one pixel",
@@ -315,7 +266,7 @@
    },
    "panels": [
     {
-     "size": 32,
+     "size": 10,
      "image": "blend-d2.f32",
      "mark": "blend-d2.mark.u8",
      "masked": "blend-d2.masked.u8",
@@ -324,23 +275,23 @@
      "marks": [
       {
        "kind": "light",
-       "x": 16.69441605326646,
-       "y": 16.307957188075648
+       "x": 5.694416053266458,
+       "y": 5.3079571880756475
       },
       {
        "kind": "neighbour",
-       "x": 16.596001720093504,
-       "y": 16.347395563295855
+       "x": 5.596001720093504,
+       "y": 5.347395563295855
       },
       {
        "kind": "target",
-       "x": 15.93703041514927,
-       "y": 15.536230779676178
+       "x": 4.93703041514927,
+       "y": 4.536230779676178
       }
      ]
     },
     {
-     "size": 32,
+     "size": 10,
      "image": "blend-d6.f32",
      "mark": "blend-d6.mark.u8",
      "masked": "blend-d6.masked.u8",
@@ -349,18 +300,18 @@
      "marks": [
       {
        "kind": "light",
-       "x": 16.25134860025495,
-       "y": 15.895058985376323
+       "x": 5.25134860025495,
+       "y": 4.895058985376323
       },
       {
        "kind": "neighbour",
-       "x": 16.596001720093504,
-       "y": 16.347395563295855
+       "x": 5.596001720093504,
+       "y": 5.347395563295855
       },
       {
        "kind": "target",
-       "x": 15.93703041514927,
-       "y": 15.536230779676178
+       "x": 4.93703041514927,
+       "y": 4.536230779676178
       }
      ]
     }

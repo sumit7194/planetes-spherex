@@ -477,6 +477,8 @@ def named() -> None:
 
 OUT = HERE.parent / "public" / "data" / "fieldguide"
 CUT = 32
+BLEND_CUT = 10
+WITHHELD = {"flag-on-star"}
 DET_RANGE = {1: "0.75–1.1 µm", 2: "1.1–1.6 µm", 3: "1.6–2.4 µm", 4: "2.4–3.8 µm", 5: "3.8–4.4 µm", 6: "4.4–5 µm"}
 
 
@@ -486,25 +488,27 @@ def date_of(mjd: float) -> str:
     return f"{d.day} {d:%B %Y}"
 
 
-def crop_origin(shape, x: float, y: float) -> tuple[int, int]:
-    """The CUT x CUT square around (x, y), moved to stay inside the box when the box is big
-    enough (a centred crop near the box's edge would be mostly empty)."""
+def crop_origin(shape, x: float, y: float, cut: int = CUT, clamp: bool = True) -> tuple[int, int]:
+    """The cut x cut square around (x, y). With clamp, moved to stay inside the box when the box
+    is big enough; without, kept centred on (x, y) so the thing the card is about sits in the
+    middle (Viewer, 15 Nov: a clamped crop put the hit at the panel's edge, beside a brighter
+    star the eye went to). Off the box is padded (hatched)."""
     h, w = shape
-    xi, yi = int(round(x)) - CUT // 2, int(round(y)) - CUT // 2
-    if w >= CUT:
-        xi = min(max(xi, 0), w - CUT)
-    if h >= CUT:
-        yi = min(max(yi, 0), h - CUT)
+    xi, yi = int(round(x)) - cut // 2, int(round(y)) - cut // 2
+    if clamp and w >= cut:
+        xi = min(max(xi, 0), w - cut)
+    if clamp and h >= cut:
+        yi = min(max(yi, 0), h - cut)
     return xi, yi
 
 
-def crop(arr: np.ndarray, x: float, y: float, fill) -> np.ndarray:
-    """A CUT x CUT square around (x, y) (see crop_origin), padded with `fill` off the box."""
-    out = np.full((CUT, CUT), fill, dtype=arr.dtype)
-    xi, yi = crop_origin(arr.shape, x, y)
+def crop(arr: np.ndarray, x: float, y: float, fill, cut: int = CUT, clamp: bool = True) -> np.ndarray:
+    """A cut x cut square around (x, y) (see crop_origin), padded with `fill` off the box."""
+    out = np.full((cut, cut), fill, dtype=arr.dtype)
+    xi, yi = crop_origin(arr.shape, x, y, cut, clamp)
     h, w = arr.shape
-    for j in range(CUT):
-        for i in range(CUT):
+    for j in range(cut):
+        for i in range(cut):
             yy, xx = yi + j, xi + i
             if 0 <= yy < h and 0 <= xx < w:
                 out[j, i] = arr[yy, xx]
@@ -516,19 +520,48 @@ def write_panel(name: str, img, mark, masked) -> dict:
     np.asarray(img, "<f4").tofile(OUT / f"{name}.f32")
     np.asarray(mark, np.uint8).tofile(OUT / f"{name}.mark.u8")
     np.asarray(masked, np.uint8).tofile(OUT / f"{name}.masked.u8")
-    return dict(size=CUT, image=f"{name}.f32", mark=f"{name}.mark.u8", masked=f"{name}.masked.u8")
+    return dict(size=int(np.asarray(img).shape[0]), image=f"{name}.f32", mark=f"{name}.mark.u8", masked=f"{name}.masked.u8")
+
+
+def centred_box(path: str, ra: float, dec: float) -> tuple[dict, float, float]:
+    """A fresh CUT x CUT read of the same photo centred on (ra, dec) (Viewer, 15 Nov: the cached
+    boxes were small and the hits sat at their edges, so a crop couldn't be centred). Read once
+    with spherex.read_box from the photo's own file, then kept in our cache."""
+    import hashlib
+    key = hashlib.sha1(f"{path}|{ra:.7f}|{dec:.7f}|{CUT}".encode()).hexdigest()[:16]
+    out = CACHE / f"fg_centred_{key}.pkl"
+    if not out.exists():
+        import asyncio
+        import aiohttp
+        import spherex as sx
+        e = pickle.loads((CACHE / path).read_bytes())
+
+        async def go():
+            async with aiohttp.ClientSession() as s_:
+                return await sx.read_box(sx.RangeReader(s_), dict(url=e["url"], t=e.get("mjd", 0)), ra, dec, CUT // 2)
+        b = asyncio.run(go())
+        if b is None:
+            raise SystemExit(f"{path}: ({ra}, {dec}) is off the detector")
+        out.write_bytes(pickle.dumps(dict(img=b["img"], fl=b["fl"], bits=b["bits"], x0=b["x0"], y0=b["y0"],
+                                          xt=b["xt"], yt=b["yt"], url=e["url"])))
+    # Our own cache, written only by this pipeline on this machine.
+    b = pickle.loads(out.read_bytes())
+    return b, b["xt"] - b["x0"], b["yt"] - b["y0"]
 
 
 def photo_panel(name: str, path: str, x: float, y: float, mark_names, caption: str, alt: str,
-                ring=False) -> dict:
+                ring=False, clamp=True, sky=None) -> dict:
     # Our own cache, written only by this pipeline on this machine (as build_pack's).
-    e = pickle.loads((CACHE / path).read_bytes())
-    img = crop(e["img"].astype("f4"), x, y, np.nan)
-    mark = crop(mask_of(e, mark_names).astype(np.uint8), x, y, 0) if mark_names else np.zeros((CUT, CUT), np.uint8)
-    masked = crop(mask_of(e, FIT_REJECT).astype(np.uint8), x, y, 1)
+    if sky is not None:
+        e, x, y = centred_box(path, *sky)
+    else:
+        e = pickle.loads((CACHE / path).read_bytes())
+    img = crop(e["img"].astype("f4"), x, y, np.nan, clamp=clamp)
+    mark = crop(mask_of(e, mark_names).astype(np.uint8), x, y, 0, clamp=clamp) if mark_names else np.zeros((CUT, CUT), np.uint8)
+    masked = crop(mask_of(e, FIT_REJECT).astype(np.uint8), x, y, 1, clamp=clamp)
     p = dict(write_panel(name, img, mark, masked), caption=caption, alt=alt)
     if ring:
-        ox, oy = crop_origin(e["img"].shape, x, y)
+        ox, oy = crop_origin(e["img"].shape, x, y, clamp=clamp)
         p["ring"] = [x - ox, y - oy]
     return p
 
@@ -592,7 +625,7 @@ def blend_marks(img, all_late, man, mjd, c0) -> list[dict]:
     tx, ty = to_px(*catalogs.propagate(dict(ra=w0855["ra"], dec=w0855["dec"], pmra=w0855["pmra"],
                                             pmdec=w0855["pmdec"], epoch=w0855["epoch"]), yr))
     # Grid pixel -> panel pixel: the panel starts where crop() starts it.
-    off = crop_origin(all_late.shape, c0, c0)[0]
+    off = crop_origin(all_late.shape, c0, c0, BLEND_CUT)[0]
     return [dict(kind="light", x=lx - off, y=ly - off), dict(kind="neighbour", x=nx - off, y=ny - off),
             dict(kind="target", x=tx - off, y=ty - off)]
 
@@ -636,14 +669,14 @@ def export() -> None:
     if c:
         other = other_photo(c, [], lambda sn: sn < 3)
         panels = [photo_panel("hit-a", c["path"], c["x"], c["y"], ("TRANSIENT",),
-                              f"{date_of(c['mjd'])}: flagged", f"{date_of(c['mjd'])}: a patch flagged as a jump (TRANSIENT), outlined", True)]
+                              f"{date_of(c['mjd'])}: flagged", f"{date_of(c['mjd'])}: a patch flagged as a jump (TRANSIENT), outlined", True, sky=(c['ra'], c['dec']))]
         if other:
             o, ox, oy = other
             panels.append(photo_panel("hit-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same sky",
-                                      f"{date_of(o['mjd'])}: the same sky, nothing there", True))
+                                      f"{date_of(o['mjd'])}: the same sky, nothing there", True, sky=(c['ra'], c['dec'])))
         # Physics: the HALO ring around the hit, which we had first misread as a bright star's halo.
-        panels.append(photo_panel("hit-halo", c["path"], c["x"], c["y"], ("HALO",), "outlined: halo around the hit (HALO)",
-                                  f"{date_of(c['mjd'])}: the ring of pixels the pipeline flags around the hit, outlined", True))
+        panels.append(photo_panel("hit-halo", c["path"], c["x"], c["y"], ("HALO",), "outlined: rings around every hit in this photo (HALO)",
+                                  f"{date_of(c['mjd'])}: the rings of pixels the pipeline flags around every hit in this photo, outlined; this card's hit is circled", True, sky=(c['ra'], c['dec'])))
         d, lam = det_line(c["det"], c["lam"])
         cards.append(dict(
             id="cosmic-ray", section="not-in-sky", title="Cosmic ray or one-off glitch",
@@ -730,11 +763,11 @@ def export() -> None:
         # The second photo looks at the star's catalogue place (its motion is a few mas/yr).
         other = other_photo(dict(h_, ra=g["ra"], dec=g["dec"]), [], lambda sn: sn >= 5)
         panels = [photo_panel("flagstar-a", h_["path"], h_["x"], h_["y"], ("TRANSIENT",),
-                              f"{date_of(h_['mjd'])}: flagged", f"{date_of(h_['mjd'])}: a flagged pixel on a catalogued star, outlined", True)]
+                              f"{date_of(h_['mjd'])}: flagged", f"{date_of(h_['mjd'])}: a flagged pixel on a catalogued star, outlined", True, sky=(g['ra'], g['dec']))]
         if other:
             o, ox, oy = other
             panels.append(photo_panel("flagstar-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same star",
-                                      f"{date_of(o['mjd'])}: the same star, no flag", True))
+                                      f"{date_of(o['mjd'])}: the same star, no flag", True, sky=(g['ra'], g['dec'])))
         d, lam = det_line(h_["det"], h_["lam"])
         cards.append(dict(
             id="flag-on-star", section="in-sky", title="A flag on a real star",
@@ -766,9 +799,11 @@ def export() -> None:
         img = np.fromfile(pk / st["image"], "<f4").reshape(n, n)
         fl = np.fromfile(pk / st["flags"], np.uint8).reshape(n, n)
         c0 = n / 2 - 0.5
-        pimg = crop(img, c0, c0, np.nan)
-        pmask = crop(((fl & 3) > 0).astype(np.uint8), c0, c0, 1)
-        blend_panels.append(dict(write_panel(f"blend-d{det}", pimg, np.zeros((CUT, CUT), np.uint8), pmask),
+        # 10 x 10 (drawn at about the same 128 px, 13x): the three marks sit within ~1 px of each other, so
+        # at 4x they merged into one blob (Viewer); at 13x the ~1 px between them is ~14 screen px.
+        pimg = crop(img, c0, c0, np.nan, BLEND_CUT)
+        pmask = crop(((fl & 3) > 0).astype(np.uint8), c0, c0, 1, BLEND_CUT)
+        blend_panels.append(dict(write_panel(f"blend-d{det}", pimg, np.zeros((BLEND_CUT, BLEND_CUT), np.uint8), pmask),
                                  caption=lab, alt=f"WISE 0855's spot in {lab}, May 2026 stack",
                                  marks=blend_marks(img, all_late, man, mjd, c0)))
     cards.append(dict(
@@ -782,6 +817,14 @@ def export() -> None:
                     detector="D2 and D6", **{"lambda": "1.1–1.6 and 4.4–5 µm"}, at=None),
         panels=blend_panels))
 
+    # Held back (15 Nov, ~04:15 IST): the "flag on a real star" pick is a lone pixel (548 vs
+    # neighbours 0.2) flagged NONFUNC + SUR_ERROR + TRANSIENT, and the "same star" photo's pixel is
+    # NONFUNC too: not starlight. With Physics; nothing about it is shown until a new pick passes.
+    for c_ in [c_ for c_ in cards if c_["id"] in WITHHELD]:
+        for p_ in c_["panels"]:
+            for f_ in (p_["image"], p_["mark"], p_["masked"]):
+                (OUT / f_).unlink(missing_ok=True)
+    cards = [c_ for c_ in cards if c_["id"] not in WITHHELD]
     (OUT / "cards.json").write_text(json.dumps(dict(
         note="Draft wording; Physics signs the labels and evidence before this is pushed.",
         rules="prereg/fieldguide/PLAN.md", cards=cards), indent=1, ensure_ascii=False))
