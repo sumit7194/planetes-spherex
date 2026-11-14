@@ -4430,19 +4430,10 @@ function aladinLink(at: { ra: number; dec: number }): HTMLElement {
   );
 }
 
-/** "RA 17h 57m 48s, Dec +4° 41′" for the eyebrow. */
+/** "RA 17h 57m 48s, Dec +4° 41′ 00″" for the eyebrow: the same format as the echo and readout. */
 function formatPosition(place: typeof state.place): string {
   if (!('at' in place) || !place.at) return '';
-  const { ra, dec } = place.at;
-  const h_ = ra / 15;
-  const hh = Math.floor(h_);
-  const mm = Math.floor((h_ - hh) * 60);
-  const ss = Math.round(((h_ - hh) * 60 - mm) * 60);
-  const sign = dec < 0 ? '−' : '+';
-  const d = Math.abs(dec);
-  const dd = Math.floor(d);
-  const dm = Math.round((d - dd) * 60);
-  return `RA ${hh}h ${mm}m ${ss}s, Dec ${sign}${dd}° ${dm}′`;
+  return positionText(place.at);
 }
 
 /**

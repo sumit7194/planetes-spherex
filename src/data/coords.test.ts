@@ -119,5 +119,12 @@ describe('writing positions', () => {
     const r = parseSkyPosition('RA 133.8, Dec -7.2');
     expect(r.ok && r.position.ra).toBeCloseTo(133.8);
     expect(parseSkyPosition('ra=10h dec=+20').ok).toBe(true);
+    // Labels decide which part is which.
+    const swapped = parseSkyPosition('Dec 2.2 RA 150.1');
+    expect(swapped.ok && swapped.position.ra).toBeCloseTo(150.1, 9);
+    expect(swapped.ok && swapped.position.dec).toBeCloseTo(2.2, 9);
+    const neg = parseSkyPosition('Dec −7° 14′ 43″, RA 8h 55m 11s');
+    expect(neg.ok && Math.abs(neg.position.ra - 133.7958)).toBeLessThan(0.001);
+    expect(neg.ok && Math.abs(neg.position.dec + 7.2453)).toBeLessThan(0.001);
   });
 });

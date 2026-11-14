@@ -73,8 +73,13 @@ export function parseSkyPosition(input: string): ParseResult {
   const s = normalise(input);
   if (s.length === 0) return { ok: false, reason: 'empty' };
 
-  const parts = splitParts(s);
-  if (!parts) return { ok: false, reason: 'expected a right ascension and a declination' };
+  const split = splitParts(s);
+  if (!split) return { ok: false, reason: 'expected a right ascension and a declination' };
+  // Labelled parts are read by their labels: "Dec 2.2 RA 150.1" is RA 150.1, Dec 2.2 (Viewer).
+  const ra0 = input.search(/(^|[\s,(])(ra|α)\s*[:=]?(?=[\s\d+\-−])/i);
+  const dec0 = input.search(/(^|[\s,(])(dec|δ)\s*[:=]?(?=[\s\d+\-−])/i);
+  const parts: [string, string] =
+    ra0 >= 0 && dec0 >= 0 && dec0 < ra0 ? [split[1].replace(/^\+/, ''), split[0]] : split;
 
   const raC = components(parts[0]);
   const decC = components(parts[1]);

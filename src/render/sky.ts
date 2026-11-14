@@ -32,13 +32,14 @@ function namedLimit(fov: number): number {
 }
 /**
  * Grid spacing in degrees, by field. RA steps land on round hours and minutes (2h, 1h, 20m), so
- * its labels read cleanly; Dec steps are 30°, 10°, 5° (Viewer, 14 Nov).
+ * its labels read cleanly; Dec steps are 15°, 10°, 5° (Viewer, 14 Nov).
  */
 function raGridStep(fov: number): number {
   return fov > 35 ? 30 : fov > 15 ? 15 : 5;
 }
 function decGridStep(fov: number): number {
-  return fov > 35 ? 30 : fov > 15 ? 10 : 5;
+  // 15° when wide, as RA's 1h, so the opening view labels a few Dec lines, not just the equator.
+  return fov > 35 ? 15 : fov > 15 ? 10 : 5;
 }
 /** The lens field: 40 pack pixels of 6.15 arcseconds, in degrees. */
 const LENS_FIELD_DEG = (40 * 6.15) / 3600;
