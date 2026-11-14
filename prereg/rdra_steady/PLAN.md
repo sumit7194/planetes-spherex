@@ -24,6 +24,7 @@
 - measure.wing_ratios on each chosen star, rings 5–9 px and 8–13 px (R Draconis's own pair), in D1, D5 and D6. Same rules: photos paired within λ/80, ≥ 10 matched pairs per pass pair, each photo's ring ≥ 60% usable.
 - **Pass, per detector:** every chosen star, every pass pair, both rings within 1.00 ± 0.06.
 - **Fixed in advance:** a detector where any chosen star fails is not trusted for R Draconis. R Draconis's brightness change is MEASURED only from trusted detectors that also pass its own gates (rings agree within 10%, change beyond 3× its error with the far comparison stars' systematic error and the 5% floor). Otherwise it stays "possible", with the reason.
+- **Too few matches (Physics, 14 Nov; added before any ratio was read):** if fewer than 2 stars match in all three detectors, each detector is tested on its own: the candidates within ±30% of R Draconis's radius in that detector (up to 5, closest first). A detector with fewer than 2 such stars **cannot be tested and isn't trusted** for R Draconis. If no detector can be tested, R Draconis stays "possible dimming, not tested".
 - **Not done:** D4 (R Draconis's ring is only 28% usable there).
 
 ## 4. Rules

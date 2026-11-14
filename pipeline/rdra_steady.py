@@ -164,11 +164,29 @@ def step2(cands):
     return rd, out, chosen
 
 
+def stars_per_detector(doc) -> dict[int, list[dict]]:
+    """Which stars test which detector: the chosen ones (matched in all three) when there are at
+    least 2; else, per detector, candidates within ±30% there (up to 5, closest first)."""
+    if len(doc["chosen"]) >= 2:
+        return {d: doc["chosen"] for d in DETS}
+    rd = {int(k): v for k, v in doc["rdraRadius"].items()}
+    out = {}
+    for d in DETS:
+        ok = [c for c in doc["candidates"]
+              if rd.get(d) and c["radius"].get(str(d)) is not None and abs(c["radius"][str(d)] / rd[d] - 1) <= 0.30]
+        out[d] = sorted(ok, key=lambda c: abs(math.log(c["radius"][str(d)] / rd[d])))[:5]
+    return out
+
+
 def step3():
     doc = json.loads((REG / "chosen.json").read_text())
     rings = [(5.0, 9.0), (8.0, 13.0)]
-    res, trusted = {}, {d: True for d in DETS}
-    for c in doc["chosen"]:
+    plan = stars_per_detector(doc)
+    # A detector with fewer than 2 test stars can't be tested and isn't trusted (Physics).
+    testable = {d: len(plan[d]) >= 2 for d in DETS}
+    res, trusted = {}, {d: testable[d] for d in DETS}
+    print("test stars per detector:", {d: [c["hip"] for c in plan[d]] for d in DETS})
+    for c in {c["hip"]: c for d in DETS for c in plan[d]}.values():
         ra, dec = c["at2026"]
         exps, _ = asyncio.run(hc.fetch_all_helper(rows_for(ra, dec), ra, dec, 20, 32, HERE / "cache"))
         per = {}
@@ -178,13 +196,17 @@ def step3():
                 if d in DETS and n >= 10:
                     per.setdefault(str(d), {})[f"s{a}s{b} {r0:g}-{r1:g}px"] = [round(m, 3), round(e, 3), n]
         for d in DETS:
+            if not any(x["hip"] == c["hip"] for x in plan[d]):
+                continue
             vals = per.get(str(d), {})
             ok = bool(vals) and all(abs(v[0] - 1) <= 0.06 for v in vals.values())
             trusted[d] = trusted[d] and ok
         res[str(c["hip"])] = per
         print(f"HIP {c['hip']}:", {d: per.get(str(d)) for d in DETS})
     print("trusted detectors for R Draconis:", [d for d in DETS if trusted[d]])
-    (HERE / "rdra_steady.json").write_text(json.dumps(dict(stars=res, trusted=[d for d in DETS if trusted[d]]), indent=1))
+    (HERE / "rdra_steady.json").write_text(json.dumps(dict(
+        stars=res, testable=[d for d in DETS if testable[d]], trusted=[d for d in DETS if trusted[d]],
+        perDetector={d: [c["hip"] for c in plan[d]] for d in DETS}), indent=1))
 
 
 def main():
