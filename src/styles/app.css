@@ -540,6 +540,316 @@ canvas.sky.backdrop {
   background: var(--dusk-line);
   border-radius: 3px;
 }
+/* ---------- option A (Sumit, 14 Nov): a fixed summary, then tabs; the column never scrolls ---------- */
+/* On a wide screen the tabbed column runs from under the header to the bottom of the window,
+   and the band (timeline, the five) sits under the lens only: ~175 px more for the tabs on a
+   1280x720 laptop. The stage is flattened so the view and the words join the page grid. */
+@media (min-width: 981px) {
+  #app.panel-full {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 500px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    column-gap: clamp(24px, 3vw, 48px);
+  }
+  #app.panel-full > .top {
+    grid-column: 1 / -1;
+  }
+  #app.panel-full > .stage {
+    display: contents;
+  }
+  #app.panel-full .stage > .view {
+    grid-column: 1;
+    grid-row: 2;
+    width: var(--hero);
+    justify-self: center;
+    align-self: center;
+    position: relative;
+    z-index: 1;
+  }
+  #app.panel-full .stage > .words {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    position: relative;
+    z-index: 1;
+    padding-right: 28px;
+    padding-bottom: 18px;
+    max-height: none;
+    min-height: 0;
+  }
+  #app.panel-full > .band {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 6px 0 14px 28px;
+    min-width: 0;
+  }
+  /* Under the lens the band is narrower: the timeline drops its gap note (it overlapped the
+     dates), and the five sit in one row that slides sideways rather than wrapping. */
+  #app.panel-full .ribbon-labels .gap {
+    display: none;
+  }
+  #app.panel-full .strip-label {
+    display: none;
+  }
+  #app.panel-full .rail {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 2px;
+  }
+  #app.panel-full .rail .card {
+    gap: 5px;
+    padding: 4px 5px 4px 3px;
+    font-size: 13px;
+  }
+  #app.panel-full > .band {
+    margin-left: 14px;
+  }
+  #app.panel-full .rail .card .thumb {
+    width: 32px;
+    height: 32px;
+  }
+}
+/* Inside tabs the buttons are compact, so a row of actions fits on one line. */
+.words.tabbed .panel-body .actions button,
+.words.tabbed .panel-body .actions a {
+  padding: 7px 14px;
+  font-size: 14px;
+}
+.words.tabbed .looks figure canvas,
+.words.tabbed .looks figure img {
+  width: 60px;
+  height: 60px;
+}
+@media (min-width: 981px) {
+}
+.words.tabbed {
+  align-self: stretch;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 4px 6px 0;
+  mask-image: none;
+}
+.panel-summary {
+  flex: none;
+}
+.words.tabbed .panel-summary h2 {
+  font-size: clamp(24px, 2.4vw, 34px);
+  margin: 4px 0 8px;
+}
+.words.tabbed .hero-count .big,
+.words.tabbed .hero-move .big {
+  font-size: clamp(40px, 4vw, 56px);
+}
+.words.tabbed .fair-colour {
+  margin-bottom: 4px;
+}
+.state-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--quiet) !important;
+  margin: 6px 0 0 !important;
+}
+.panel-tabbed {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+.panel-tabs {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--dusk-line);
+}
+.panel-tabs [role='tab'] {
+  position: relative;
+  flex: 1;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 4px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--quiet);
+  font: 600 14px var(--sans);
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+.panel-tabs [role='tab']:hover {
+  color: var(--starlight);
+}
+.panel-tabs [role='tab'][aria-selected='true'] {
+  color: var(--starlight);
+  border-bottom-color: var(--starlight);
+}
+.panel-tabs [role='tab']:focus-visible {
+  outline: 2px solid var(--look);
+  outline-offset: -2px;
+}
+.panel-tabs .badge {
+  font: 400 11.5px var(--sans);
+  color: var(--quiet);
+}
+/* A quiet dot on a tab with something new the visitor hasn't opened yet. */
+.panel-tabs [role='tab'].cue::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: calc(50% - 34px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--look);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .panel-tabs [role='tab'].cue::after {
+    animation: tab-cue 2.4s ease-in-out 3;
+  }
+}
+@keyframes tab-cue {
+  50% {
+    opacity: 0.25;
+  }
+}
+.panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* A safety net only: every tab is laid out to fit; if one ever doesn't, it scrolls here, never the summary. */
+  overflow-y: auto;
+  padding: 12px 2px 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dusk-line) transparent;
+}
+.panel-body > :first-child {
+  margin-top: 0;
+}
+.words .tab-hint {
+  max-width: none;
+  font-size: 13.5px;
+  color: var(--quiet) !important;
+  margin: 0 0 9px !important;
+}
+.words.tabbed .facts {
+  margin-top: 0;
+  font-size: 13px;
+}
+.words.tabbed .facts dt {
+  padding: 3px 16px 3px 0;
+}
+.words.tabbed .facts dd {
+  padding: 3px 0;
+}
+.words.tabbed .state-line {
+  max-width: none;
+}
+.words.tabbed .why {
+  margin-top: 6px;
+}
+.words.tabbed .panel-body h3 {
+  margin: 12px 0 6px;
+}
+.words.tabbed .looks figcaption {
+  margin-top: 2px;
+}
+.words.tabbed .actions.links {
+  margin-top: 10px;
+}
+.coadds-fold .coadds > h3,
+.how-sure-fold .how-sure .legend {
+  display: none;
+}
+.how-sure-fold > summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.how-sure-fold .how-sure {
+  margin: 6px 0 0;
+}
+.words.tabbed .coin-line {
+  margin: 6px 0 8px;
+  font-size: 13px;
+}
+.words.tabbed .release-line {
+  font-size: 12.5px;
+  margin: 6px 0 0;
+}
+
+/* Phones and narrow windows: the tabbed column becomes a bottom sheet over the page, with three
+   heights (the Apple Maps pattern): peek shows the summary, half and full the tabs. The lens
+   stays in view above it. Inside the sheet the tab content may scroll: on a phone that is
+   the expected gesture. */
+.sheet-handle {
+  display: none;
+}
+@media (max-width: 980px) {
+  .words.tabbed {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    height: auto;
+    max-height: 52vh;
+    padding: 4px 16px 10px;
+    background: var(--panel);
+    border-top: 1px solid var(--dusk-line);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.35);
+    transition: max-height 280ms var(--ease-out);
+  }
+  .words.tabbed[data-sheet='peek'] {
+    max-height: 168px;
+  }
+  .words.tabbed[data-sheet='full'] {
+    max-height: calc(100dvh - 72px);
+  }
+  .words.tabbed[data-sheet='peek'] .panel-tabbed {
+    display: none;
+  }
+  .sheet-handle {
+    display: block;
+    width: 100%;
+    flex: none;
+    padding: 8px 0 10px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .sheet-handle span {
+    display: block;
+    width: 40px;
+    height: 5px;
+    margin: 0 auto;
+    border-radius: 3px;
+    background: var(--dusk-line);
+  }
+  /* Room under the page for the sheet's peek, so the band can scroll clear of it. */
+  #app.panel-full {
+    padding-bottom: 180px;
+  }
+  /* The sheet lives in the stage; lift the stage's layer above the band so the sheet covers it. */
+  #app.panel-full > .stage {
+    z-index: 3;
+  }
+  .words.tabbed .panel-summary h2 {
+    font-size: 24px;
+  }
+}
+@media (max-width: 980px) and (prefers-reduced-motion: reduce) {
+  .words.tabbed {
+    transition: none;
+  }
+}
+
 /* When there's more below, the last lines fade so the cut doesn't read as the end. */
 .words.more {
   mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent);

@@ -630,8 +630,9 @@ export const copy = {
     none: 'not enough other dates in this colour',
     fainter: (limit: number) => `fainter, −${limit}σ`,
     brighter: (limit: number) => `+${limit}σ, brighter`,
-    refs: (n: number, steps: string, month: string, sameTurn: boolean) =>
-      `This photo minus the median of ${n} photos from other dates (around ${month}), within ${steps} colour step${steps === '1.0' ? '' : 's'}${sameTurn ? ', taken with SPHEREx turned the same way' : ''}.`,
+    /** turn: 'same' / 'mixed' when the photos' orientation is known (live looks), else null. */
+    refs: (n: number, steps: string, month: string, turn: 'same' | 'mixed' | null) =>
+      `This photo minus the median of ${n} photos from other dates (around ${month}), within ${steps} colour step${steps === '1.0' ? '' : 's'}${turn === 'same' ? ', taken with SPHEREx turned the same way' : turn === 'mixed' ? ', references from both scan orientations' : ''}.`,
     noRefs:
       'Not enough photos from other dates in this colour to compare this one with, so it is hatched.',
     /** Physics' required wording, verbatim except "Hatched" for the grey view's masked pixels. */
@@ -685,6 +686,27 @@ export const copy = {
   },
   lensName: 'SPHEREx photo in the lens',
   rooms: { play: 'Play', learn: 'Learn', watch: 'Watch' },
+  /** The words column as a fixed summary plus tabs (option A, Sumit, 14 Nov). */
+  panel: {
+    label: 'What to do with this spot',
+    tabs: { compare: 'Compare', watch: 'Watch', facts: 'Facts', spectrum: 'Spectrum' },
+    hints: {
+      compare: 'Blink two same-colour photos taken months apart: did anything move?',
+      watch: 'Play every photo in this colour range in date order, or what changed.',
+      watchFive: 'Pick a colour range to play its photos in date order.',
+      facts: 'What was measured here, how sure it is, and what wasn\u2019t.',
+      spectrum: 'How bright this spot is at each wavelength SPHEREx sees.',
+    },
+    /** The summary's honest state line for a live look. */
+    lookState: 'Not measured: a look at the photos, not a search or a measurement',
+    noSpectrum: 'No spectrum for this one yet.',
+    /** The phone sheet's handle: what a press does next. */
+    sheet: {
+      peek: 'Showing the summary only. Show more',
+      half: 'Showing half. Show all',
+      full: 'Showing all. Show the summary only',
+    },
+  },
   /** The Learn room: a one-minute guided tour (Rubin SkyViewer's "Please guide me" pattern). */
   tour: {
     eyebrow: (n: number, of: number) => `A one-minute tour, ${n} of ${of}`,
