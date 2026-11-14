@@ -1,0 +1,1677 @@
+{
+  "count": 411,
+  "credit": "Star names: IAU Catalog of Star Names, IAU Working Group on Star Names (WGSN), https://exopla.net/star-names/modern-iau-star-names/ (names are public domain)",
+  "env": {
+    "blas": "accelerate",
+    "git_commit": "42f4ff6b51cc725dffe5fec08af1052afd93fd61",
+    "git_dirty": true,
+    "machine": "arm64",
+    "packages": {
+      "astropy": "8.0.2",
+      "httpx": "0.28.1",
+      "kete": "3.3.0",
+      "numpy": "2.5.4",
+      "photutils": "3.1.1",
+      "pyarrow": "26.0.0",
+      "pyvo": "1.9.1",
+      "scipy": "1.18.1"
+    },
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "python": "3.15.1",
+    "threads": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "VECLIB_MAXIMUM_THREADS": null
+    },
+    "time_utc": "2026-10-29T10:43:22.461573+00:00",
+    "uv_lock_sha256": "841bd9be3bc296bf7dafa1bfc73725ae92a9e228e15e40ed505abc26afabdc24"
+  },
+  "hip_to_name": {
+    "100064": {
+      "name": "Algedi",
+      "name_diacritics": "Algedi"
+    },
+    "100310": {
+      "name": "Alshat",
+      "name_diacritics": "Alshat"
+    },
+    "100345": {
+      "name": "Dabih",
+      "name_diacritics": "Dabih"
+    },
+    "100453": {
+      "name": "Sadr",
+      "name_diacritics": "Sadr"
+    },
+    "100751": {
+      "name": "Peacock",
+      "name_diacritics": "Peacock"
+    },
+    "101421": {
+      "name": "Aldulfin",
+      "name_diacritics": "Aldulfin"
+    },
+    "101769": {
+      "name": "Rotanev",
+      "name_diacritics": "Rotanev"
+    },
+    "101958": {
+      "name": "Sualocin",
+      "name_diacritics": "Sualocin"
+    },
+    "102098": {
+      "name": "Deneb",
+      "name_diacritics": "Deneb"
+    },
+    "102488": {
+      "name": "Aljanah",
+      "name_diacritics": "Aljanah"
+    },
+    "102618": {
+      "name": "Albali",
+      "name_diacritics": "Albali"
+    },
+    "103527": {
+      "name": "Musica",
+      "name_diacritics": "Musica"
+    },
+    "104382": {
+      "name": "Polaris Australis",
+      "name_diacritics": "Polaris Australis"
+    },
+    "104780": {
+      "name": "Solaris",
+      "name_diacritics": "Solaris"
+    },
+    "104987": {
+      "name": "Kitalpha",
+      "name_diacritics": "Kitalpha"
+    },
+    "105199": {
+      "name": "Alderamin",
+      "name_diacritics": "Alderamin"
+    },
+    "106032": {
+      "name": "Alfirk",
+      "name_diacritics": "Alfirk"
+    },
+    "106278": {
+      "name": "Sadalsuud",
+      "name_diacritics": "Sadalsuud"
+    },
+    "1067": {
+      "name": "Algenib",
+      "name_diacritics": "Algenib"
+    },
+    "106786": {
+      "name": "Bunda",
+      "name_diacritics": "Bunda"
+    },
+    "106824": {
+      "name": "Samaya",
+      "name_diacritics": "S\u0101maya"
+    },
+    "106985": {
+      "name": "Nashira",
+      "name_diacritics": "Nashira"
+    },
+    "107136": {
+      "name": "Azelfafage",
+      "name_diacritics": "Azelfafage"
+    },
+    "107251": {
+      "name": "Bosona",
+      "name_diacritics": "Bosona"
+    },
+    "107315": {
+      "name": "Enif",
+      "name_diacritics": "Enif"
+    },
+    "107556": {
+      "name": "Deneb Algedi",
+      "name_diacritics": "Deneb Algedi"
+    },
+    "108085": {
+      "name": "Aldhanab",
+      "name_diacritics": "Aldhanab"
+    },
+    "10826": {
+      "name": "Mira",
+      "name_diacritics": "Mira"
+    },
+    "108375": {
+      "name": "Itonda",
+      "name_diacritics": "Itonda"
+    },
+    "108917": {
+      "name": "Kurhah",
+      "name_diacritics": "Kurhah"
+    },
+    "109074": {
+      "name": "Sadalmelik",
+      "name_diacritics": "Sadalmelik"
+    },
+    "109268": {
+      "name": "Alnair",
+      "name_diacritics": "Alnair"
+    },
+    "109427": {
+      "name": "Biham",
+      "name_diacritics": "Biham"
+    },
+    "110003": {
+      "name": "Ancha",
+      "name_diacritics": "Ancha"
+    },
+    "110395": {
+      "name": "Sadachbia",
+      "name_diacritics": "Sadachbia"
+    },
+    "110813": {
+      "name": "Lionrock",
+      "name_diacritics": "Lionrock"
+    },
+    "111710": {
+      "name": "Situla",
+      "name_diacritics": "Situla"
+    },
+    "112029": {
+      "name": "Homam",
+      "name_diacritics": "Homam"
+    },
+    "112122": {
+      "name": "Tiaki",
+      "name_diacritics": "Tiaki"
+    },
+    "112158": {
+      "name": "Matar",
+      "name_diacritics": "Matar"
+    },
+    "112748": {
+      "name": "Sadalbari",
+      "name_diacritics": "Sadalbari"
+    },
+    "113136": {
+      "name": "Skat",
+      "name_diacritics": "Skat"
+    },
+    "113357": {
+      "name": "Helvetios",
+      "name_diacritics": "Helvetios"
+    },
+    "113368": {
+      "name": "Fomalhaut",
+      "name_diacritics": "Fomalhaut"
+    },
+    "113881": {
+      "name": "Scheat",
+      "name_diacritics": "Scheat"
+    },
+    "113889": {
+      "name": "Fumalsamakah",
+      "name_diacritics": "Fumalsamakah"
+    },
+    "113963": {
+      "name": "Markab",
+      "name_diacritics": "Markab"
+    },
+    "114322": {
+      "name": "Ebla",
+      "name_diacritics": "Ebla"
+    },
+    "115250": {
+      "name": "Salm",
+      "name_diacritics": "Salm"
+    },
+    "115623": {
+      "name": "Alkarab",
+      "name_diacritics": "Alkarab"
+    },
+    "116076": {
+      "name": "Veritate",
+      "name_diacritics": "Veritate"
+    },
+    "116084": {
+      "name": "Poerava",
+      "name_diacritics": "Poerava"
+    },
+    "116727": {
+      "name": "Errai",
+      "name_diacritics": "Errai"
+    },
+    "11767": {
+      "name": "Polaris",
+      "name_diacritics": "Polaris"
+    },
+    "118319": {
+      "name": "Axolotl",
+      "name_diacritics": "Ax\u00f3lotl"
+    },
+    "12191": {
+      "name": "Buna",
+      "name_diacritics": "Buna"
+    },
+    "12706": {
+      "name": "Kaffaljidhma",
+      "name_diacritics": "Kaffaljidhma"
+    },
+    "12961": {
+      "name": "Koeia",
+      "name_diacritics": "Koeia"
+    },
+    "13061": {
+      "name": "Lilii Borea",
+      "name_diacritics": "Lilii Borea"
+    },
+    "13192": {
+      "name": "Nushagak",
+      "name_diacritics": "Nushagak"
+    },
+    "13209": {
+      "name": "Bharani",
+      "name_diacritics": "Bharani"
+    },
+    "13268": {
+      "name": "Miram",
+      "name_diacritics": "Miram"
+    },
+    "13288": {
+      "name": "Angetenar",
+      "name_diacritics": "Angetenar"
+    },
+    "13701": {
+      "name": "Azha",
+      "name_diacritics": "Azha"
+    },
+    "13847": {
+      "name": "Acamar",
+      "name_diacritics": "Acamar"
+    },
+    "13993": {
+      "name": "Ayeyarwady",
+      "name_diacritics": "Ayeyarwady"
+    },
+    "14135": {
+      "name": "Menkar",
+      "name_diacritics": "Menkar"
+    },
+    "14576": {
+      "name": "Algol",
+      "name_diacritics": "Algol"
+    },
+    "14668": {
+      "name": "Misam",
+      "name_diacritics": "Misam"
+    },
+    "14838": {
+      "name": "Botein",
+      "name_diacritics": "Botein"
+    },
+    "14879": {
+      "name": "Dalim",
+      "name_diacritics": "Dalim"
+    },
+    "15197": {
+      "name": "Zibal",
+      "name_diacritics": "Zibal"
+    },
+    "1547": {
+      "name": "Citadelle",
+      "name_diacritics": "Citadelle"
+    },
+    "15578": {
+      "name": "Intan",
+      "name_diacritics": "Intan"
+    },
+    "15863": {
+      "name": "Mirfak",
+      "name_diacritics": "Mirfak"
+    },
+    "16537": {
+      "name": "Ran",
+      "name_diacritics": "Ran"
+    },
+    "17096": {
+      "name": "Tupi",
+      "name_diacritics": "Tupi"
+    },
+    "17378": {
+      "name": "Rana",
+      "name_diacritics": "Rana"
+    },
+    "17448": {
+      "name": "Atik",
+      "name_diacritics": "Atik"
+    },
+    "17489": {
+      "name": "Celaeno",
+      "name_diacritics": "Celaeno"
+    },
+    "17499": {
+      "name": "Electra",
+      "name_diacritics": "Electra"
+    },
+    "17531": {
+      "name": "Taygeta",
+      "name_diacritics": "Taygeta"
+    },
+    "17573": {
+      "name": "Maia",
+      "name_diacritics": "Maia"
+    },
+    "17579": {
+      "name": "Asterope",
+      "name_diacritics": "Asterope"
+    },
+    "17608": {
+      "name": "Merope",
+      "name_diacritics": "Merope"
+    },
+    "17702": {
+      "name": "Alcyone",
+      "name_diacritics": "Alcyone"
+    },
+    "17847": {
+      "name": "Atlas",
+      "name_diacritics": "Atlas"
+    },
+    "17851": {
+      "name": "Pleione",
+      "name_diacritics": "Pleione"
+    },
+    "18543": {
+      "name": "Zaurak",
+      "name_diacritics": "Zaurak"
+    },
+    "18614": {
+      "name": "Menkib",
+      "name_diacritics": "Menkib"
+    },
+    "19587": {
+      "name": "Beid",
+      "name_diacritics": "Beid"
+    },
+    "19849": {
+      "name": "Keid",
+      "name_diacritics": "Keid"
+    },
+    "20205": {
+      "name": "Prima Hyadum",
+      "name_diacritics": "Prima Hyadum"
+    },
+    "20455": {
+      "name": "Secunda Hyadum",
+      "name_diacritics": "Secunda Hyadum"
+    },
+    "20535": {
+      "name": "Beemim",
+      "name_diacritics": "Beemim"
+    },
+    "2081": {
+      "name": "Ankaa",
+      "name_diacritics": "Ankaa"
+    },
+    "20889": {
+      "name": "Ain",
+      "name_diacritics": "Ain"
+    },
+    "20894": {
+      "name": "Chamukuy",
+      "name_diacritics": "Chamukuy"
+    },
+    "21109": {
+      "name": "Hoggar",
+      "name_diacritics": "Hoggar"
+    },
+    "21393": {
+      "name": "Theemin",
+      "name_diacritics": "Theemin"
+    },
+    "21421": {
+      "name": "Aldebaran",
+      "name_diacritics": "Aldebaran"
+    },
+    "21594": {
+      "name": "Sceptrum",
+      "name_diacritics": "Sceptrum"
+    },
+    "22449": {
+      "name": "Tabit",
+      "name_diacritics": "Tabit"
+    },
+    "2247": {
+      "name": "Felixvarela",
+      "name_diacritics": "Felixvarela"
+    },
+    "22491": {
+      "name": "Mouhoun",
+      "name_diacritics": "Mouhoun"
+    },
+    "23015": {
+      "name": "Hassaleh",
+      "name_diacritics": "Hassaleh"
+    },
+    "23416": {
+      "name": "Almaaz",
+      "name_diacritics": "Almaaz"
+    },
+    "23453": {
+      "name": "Saclateni",
+      "name_diacritics": "Saclateni"
+    },
+    "23767": {
+      "name": "Haedus",
+      "name_diacritics": "Haedus"
+    },
+    "23875": {
+      "name": "Cursa",
+      "name_diacritics": "Cursa"
+    },
+    "24003": {
+      "name": "Mago",
+      "name_diacritics": "Mago"
+    },
+    "24436": {
+      "name": "Rigel",
+      "name_diacritics": "Rigel"
+    },
+    "24608": {
+      "name": "Capella",
+      "name_diacritics": "Capella"
+    },
+    "25336": {
+      "name": "Bellatrix",
+      "name_diacritics": "Bellatrix"
+    },
+    "25428": {
+      "name": "Elnath",
+      "name_diacritics": "Elnath"
+    },
+    "25606": {
+      "name": "Nihal",
+      "name_diacritics": "Nihal"
+    },
+    "25930": {
+      "name": "Mintaka",
+      "name_diacritics": "Mintaka"
+    },
+    "25985": {
+      "name": "Arneb",
+      "name_diacritics": "Arneb"
+    },
+    "26207": {
+      "name": "Meissa",
+      "name_diacritics": "Meissa"
+    },
+    "26241": {
+      "name": "Hatysa",
+      "name_diacritics": "Hatysa"
+    },
+    "26311": {
+      "name": "Alnilam",
+      "name_diacritics": "Alnilam"
+    },
+    "26380": {
+      "name": "Bubup",
+      "name_diacritics": "Bubup"
+    },
+    "26451": {
+      "name": "Tianguan",
+      "name_diacritics": "Tianguan"
+    },
+    "26634": {
+      "name": "Phact",
+      "name_diacritics": "Phact"
+    },
+    "26727": {
+      "name": "Alnitak",
+      "name_diacritics": "Alnitak"
+    },
+    "27366": {
+      "name": "Saiph",
+      "name_diacritics": "Saiph"
+    },
+    "27628": {
+      "name": "Wazn",
+      "name_diacritics": "Wazn"
+    },
+    "27989": {
+      "name": "Betelgeuse",
+      "name_diacritics": "Betelgeuse"
+    },
+    "28360": {
+      "name": "Menkalinan",
+      "name_diacritics": "Menkalinan"
+    },
+    "28380": {
+      "name": "Mahasim",
+      "name_diacritics": "Mahasim"
+    },
+    "29034": {
+      "name": "Elkurud",
+      "name_diacritics": "Elkurud"
+    },
+    "2920": {
+      "name": "Fulu",
+      "name_diacritics": "Fulu"
+    },
+    "29550": {
+      "name": "Amadioha",
+      "name_diacritics": "Amadioha"
+    },
+    "29655": {
+      "name": "Propus",
+      "name_diacritics": "Propus"
+    },
+    "30122": {
+      "name": "Furud",
+      "name_diacritics": "Furud"
+    },
+    "30324": {
+      "name": "Mirzam",
+      "name_diacritics": "Mirzam"
+    },
+    "30343": {
+      "name": "Tejat",
+      "name_diacritics": "Tejat"
+    },
+    "30438": {
+      "name": "Canopus",
+      "name_diacritics": "Canopus"
+    },
+    "30860": {
+      "name": "Lucilinburhuc",
+      "name_diacritics": "Lucilinburhuc"
+    },
+    "30905": {
+      "name": "Lusitania",
+      "name_diacritics": "Lusit\u00e2nia"
+    },
+    "31681": {
+      "name": "Alhena",
+      "name_diacritics": "Alhena"
+    },
+    "3179": {
+      "name": "Schedar",
+      "name_diacritics": "Schedar"
+    },
+    "31895": {
+      "name": "Nosaxa",
+      "name_diacritics": "Nosaxa"
+    },
+    "32246": {
+      "name": "Mebsuta",
+      "name_diacritics": "Mebsuta"
+    },
+    "32349": {
+      "name": "Sirius",
+      "name_diacritics": "Sirius"
+    },
+    "32362": {
+      "name": "Alzirr",
+      "name_diacritics": "Alzirr"
+    },
+    "32916": {
+      "name": "Nervia",
+      "name_diacritics": "Nervia"
+    },
+    "33579": {
+      "name": "Adhara",
+      "name_diacritics": "Adhara"
+    },
+    "33719": {
+      "name": "Citala",
+      "name_diacritics": "Cital\u00e1"
+    },
+    "33856": {
+      "name": "Nganurganity",
+      "name_diacritics": "Nganurganity"
+    },
+    "34045": {
+      "name": "Muliphein",
+      "name_diacritics": "Muliphein"
+    },
+    "34088": {
+      "name": "Mekbuda",
+      "name_diacritics": "Mekbuda"
+    },
+    "3419": {
+      "name": "Diphda",
+      "name_diacritics": "Diphda"
+    },
+    "34444": {
+      "name": "Wezen",
+      "name_diacritics": "Wezen"
+    },
+    "3479": {
+      "name": "Cocibolca",
+      "name_diacritics": "Cocibolca"
+    },
+    "35550": {
+      "name": "Wasat",
+      "name_diacritics": "Wasat"
+    },
+    "35904": {
+      "name": "Aludra",
+      "name_diacritics": "Aludra"
+    },
+    "36188": {
+      "name": "Gomeisa",
+      "name_diacritics": "Gomeisa"
+    },
+    "36850": {
+      "name": "Castor",
+      "name_diacritics": "Castor"
+    },
+    "37265": {
+      "name": "Jishui",
+      "name_diacritics": "Jishui"
+    },
+    "37279": {
+      "name": "Procyon",
+      "name_diacritics": "Procyon"
+    },
+    "37284": {
+      "name": "Ceibo",
+      "name_diacritics": "Ceibo"
+    },
+    "37826": {
+      "name": "Pollux",
+      "name_diacritics": "Pollux"
+    },
+    "38041": {
+      "name": "Tapecue",
+      "name_diacritics": "Tapecue"
+    },
+    "38170": {
+      "name": "Azmidi",
+      "name_diacritics": "Azmidi"
+    },
+    "3821": {
+      "name": "Achird",
+      "name_diacritics": "Achird"
+    },
+    "39429": {
+      "name": "Naos",
+      "name_diacritics": "Naos"
+    },
+    "39757": {
+      "name": "Tureis",
+      "name_diacritics": "Tureis"
+    },
+    "40167": {
+      "name": "Tegmine",
+      "name_diacritics": "Tegmine"
+    },
+    "40526": {
+      "name": "Tarf",
+      "name_diacritics": "Tarf"
+    },
+    "40687": {
+      "name": "Nasti",
+      "name_diacritics": "N\u00e1sti"
+    },
+    "40881": {
+      "name": "Piautos",
+      "name_diacritics": "Piautos"
+    },
+    "41037": {
+      "name": "Avior",
+      "name_diacritics": "Avior"
+    },
+    "41075": {
+      "name": "Alsciaukat",
+      "name_diacritics": "Alsciaukat"
+    },
+    "41704": {
+      "name": "Muscida",
+      "name_diacritics": "Muscida"
+    },
+    "42402": {
+      "name": "Minchir",
+      "name_diacritics": "Minchir"
+    },
+    "42446": {
+      "name": "Gakyid",
+      "name_diacritics": "Gakyid"
+    },
+    "42556": {
+      "name": "Meleph",
+      "name_diacritics": "Meleph"
+    },
+    "42806": {
+      "name": "Asellus Borealis",
+      "name_diacritics": "Asellus Borealis"
+    },
+    "42911": {
+      "name": "Asellus Australis",
+      "name_diacritics": "Asellus Australis"
+    },
+    "42913": {
+      "name": "Alsephina",
+      "name_diacritics": "Alsephina"
+    },
+    "43109": {
+      "name": "Ashlesha",
+      "name_diacritics": "Ashlesha"
+    },
+    "43587": {
+      "name": "Copernicus",
+      "name_diacritics": "Copernicus"
+    },
+    "43674": {
+      "name": "Stribor",
+      "name_diacritics": "Stribor"
+    },
+    "44066": {
+      "name": "Acubens",
+      "name_diacritics": "Acubens"
+    },
+    "44127": {
+      "name": "Talitha",
+      "name_diacritics": "Talitha"
+    },
+    "4422": {
+      "name": "Castula",
+      "name_diacritics": "Castula"
+    },
+    "44471": {
+      "name": "Alkaphrah",
+      "name_diacritics": "Alkaphrah"
+    },
+    "44816": {
+      "name": "Suhail",
+      "name_diacritics": "Suhail"
+    },
+    "44946": {
+      "name": "Nahn",
+      "name_diacritics": "Nahn"
+    },
+    "45238": {
+      "name": "Miaplacidus",
+      "name_diacritics": "Miaplacidus"
+    },
+    "45556": {
+      "name": "Aspidiske",
+      "name_diacritics": "Aspidiske"
+    },
+    "45941": {
+      "name": "Markeb",
+      "name_diacritics": "Markeb"
+    },
+    "46390": {
+      "name": "Alphard",
+      "name_diacritics": "Alphard"
+    },
+    "46471": {
+      "name": "Intercrus",
+      "name_diacritics": "Intercrus"
+    },
+    "46750": {
+      "name": "Alterf",
+      "name_diacritics": "Alterf"
+    },
+    "47087": {
+      "name": "Illyrian",
+      "name_diacritics": "Illyrian"
+    },
+    "47202": {
+      "name": "Kalausi",
+      "name_diacritics": "Kalausi"
+    },
+    "47431": {
+      "name": "Ukdah",
+      "name_diacritics": "Ukdah"
+    },
+    "47508": {
+      "name": "Subra",
+      "name_diacritics": "Subra"
+    },
+    "48235": {
+      "name": "Natasha",
+      "name_diacritics": "Natasha"
+    },
+    "48356": {
+      "name": "Zhang",
+      "name_diacritics": "Zhang"
+    },
+    "48455": {
+      "name": "Rasalas",
+      "name_diacritics": "Rasalas"
+    },
+    "48615": {
+      "name": "Felis",
+      "name_diacritics": "Felis"
+    },
+    "48711": {
+      "name": "Bibha",
+      "name_diacritics": "Bibh\u0101"
+    },
+    "49669": {
+      "name": "Regulus",
+      "name_diacritics": "Regulus"
+    },
+    "50335": {
+      "name": "Adhafera",
+      "name_diacritics": "Adhafera"
+    },
+    "50372": {
+      "name": "Tania Borealis",
+      "name_diacritics": "Tania Borealis"
+    },
+    "5054": {
+      "name": "Nenque",
+      "name_diacritics": "Nenque"
+    },
+    "50583": {
+      "name": "Algieba",
+      "name_diacritics": "Algieba"
+    },
+    "50801": {
+      "name": "Tania Australis",
+      "name_diacritics": "Tania Australis"
+    },
+    "52521": {
+      "name": "Macondo",
+      "name_diacritics": "Macondo"
+    },
+    "53229": {
+      "name": "Praecipua",
+      "name_diacritics": "Praecipua"
+    },
+    "5348": {
+      "name": "Wurren",
+      "name_diacritics": "Wurren"
+    },
+    "53721": {
+      "name": "Chalawan",
+      "name_diacritics": "Chalawan"
+    },
+    "53740": {
+      "name": "Alkes",
+      "name_diacritics": "Alkes"
+    },
+    "53910": {
+      "name": "Merak",
+      "name_diacritics": "Merak"
+    },
+    "54061": {
+      "name": "Dubhe",
+      "name_diacritics": "Dubhe"
+    },
+    "54158": {
+      "name": "Dingolay",
+      "name_diacritics": "Dingolay"
+    },
+    "5447": {
+      "name": "Mirach",
+      "name_diacritics": "Mirach"
+    },
+    "54872": {
+      "name": "Zosma",
+      "name_diacritics": "Zosma"
+    },
+    "54879": {
+      "name": "Chertan",
+      "name_diacritics": "Chertan"
+    },
+    "55174": {
+      "name": "Hunahpu",
+      "name_diacritics": "Hunahp\u00fa"
+    },
+    "55203": {
+      "name": "Alula Australis",
+      "name_diacritics": "Alula Australis"
+    },
+    "55219": {
+      "name": "Alula Borealis",
+      "name_diacritics": "Alula Borealis"
+    },
+    "5529": {
+      "name": "Emiw",
+      "name_diacritics": "Emiw"
+    },
+    "55664": {
+      "name": "Shama",
+      "name_diacritics": "Shama"
+    },
+    "56211": {
+      "name": "Giausar",
+      "name_diacritics": "Giausar"
+    },
+    "56508": {
+      "name": "Formosa",
+      "name_diacritics": "Formosa"
+    },
+    "56572": {
+      "name": "Sagarmatha",
+      "name_diacritics": "Sagarmatha"
+    },
+    "57291": {
+      "name": "Uklun",
+      "name_diacritics": "Uklun"
+    },
+    "5737": {
+      "name": "Revati",
+      "name_diacritics": "Revati"
+    },
+    "57370": {
+      "name": "Flegetonte",
+      "name_diacritics": "Flegetonte"
+    },
+    "57399": {
+      "name": "Taiyangshou",
+      "name_diacritics": "Taiyangshou"
+    },
+    "57632": {
+      "name": "Denebola",
+      "name_diacritics": "Denebola"
+    },
+    "57757": {
+      "name": "Zavijava",
+      "name_diacritics": "Zavijava"
+    },
+    "57820": {
+      "name": "Aniara",
+      "name_diacritics": "Aniara"
+    },
+    "58001": {
+      "name": "Phecda",
+      "name_diacritics": "Phecda"
+    },
+    "58952": {
+      "name": "Tonatiuh",
+      "name_diacritics": "Tonatiuh"
+    },
+    "59199": {
+      "name": "Alchiba",
+      "name_diacritics": "Alchiba"
+    },
+    "59747": {
+      "name": "Imai",
+      "name_diacritics": "Imai"
+    },
+    "59774": {
+      "name": "Megrez",
+      "name_diacritics": "Megrez"
+    },
+    "59803": {
+      "name": "Gienah",
+      "name_diacritics": "Gienah"
+    },
+    "60129": {
+      "name": "Zaniah",
+      "name_diacritics": "Zaniah"
+    },
+    "60260": {
+      "name": "Ginan",
+      "name_diacritics": "Ginan"
+    },
+    "60644": {
+      "name": "Tupa",
+      "name_diacritics": "Tup\u00e3"
+    },
+    "60718": {
+      "name": "Acrux",
+      "name_diacritics": "Acrux"
+    },
+    "60965": {
+      "name": "Algorab",
+      "name_diacritics": "Algorab"
+    },
+    "61084": {
+      "name": "Gacrux",
+      "name_diacritics": "Gacrux"
+    },
+    "61177": {
+      "name": "Funi",
+      "name_diacritics": "Funi"
+    },
+    "61317": {
+      "name": "Chara",
+      "name_diacritics": "Chara"
+    },
+    "61359": {
+      "name": "Kraz",
+      "name_diacritics": "Kraz"
+    },
+    "61941": {
+      "name": "Porrima",
+      "name_diacritics": "Porrima"
+    },
+    "62223": {
+      "name": "La Superba",
+      "name_diacritics": "La Superba"
+    },
+    "62423": {
+      "name": "Tianyi",
+      "name_diacritics": "Tianyi"
+    },
+    "62434": {
+      "name": "Mimosa",
+      "name_diacritics": "Mimosa"
+    },
+    "62956": {
+      "name": "Alioth",
+      "name_diacritics": "Alioth"
+    },
+    "63076": {
+      "name": "Taiyi",
+      "name_diacritics": "Taiyi"
+    },
+    "63090": {
+      "name": "Minelauva",
+      "name_diacritics": "Minelauva"
+    },
+    "63125": {
+      "name": "Cor Caroli",
+      "name_diacritics": "Cor Caroli"
+    },
+    "63608": {
+      "name": "Vindemiatrix",
+      "name_diacritics": "Vindemiatrix"
+    },
+    "6411": {
+      "name": "Adhil",
+      "name_diacritics": "Adhil"
+    },
+    "64241": {
+      "name": "Diadem",
+      "name_diacritics": "Diadem"
+    },
+    "65378": {
+      "name": "Mizar",
+      "name_diacritics": "Mizar"
+    },
+    "65474": {
+      "name": "Spica",
+      "name_diacritics": "Spica"
+    },
+    "65477": {
+      "name": "Alcor",
+      "name_diacritics": "Alcor"
+    },
+    "66047": {
+      "name": "Dofida",
+      "name_diacritics": "Dofida"
+    },
+    "66192": {
+      "name": "Liesma",
+      "name_diacritics": "Liesma"
+    },
+    "66249": {
+      "name": "Heze",
+      "name_diacritics": "Heze"
+    },
+    "6643": {
+      "name": "Belenos",
+      "name_diacritics": "B\u00e9l\u00e9nos"
+    },
+    "6686": {
+      "name": "Ruchbah",
+      "name_diacritics": "Ruchbah"
+    },
+    "67301": {
+      "name": "Alkaid",
+      "name_diacritics": "Alkaid"
+    },
+    "677": {
+      "name": "Alpheratz",
+      "name_diacritics": "Alpheratz"
+    },
+    "67927": {
+      "name": "Muphrid",
+      "name_diacritics": "Muphrid"
+    },
+    "68702": {
+      "name": "Hadar",
+      "name_diacritics": "Hadar"
+    },
+    "68756": {
+      "name": "Thuban",
+      "name_diacritics": "Thuban"
+    },
+    "68933": {
+      "name": "Menkent",
+      "name_diacritics": "Menkent"
+    },
+    "69427": {
+      "name": "Kang",
+      "name_diacritics": "Kang"
+    },
+    "69673": {
+      "name": "Arcturus",
+      "name_diacritics": "Arcturus"
+    },
+    "69701": {
+      "name": "Syrma",
+      "name_diacritics": "Syrma"
+    },
+    "69732": {
+      "name": "Xuange",
+      "name_diacritics": "Xuange"
+    },
+    "69974": {
+      "name": "Khambalia",
+      "name_diacritics": "Khambalia"
+    },
+    "70755": {
+      "name": "Elgafar",
+      "name_diacritics": "Elgafar"
+    },
+    "70890": {
+      "name": "Proxima Centauri",
+      "name_diacritics": "Proxima Centauri"
+    },
+    "7097": {
+      "name": "Alpherg",
+      "name_diacritics": "Alpherg"
+    },
+    "71075": {
+      "name": "Seginus",
+      "name_diacritics": "Seginus"
+    },
+    "71681": {
+      "name": "Toliman",
+      "name_diacritics": "Toliman"
+    },
+    "71683": {
+      "name": "Rigil Kentaurus",
+      "name_diacritics": "Rigil Kentaurus"
+    },
+    "72105": {
+      "name": "Izar",
+      "name_diacritics": "Izar"
+    },
+    "72339": {
+      "name": "Monch",
+      "name_diacritics": "M\u00f6nch"
+    },
+    "72487": {
+      "name": "Merga",
+      "name_diacritics": "Merga"
+    },
+    "72607": {
+      "name": "Kochab",
+      "name_diacritics": "Kochab"
+    },
+    "72622": {
+      "name": "Zubenelgenubi",
+      "name_diacritics": "Zubenelgenubi"
+    },
+    "72845": {
+      "name": "Arcalis",
+      "name_diacritics": "Arcal\u00eds"
+    },
+    "73136": {
+      "name": "Baekdu",
+      "name_diacritics": "Baekdu"
+    },
+    "73555": {
+      "name": "Nekkar",
+      "name_diacritics": "Nekkar"
+    },
+    "73714": {
+      "name": "Brachium",
+      "name_diacritics": "Brachium"
+    },
+    "746": {
+      "name": "Caph",
+      "name_diacritics": "Caph"
+    },
+    "74785": {
+      "name": "Zubeneschamali",
+      "name_diacritics": "Zubeneschamali"
+    },
+    "74961": {
+      "name": "Nikawiy",
+      "name_diacritics": "Nikawiy"
+    },
+    "75097": {
+      "name": "Pherkad",
+      "name_diacritics": "Pherkad"
+    },
+    "7513": {
+      "name": "Titawin",
+      "name_diacritics": "Titawin"
+    },
+    "75411": {
+      "name": "Alkalurops",
+      "name_diacritics": "Alkalurops"
+    },
+    "75458": {
+      "name": "Edasich",
+      "name_diacritics": "Edasich"
+    },
+    "75695": {
+      "name": "Nusakan",
+      "name_diacritics": "Nusakan"
+    },
+    "7588": {
+      "name": "Achernar",
+      "name_diacritics": "Achernar"
+    },
+    "7607": {
+      "name": "Nembus",
+      "name_diacritics": "Nembus"
+    },
+    "76267": {
+      "name": "Alphecca",
+      "name_diacritics": "Alphecca"
+    },
+    "76333": {
+      "name": "Zubenelhakrabi",
+      "name_diacritics": "Zubenelhakrabi"
+    },
+    "76351": {
+      "name": "Karaka",
+      "name_diacritics": "Karaka"
+    },
+    "77070": {
+      "name": "Unukalhai",
+      "name_diacritics": "Unukalhai"
+    },
+    "77450": {
+      "name": "Gudja",
+      "name_diacritics": "Gudja"
+    },
+    "78104": {
+      "name": "Iklil",
+      "name_diacritics": "Iklil"
+    },
+    "78265": {
+      "name": "Fang",
+      "name_diacritics": "Fang"
+    },
+    "78401": {
+      "name": "Dschubba",
+      "name_diacritics": "Dschubba"
+    },
+    "78820": {
+      "name": "Acrab",
+      "name_diacritics": "Acrab"
+    },
+    "79043": {
+      "name": "Marsic",
+      "name_diacritics": "Marsic"
+    },
+    "79219": {
+      "name": "Kamuy",
+      "name_diacritics": "Kamuy"
+    },
+    "79374": {
+      "name": "Jabbah",
+      "name_diacritics": "Jabbah"
+    },
+    "79431": {
+      "name": "Sharjah",
+      "name_diacritics": "Sharjah"
+    },
+    "79593": {
+      "name": "Yed Prior",
+      "name_diacritics": "Yed Prior"
+    },
+    "79882": {
+      "name": "Yed Posterior",
+      "name_diacritics": "Yed Posterior"
+    },
+    "80076": {
+      "name": "Hunor",
+      "name_diacritics": "Hunor"
+    },
+    "80112": {
+      "name": "Alniyat",
+      "name_diacritics": "Alniyat"
+    },
+    "80331": {
+      "name": "Athebyne",
+      "name_diacritics": "Athebyne"
+    },
+    "80463": {
+      "name": "Cujam",
+      "name_diacritics": "Cujam"
+    },
+    "80687": {
+      "name": "Timir",
+      "name_diacritics": "Timir"
+    },
+    "80763": {
+      "name": "Antares",
+      "name_diacritics": "Antares"
+    },
+    "80816": {
+      "name": "Kornephoros",
+      "name_diacritics": "Kornephoros"
+    },
+    "80838": {
+      "name": "Ogma",
+      "name_diacritics": "Ogma"
+    },
+    "80883": {
+      "name": "Marfik",
+      "name_diacritics": "Marfik"
+    },
+    "81022": {
+      "name": "Rosaliadecastro",
+      "name_diacritics": "Rosal\u00edadecastro"
+    },
+    "81266": {
+      "name": "Paikauhale",
+      "name_diacritics": "Paikauhale"
+    },
+    "8198": {
+      "name": "Torcular",
+      "name_diacritics": "Torcular"
+    },
+    "82273": {
+      "name": "Atria",
+      "name_diacritics": "Atria"
+    },
+    "82396": {
+      "name": "Larawag",
+      "name_diacritics": "Larawag"
+    },
+    "82514": {
+      "name": "Xamidimura",
+      "name_diacritics": "Xamidimura"
+    },
+    "82545": {
+      "name": "Pipirima",
+      "name_diacritics": "Pipirima"
+    },
+    "82651": {
+      "name": "Mahsati",
+      "name_diacritics": "Mahsati"
+    },
+    "83547": {
+      "name": "Rapeto",
+      "name_diacritics": "Rapeto"
+    },
+    "83608": {
+      "name": "Alrakis",
+      "name_diacritics": "Alrakis"
+    },
+    "83895": {
+      "name": "Aldhibah",
+      "name_diacritics": "Aldhibah"
+    },
+    "84012": {
+      "name": "Sabik",
+      "name_diacritics": "Sabik"
+    },
+    "84345": {
+      "name": "Rasalgethi",
+      "name_diacritics": "Rasalgethi"
+    },
+    "84379": {
+      "name": "Sarin",
+      "name_diacritics": "Sarin"
+    },
+    "84405": {
+      "name": "Guniibuu",
+      "name_diacritics": "Guniibuu"
+    },
+    "84787": {
+      "name": "Inquill",
+      "name_diacritics": "Inquill"
+    },
+    "85670": {
+      "name": "Rastaban",
+      "name_diacritics": "Rastaban"
+    },
+    "85693": {
+      "name": "Maasym",
+      "name_diacritics": "Maasym"
+    },
+    "85696": {
+      "name": "Lesath",
+      "name_diacritics": "Lesath"
+    },
+    "85822": {
+      "name": "Yildun",
+      "name_diacritics": "Yildun"
+    },
+    "85927": {
+      "name": "Shaula",
+      "name_diacritics": "Shaula"
+    },
+    "86032": {
+      "name": "Rasalhague",
+      "name_diacritics": "Rasalhague"
+    },
+    "86228": {
+      "name": "Sargas",
+      "name_diacritics": "Sargas"
+    },
+    "8645": {
+      "name": "Baten Kaitos",
+      "name_diacritics": "Baten Kaitos"
+    },
+    "86614": {
+      "name": "Dziban",
+      "name_diacritics": "Dziban"
+    },
+    "86742": {
+      "name": "Cebalrai",
+      "name_diacritics": "Cebalrai"
+    },
+    "86782": {
+      "name": "Alruba",
+      "name_diacritics": "Alruba"
+    },
+    "86796": {
+      "name": "Cervantes",
+      "name_diacritics": "Cervantes"
+    },
+    "87261": {
+      "name": "Fuyue",
+      "name_diacritics": "Fuyue"
+    },
+    "87585": {
+      "name": "Grumium",
+      "name_diacritics": "Grumium"
+    },
+    "87833": {
+      "name": "Eltanin",
+      "name_diacritics": "Eltanin"
+    },
+    "87937": {
+      "name": "Barnard's Star",
+      "name_diacritics": "Barnard's Star"
+    },
+    "8796": {
+      "name": "Mothallah",
+      "name_diacritics": "Mothallah"
+    },
+    "8832": {
+      "name": "Mesarthim",
+      "name_diacritics": "Mesarthim"
+    },
+    "88414": {
+      "name": "Pincoya",
+      "name_diacritics": "Pincoya"
+    },
+    "88635": {
+      "name": "Alnasl",
+      "name_diacritics": "Alnasl"
+    },
+    "8886": {
+      "name": "Segin",
+      "name_diacritics": "Segin"
+    },
+    "8903": {
+      "name": "Sheratan",
+      "name_diacritics": "Sheratan"
+    },
+    "89341": {
+      "name": "Polis",
+      "name_diacritics": "Polis"
+    },
+    "89931": {
+      "name": "Kaus Media",
+      "name_diacritics": "Kaus Media"
+    },
+    "90004": {
+      "name": "Alasia",
+      "name_diacritics": "Alasia"
+    },
+    "90185": {
+      "name": "Kaus Australis",
+      "name_diacritics": "Kaus Australis"
+    },
+    "90344": {
+      "name": "Fafnir",
+      "name_diacritics": "Fafnir"
+    },
+    "90496": {
+      "name": "Kaus Borealis",
+      "name_diacritics": "Kaus Borealis"
+    },
+    "91262": {
+      "name": "Vega",
+      "name_diacritics": "Vega"
+    },
+    "91852": {
+      "name": "Xihe",
+      "name_diacritics": "Xihe"
+    },
+    "92420": {
+      "name": "Sheliak",
+      "name_diacritics": "Sheliak"
+    },
+    "92761": {
+      "name": "Ainalrami",
+      "name_diacritics": "Ainalrami"
+    },
+    "92855": {
+      "name": "Nunki",
+      "name_diacritics": "Nunki"
+    },
+    "92895": {
+      "name": "Kaveh",
+      "name_diacritics": "Kaveh"
+    },
+    "92946": {
+      "name": "Alya",
+      "name_diacritics": "Alya"
+    },
+    "93194": {
+      "name": "Sulafat",
+      "name_diacritics": "Sulafat"
+    },
+    "93506": {
+      "name": "Ascella",
+      "name_diacritics": "Ascella"
+    },
+    "93747": {
+      "name": "Okab",
+      "name_diacritics": "Okab"
+    },
+    "94114": {
+      "name": "Meridiana",
+      "name_diacritics": "Meridiana"
+    },
+    "94141": {
+      "name": "Albaldah",
+      "name_diacritics": "Albaldah"
+    },
+    "94376": {
+      "name": "Altais",
+      "name_diacritics": "Altais"
+    },
+    "94481": {
+      "name": "Aladfar",
+      "name_diacritics": "Aladfar"
+    },
+    "94645": {
+      "name": "Gumala",
+      "name_diacritics": "Gumala"
+    },
+    "9487": {
+      "name": "Alrescha",
+      "name_diacritics": "Alrescha"
+    },
+    "95124": {
+      "name": "Belel",
+      "name_diacritics": "Belel"
+    },
+    "95241": {
+      "name": "Arkab Prior",
+      "name_diacritics": "Arkab Prior"
+    },
+    "95262": {
+      "name": "Sika",
+      "name_diacritics": "Sika"
+    },
+    "95294": {
+      "name": "Arkab Posterior",
+      "name_diacritics": "Arkab Posterior"
+    },
+    "95347": {
+      "name": "Rukbat",
+      "name_diacritics": "Rukbat"
+    },
+    "95771": {
+      "name": "Anser",
+      "name_diacritics": "Anser"
+    },
+    "95947": {
+      "name": "Albireo",
+      "name_diacritics": "Albireo"
+    },
+    "96078": {
+      "name": "Uruk",
+      "name_diacritics": "Uruk"
+    },
+    "96100": {
+      "name": "Alsafi",
+      "name_diacritics": "Alsafi"
+    },
+    "9640": {
+      "name": "Almach",
+      "name_diacritics": "Almach"
+    },
+    "96757": {
+      "name": "Sham",
+      "name_diacritics": "Sham"
+    },
+    "97165": {
+      "name": "Fawaris",
+      "name_diacritics": "Fawaris"
+    },
+    "97278": {
+      "name": "Tarazed",
+      "name_diacritics": "Tarazed"
+    },
+    "97649": {
+      "name": "Altair",
+      "name_diacritics": "Altair"
+    },
+    "97938": {
+      "name": "Libertas",
+      "name_diacritics": "Libertas"
+    },
+    "98036": {
+      "name": "Alshain",
+      "name_diacritics": "Alshain"
+    },
+    "98066": {
+      "name": "Terebellum",
+      "name_diacritics": "Terebellum"
+    },
+    "9884": {
+      "name": "Hamal",
+      "name_diacritics": "Hamal"
+    },
+    "99711": {
+      "name": "Phoenicia",
+      "name_diacritics": "Phoenicia"
+    },
+    "99894": {
+      "name": "Chechia",
+      "name_diacritics": "Chechia"
+    }
+  },
+  "response_sha256": "84fac0c90f1b19abc491c2793469e0caa7b003ad1bc93a790ca41147010d0eb0",
+  "source": "IAU Catalog of Star Names (IAU-CSN), IAU Division C WGSN; file https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt"
+}

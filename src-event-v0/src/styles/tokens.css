@@ -1,0 +1,118 @@
+/* Reused from the pre-event Planetes practice viewer (src/styles/tokens.css); see PRIOR_WORK.md. */
+/* Design tokens. Theme B, "Infrared", is the default (Sumit, 29 Oct): a deep night, ember for
+   what was measured, teal-blue for an honest look, Source Serif 4 and Source Sans 3. Theme A,
+   "Night observatory", stays available under ?theme=observatory. Fonts are bundled (OFL), so
+   the viewer looks the same on every device and needs no network. */
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/source-sans-3';
+
+:root {
+  color-scheme: dark;
+  /* The night: the sky, SPHEREx's photos and anything drawn over them use these in every
+     scheme. The sky is the data; a light page never turns it pale. */
+  --sky-night: #0c1120;
+  --sky-dusk: #1b2236;
+  --sky-dusk-line: #323a52;
+  --sky-panel: #141a2c;
+  --sky-starlight: #efe8dd;
+  --sky-mist: #d2cbc2;
+  --sky-quiet: #9a948c;
+  /* Round 3 (29 Oct): ember means measured and nothing else; buttons and selections are starlight. */
+  --sky-show: #ff9d5c; /* the rim of a show with a measured move */
+  --sky-look: #6fb7d6; /* an honest look: any other spot */
+  --sky-measured: #ff9d5c; /* filled mark: measured */
+  --sky-predicted: #a9a4c9; /* dashed ring */
+  --sky-flag: #e0533c; /* outlines only, never fills */
+
+  /* The room: the interface's colours, the night palette in the dark scheme. */
+  --night: var(--sky-night);
+  --dusk: var(--sky-dusk);
+  --dusk-line: var(--sky-dusk-line);
+  --panel: var(--sky-panel);
+  --starlight: var(--sky-starlight);
+  --mist: var(--sky-mist);
+  --quiet: var(--sky-quiet);
+
+  /* Meaning: the colour is the contract */
+  --show: var(--sky-show);
+  --look: var(--sky-look);
+  --measured: var(--sky-measured);
+  --predicted: var(--sky-predicted);
+  --flag: var(--sky-flag);
+
+  /* Type */
+  --serif: 'Source Serif 4 Variable', Georgia, serif;
+  --sans: 'Source Sans 3 Variable', system-ui, sans-serif;
+
+  /* Motion (see the motion table; every value has a reduced-motion replacement) */
+  --dive-ms: 700ms;
+  --dial-ms: 400ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme A, "Night observatory": the cooler indigo night, kept as an option (?theme=observatory).
+   Gold for a measured show, blue for an honest look; Newsreader and Atkinson Hyperlegible Next. */
+:root[data-theme='observatory'] {
+  --sky-night: #0e1430;
+  --sky-dusk: #1e2a55;
+  --sky-dusk-line: #2f3d72;
+  --sky-panel: #121b40;
+  --sky-starlight: #f2eee4;
+  --sky-mist: #c9cfe6;
+  --sky-quiet: #8f99c4;
+  --sky-show: #f4b860;
+  --sky-look: #78a6ff;
+  --sky-measured: #f4b860;
+  --sky-predicted: #9aa6d8;
+  --sky-flag: #f08a6b;
+  --serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Atkinson Hyperlegible Next Variable', 'Avenir Next', system-ui, sans-serif;
+}
+
+/* The light scheme (13 Nov): a cool daylight paper, not cream. The same meanings, deepened to
+   keep every one at 4.5:1 or more on the page, the panels and the dusk fills. data-ui is the
+   resolved scheme: the visitor's pick, else the system's, set by a script in the page head
+   before first paint (src/ui/scheme.ts keeps it current). */
+:root[data-ui='light'] {
+  color-scheme: light;
+  --night: #eef1f5;
+  --dusk: #e1e6ed;
+  --dusk-line: #c5cdd8;
+  --panel: #f8f9fb;
+  --starlight: #121826;
+  --mist: #353d4e;
+  --quiet: #5a6375;
+  --show: #a8480b;
+  --look: #1d6a8e;
+  --measured: #a8480b;
+  --predicted: #5b5596;
+  --flag: #b0301c;
+}
+
+/* Over the sky the interface takes the night palette in every scheme: text and scrims there
+   sit on the sky, not on the page. (Glass controls carry their own scheme colours.) */
+.on-sky {
+  color-scheme: dark;
+  /* Text inherits the colour computed on body (the page's ink), so set it again here. */
+  color: var(--starlight);
+  --night: var(--sky-night);
+  --dusk: var(--sky-dusk);
+  --dusk-line: var(--sky-dusk-line);
+  --panel: var(--sky-panel);
+  --starlight: var(--sky-starlight);
+  --mist: var(--sky-mist);
+  --quiet: var(--sky-quiet);
+  --show: var(--sky-show);
+  --look: var(--sky-look);
+  --measured: var(--sky-measured);
+  --predicted: var(--sky-predicted);
+  --flag: var(--sky-flag);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dive-ms: 150ms;
+    --dial-ms: 0ms;
+  }
+}

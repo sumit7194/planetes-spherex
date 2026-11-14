@@ -1,50 +1,31 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Planetes · watch SPHEREx's sky change</title>
-    <meta name="description" content="Type a sky position and watch NASA SPHEREx's infrared photos of it, pass by pass, to spot stars and brown dwarfs that move and stars that change." />
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <meta
+      name="description"
+      content="See how the sky changes, in NASA SPHEREx's infrared photographs."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <script>
-      // Light or dark before first paint: the visitor's pick, else the system's.
+      /* Light or dark before first paint: the visitor's pick, else the system's (src/ui/scheme.ts). */
       (function () {
-        var pick = null;
-        try { pick = localStorage.getItem('planetes-scheme'); } catch (e) {}
-        var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.dataset.ui = pick === 'light' || pick === 'dark' ? pick : dark ? 'dark' : 'light';
+        var pick = 'system';
+        try {
+          pick = localStorage.getItem('planetes-scheme') || 'system';
+        } catch (e) {}
+        var light =
+          pick === 'light' ||
+          (pick === 'system' && matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.dataset.scheme = pick;
+        document.documentElement.dataset.ui = light ? 'light' : 'dark';
       })();
     </script>
+    <title>Planetes</title>
   </head>
   <body>
-    <header class="top">
-      <a class="brand" href="./" aria-label="Planetes home">
-        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-opacity=".45"/><circle cx="16" cy="16" r="5.5" fill="var(--sky-show)"/><circle cx="26" cy="9" r="2.2" fill="currentColor"/></svg>
-        <span>Planetes</span>
-      </a>
-      <form class="search glass" id="search" role="search" autocomplete="off">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.2 3.2"/></svg>
-        <input id="q" name="q" type="text" spellcheck="false" placeholder="Find a star or a position (RA Dec)" aria-label="Star name or sky position" />
-        <button type="submit" class="go">Go</button>
-      </form>
-      <div class="top-right">
-        <div class="scheme-switch glass" role="group" aria-label="Appearance" id="scheme">
-          <button type="button" data-s="auto" title="Follow the device" aria-label="Follow the device"><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg></button>
-          <button type="button" data-s="light" title="Light" aria-label="Light"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/></svg></button>
-          <button type="button" data-s="dark" title="Dark" aria-label="Dark"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M13 10.2A5.6 5.6 0 0 1 5.8 3a5.6 5.6 0 1 0 7.2 7.2z" fill="currentColor"/></svg></button>
-        </div>
-        <a class="credits-link" href="./about.html">About &amp; credits</a>
-      </div>
-    </header>
-
-    <main id="app" aria-live="polite"></main>
-
-    <footer class="foot">
-      <p>
-        SPHEREx images: NASA / JPL-Caltech, served by IRSA (NASA/IPAC Infrared Science Archive). Catalogues: ESA Gaia DR3, CatWISE2020.
-        Built for the NASA Space Apps Challenge 2026, “Planet X and SPHEREx”, with AI assistance (see <a href="./about.html">About</a>).
-      </p>
-    </footer>
-    <script type="module" src="./src/main.ts"></script>
+    <main id="app"></main>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

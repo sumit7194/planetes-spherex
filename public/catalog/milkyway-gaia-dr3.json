@@ -1,0 +1,62 @@
+{
+  "credit": "Milky Way glow: star counts from the ESA mission Gaia (DR3), Gaia Collaboration et al. (2016b, 2023j). This work has made use of data from the European Space Agency (ESA) mission Gaia (https://www.cosmos.esa.int/gaia), processed by the Gaia Data Processing and Analysis Consortium (DPAC, https://www.cosmos.esa.int/web/gaia/dpac/consortium). Funding for the DPAC has been provided by national institutions, in particular the institutions participating in the Gaia Multilateral Agreement.",
+  "env": {
+    "blas": "accelerate",
+    "git_commit": "8d74b26320142af78ac47f800a35d70d322c6f73",
+    "git_dirty": true,
+    "machine": "arm64",
+    "packages": {
+      "astropy": "8.0.2",
+      "httpx": "0.28.1",
+      "kete": "3.3.0",
+      "numpy": "2.5.4",
+      "photutils": "3.1.1",
+      "pyarrow": "26.0.0",
+      "pyvo": "1.9.1",
+      "scipy": "1.18.1"
+    },
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "python": "3.15.1",
+    "threads": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "VECLIB_MAXIMUM_THREADS": null
+    },
+    "time_utc": "2026-10-29T10:54:13.563043+00:00",
+    "uv_lock_sha256": "841bd9be3bc296bf7dafa1bfc73725ae92a9e228e15e40ed505abc26afabdc24"
+  },
+  "files": {
+    "milkyway_gaia_dr3_n128.bin": {
+      "n_all_max": 291552,
+      "n_all_median": 2055.0,
+      "n_g18_max": 97876,
+      "npix": 196608,
+      "nside": 128,
+      "sha256": "14c3adfb9226ed359c21e467184de8d6861ae6ef6de447cfdcf2ed49cc03dffd"
+    },
+    "milkyway_gaia_dr3_n64.bin": {
+      "n_all_max": 1117707,
+      "n_all_median": 8237.0,
+      "n_g18_max": 330242,
+      "npix": 49152,
+      "nside": 64,
+      "sha256": "71c6db0799fa7376a4ccc68932d91c76a68bc4e56c4bff3ba70105c604afb16d"
+    }
+  },
+  "jobs": {
+    "all": "https://gea.esac.esa.int/tap-server/tap/async/b6c49ebb-d386-11f1-9d98-bc97e148b76b-O",
+    "g18": "https://gea.esac.esa.int/tap-server/tap/async/e3dc0ca3-d386-11f1-9d98-bc97e148b76b-O"
+  },
+  "layout": "magic 'GMW1', uint32 nside, uint32 npix, then uint32 n_all[npix], uint32 n_g18[npix], float32 g_flux_sum[npix] (e-/s), little-endian",
+  "queries": {
+    "all": "SELECT source_id/35184372088832 AS hpx7, COUNT(*) AS n_all, SUM(phot_g_mean_flux) AS g_flux_sum FROM gaiadr3.gaia_source GROUP BY hpx7",
+    "g18": "SELECT source_id/35184372088832 AS hpx7, COUNT(*) AS n_g18 FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < 18 GROUP BY hpx7"
+  },
+  "responses_sha256": {
+    "all": "a1d98aa1779366dad23fe0ea3df35003b7af69d8e46d3c0e1adbfcfee3c9d159",
+    "g18": "285c5dd70e3c620f3defb0064242100cf0eacec1c1668262177548f888a97162"
+  },
+  "total_g18": 304941694,
+  "total_sources": 1811709771,
+  "what": "Gaia DR3 star counts and summed G flux per HEALPix pixel (NESTED, ICRS); catalogue data, not SPHEREx"
+}

@@ -1,0 +1,2123 @@
+/*
+ * One persistent room: header, a stage (the hero on the left, words on the right) and a band.
+ * The hero is sized from the window height so it dominates on any screen; the words column
+ * sits beside it as one centred composition, not two islands.
+ */
+
+#app {
+  /* Height left for the hero once the header and band are drawn. */
+  --chrome: 230px;
+  --hero: min(calc(100vh - var(--chrome)), 60vw);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* One column the width of the screen: a wide child (the card row) scrolls, never widens it. */
+  grid-template-columns: minmax(0, 1fr);
+  /* Soft backings reach past the edges; they never make the page scroll sideways. */
+  overflow-x: clip;
+  height: 100%;
+  min-height: 640px;
+  background: var(--night);
+}
+
+/* ---------- header ---------- */
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 28px 8px;
+}
+.wordmark {
+  margin: 0;
+  font: inherit;
+}
+/* The wordmark is the home link: the mark, the name, and a chevron that appears in a show. */
+.home {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--starlight);
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 2px 6px 2px 0;
+}
+.home-name {
+  font: 600 21px / 1 var(--serif);
+  letter-spacing: 0.02em;
+}
+.home-back {
+  display: none;
+  font: 400 22px / 1 var(--sans);
+  color: var(--quiet);
+  margin-right: -3px;
+  transition: transform 0.15s;
+}
+:not([data-place='sky']) > .top .home-back {
+  display: inline;
+}
+.home:hover .home-back,
+.home:focus-visible .home-back {
+  color: var(--starlight);
+  transform: translateX(-2px);
+}
+.credits-link {
+  color: var(--quiet);
+  font-size: 13px;
+  text-decoration: none;
+}
+.credits-link:hover {
+  color: var(--mist);
+}
+.dial {
+  display: inline-flex;
+  margin: 0 auto;
+  padding: 3px;
+  border-radius: 20px;
+}
+.dial button {
+  border: 0;
+  border-radius: 16px;
+  padding: 4px 18px;
+  background: none;
+  color: var(--glass-ink-quiet);
+}
+.dial button:hover {
+  color: var(--glass-ink);
+}
+.dial button[aria-pressed='true'] {
+  background: var(--glass-on);
+  color: var(--glass-on-ink);
+  font-weight: 600;
+}
+/* Appearance: three small icons in a glass capsule, like the dial. */
+.scheme-switch {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 999px;
+}
+.scheme-switch button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--glass-ink-quiet);
+}
+.scheme-switch button:hover {
+  color: var(--glass-ink);
+}
+.scheme-switch button[aria-pressed='true'] {
+  background: var(--glass-on);
+  color: var(--glass-on-ink);
+}
+.search.glass {
+  width: 260px;
+  padding: 7px 14px 7px 32px;
+  /* A magnifier in the glass's quiet ink (CSS can't tint a data URI, so one per scheme). */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23d2cbc2' stroke-opacity='.8' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.6'/%3E%3Cpath d='m10.5 10.5 3.2 3.2'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--glass-sheen), transparent 60%);
+  background-repeat: no-repeat;
+  background-position:
+    11px 50%,
+    0 0;
+  background-size:
+    14px 14px,
+    100% 100%;
+  border-radius: 999px;
+  color: var(--glass-ink);
+}
+:root[data-ui='light'] :not(.on-sky) > .search.glass {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23353d4e' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.6'/%3E%3Cpath d='m10.5 10.5 3.2 3.2'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--glass-sheen), transparent 60%);
+}
+.search::placeholder {
+  color: var(--glass-ink-quiet);
+}
+
+/* Author display rules would otherwise override the hidden attribute. */
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- stage ---------- */
+
+.stage {
+  display: grid;
+  grid-template-columns: var(--hero) minmax(300px, 520px);
+  justify-content: center;
+  align-items: center;
+  gap: clamp(28px, 4vw, 64px);
+  padding: 0 28px;
+  min-height: 0;
+}
+/* The sky is the page's backdrop in every view; the hero slot only anchors it. */
+#app > :not(.backdrop) {
+  position: relative;
+  z-index: 1;
+}
+canvas.sky-fade {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 500ms ease-in-out;
+}
+canvas.sky-fade.gone {
+  opacity: 0;
+}
+/* Under reduced motion, stepping out moves in stills joined by a short fade (Neural: ≤ 200 ms). */
+canvas.sky-fade.quick {
+  transition-duration: 0.18s;
+}
+canvas.sky.backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  z-index: 0;
+  cursor: grab;
+}
+.focus {
+  /* Invisible: it only tells the sky where the lens will open, so the view aims there. */
+  display: none;
+  width: 90%;
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+[data-place='sky'] .focus {
+  display: block;
+}
+.focus-caption {
+  display: none;
+  position: absolute;
+  inset: auto 0 -2px 0;
+  margin: 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--mist);
+  min-height: 1.4em;
+}
+/* The sky draws the caption beside the aim; this copy is for screen readers only. */
+[data-place='sky'][data-entry='inside'] .focus-caption {
+  display: block;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.this-week-badge {
+  display: none;
+  color: var(--look);
+  font-size: 12px;
+}
+.card.this-week .this-week-badge {
+  display: inline;
+}
+.card.this-week {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--look) 50%, transparent);
+}
+.card.lit {
+  border-color: var(--mist);
+  background: color-mix(in srgb, var(--dusk) 90%, transparent);
+}
+/* Drags on the page reach the backdrop; only the controls and the cards catch the pointer.
+   The stage itself must let go too: it spans the page, above the sky. */
+[data-place='sky'] .stage,
+[data-place='sky'] .view,
+[data-place='sky'] .words {
+  pointer-events: none;
+}
+[data-place='sky'] .entry-switch,
+[data-place='sky'] .words :is(button, input, a) {
+  pointer-events: auto;
+}
+/* Words and cards sit on a soft scrim, never a box, so they read over any sky. */
+[data-place='sky'] .words {
+  position: relative;
+  isolation: isolate;
+  /* On the sky the words always fit; scrolling would clip the soft backing to a box. */
+  overflow: visible;
+  max-height: none;
+  padding: 24px 28px 24px 36px;
+  margin-left: -36px;
+}
+/* A soft, nearly opaque night behind the words that fades out well beyond them: no edge, no
+   blur, so it never reads as a card. 90% keeps the quietest text at 4.95:1 even over a bright
+   star in the Milky Way's glow. The sky also draws no names or figures under it. */
+[data-place='sky'] .words::before {
+  content: '';
+  position: absolute;
+  inset: -110px -120px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--night) 90%, transparent) 0%,
+    color-mix(in srgb, var(--night) 90%, transparent) 62%,
+    color-mix(in srgb, var(--night) 0%, transparent) 100%
+  );
+}
+/* The header sits on a soft scrim too, so lights near the top of the sky never fight it. */
+[data-place='sky'] .top {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--night) 85%, transparent) 0%,
+    color-mix(in srgb, var(--night) 0%, transparent) 100%
+  );
+}
+/* The band rests on a soft pool of night that fades out on every side: further above, where
+   it meets the sky, and less below, where the page ends. */
+[data-place='sky'] .band {
+  position: relative;
+  padding-top: 18px;
+}
+[data-place='sky'] .band::before {
+  content: '';
+  position: absolute;
+  inset: -36px -28px -18px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--night) 82%, transparent) 0%,
+    color-mix(in srgb, var(--night) 72%, transparent) 55%,
+    color-mix(in srgb, var(--night) 0%, transparent) 100%
+  );
+}
+/* In a show, the sky stays behind the lens, faint and still. */
+:not([data-place='sky']) > .backdrop {
+  opacity: 0.35;
+  transition: opacity var(--dive-ms) var(--ease-out);
+}
+/* On the light page a show leaves the night behind entirely: a faint sky would only grey it. */
+:root[data-ui='light'] :not([data-place='sky']) > .backdrop {
+  opacity: 0;
+}
+
+.view {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+/* Away from the sky the view stays square, so the lens has a margin for its label. */
+:not([data-place='sky']) > .stage .view {
+  aspect-ratio: 1;
+}
+.view canvas.sky,
+.view canvas.lens {
+  height: auto;
+  aspect-ratio: 1;
+}
+.view canvas.sky {
+  width: 100%;
+}
+.view canvas.sky[data-entry='flat'] {
+  aspect-ratio: 2;
+}
+
+.view .lens {
+  /* A little smaller than its square, so the corner insets sit clear of the rim. */
+  width: 90%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--show) 55%, transparent);
+}
+/* The rim is the contract: solid ember for a measured move, a dashed mist rim for a show
+   where nothing was measured, a thin blue rim for a look. */
+[data-show='status'] .view .lens {
+  box-shadow: none;
+  outline: 1.5px dashed color-mix(in srgb, var(--mist) 55%, transparent);
+  outline-offset: 2px;
+}
+:is([data-place='finding'], [data-place='filling'], [data-place='look']) .view .lens {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--look) 70%, transparent);
+  outline: none;
+}
+
+/* The dive: the sky gives way to the lens in one move. */
+.view .sky,
+.view .lens {
+  transition:
+    opacity var(--dive-ms) var(--ease-out),
+    transform var(--dive-ms) var(--ease-out),
+    visibility 0s;
+}
+[data-place='sky'] .view .lens,
+:not([data-place='sky']) > .stage .view .sky {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--dive-ms) var(--ease-out),
+    transform var(--dive-ms) var(--ease-out),
+    visibility 0s linear var(--dive-ms);
+}
+[data-place='sky'] .view .lens {
+  transform: scale(0.6);
+}
+:not([data-place='sky']) > .stage .view .sky {
+  transform: scale(1.6);
+}
+
+/* Insets around the lens: where you are, the real size of the move, and the Moon for scale. */
+.view .locator,
+.view .true-scale,
+.view .moon {
+  position: absolute;
+  transition: opacity var(--dive-ms) var(--ease-out);
+}
+[data-place='sky'] .view .locator,
+[data-place='sky'] .view .true-scale,
+[data-place='sky'] .view .moon,
+[data-place='sky'] .lens-labels {
+  opacity: 0;
+  pointer-events: none;
+}
+.view .locator {
+  top: 0;
+  left: 0;
+  width: 22%;
+  aspect-ratio: 2;
+}
+.view .true-scale,
+.view .moon {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--quiet);
+  text-align: center;
+}
+.view .true-scale {
+  top: 0;
+  right: 0;
+  width: 15%;
+}
+.true-scale-canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--dusk-line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--night) 70%, transparent);
+}
+.view .moon {
+  bottom: 3%;
+  left: 0;
+  width: 13%;
+}
+.moon-disc {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--mist) 50%, transparent);
+  display: grid;
+  place-items: center;
+}
+.moon-disc::after {
+  content: '';
+  width: var(--field, 13%);
+  aspect-ratio: 1;
+  border: 1.5px solid var(--mist);
+}
+.lens-labels {
+  position: absolute;
+  inset: auto 0 -4px 0;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--mist);
+}
+
+.entry-switch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  z-index: 1;
+}
+/* A quiet indicator of where the camera is, not a row of modes: one glass capsule whose pills
+   only fill for the current view. The flat map appears once you're at the globe (flattening is
+   a step from there), and + and − step the same zoom as the wheel. */
+.entry-switch button {
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--glass-ink-quiet);
+  padding: 3px 10px;
+}
+.entry-switch button:hover {
+  color: var(--glass-ink);
+}
+.entry-switch button[aria-pressed='true'] {
+  background: var(--glass-on);
+  color: var(--glass-on-ink);
+}
+.entry-switch .zoom {
+  width: 26px;
+  padding: 3px 0;
+}
+.entry-switch button[data-entry] + .zoom {
+  margin-left: 8px;
+}
+:not([data-place='sky']) > .stage .entry-switch {
+  display: none;
+}
+
+/* ---------- the time sweep ---------- */
+
+.sweep {
+  margin-top: 18px;
+  pointer-events: auto;
+}
+.sweep-toggle,
+.sweep-play {
+  border: 1px solid var(--dusk-line);
+  background: none;
+  color: var(--starlight);
+  border-radius: 16px;
+  padding: 5px 14px;
+  font-size: 13.5px;
+}
+.sweep.open .sweep-toggle {
+  color: var(--quiet);
+}
+.sweep-week {
+  margin: 12px 0 2px;
+  color: var(--starlight) !important;
+}
+.sweep .hint {
+  margin: 2px 0;
+}
+.sweep .placeholder {
+  color: var(--flag) !important;
+}
+.sweep-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 8px 0 6px;
+}
+.sweep-row input[type='range'] {
+  flex: 1;
+  accent-color: var(--look);
+}
+
+/* ---------- words ---------- */
+
+.words {
+  /* The stage's own height, so the column never slides under the header or the band. */
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
+  /* A quiet scrollbar in the night's own colours, not the system's bright one. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--dusk-line) transparent;
+}
+.words::-webkit-scrollbar {
+  width: 6px;
+}
+.words::-webkit-scrollbar-thumb {
+  background: var(--dusk-line);
+  border-radius: 3px;
+}
+/* When there's more below, the last lines fade so the cut doesn't read as the end. */
+.words.more {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent);
+}
+.words h2 {
+  font: 400 clamp(30px, 3.2vw, 44px) / 1.12 var(--serif);
+  margin: 6px 0 14px;
+}
+.words h3 {
+  font: 600 14px var(--sans);
+  color: var(--mist);
+  margin: 18px 0 8px;
+}
+.words .eyebrow {
+  color: var(--mist);
+  font-size: 15px;
+  margin: 0;
+}
+.words p {
+  color: var(--mist);
+  max-width: 48ch;
+  margin: 0 0 12px;
+}
+.numbers {
+  margin: 14px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  border: 1px solid var(--dusk-line);
+  font-size: 14px;
+}
+.numbers div {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.dot.measured {
+  background: var(--measured);
+}
+.dot.predicted {
+  border: 1.5px dashed var(--predicted);
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 6px 0 8px;
+}
+.actions button {
+  border-radius: 24px;
+  padding: 10px 20px;
+  border: 1px solid var(--dusk-line);
+  background: none;
+}
+.actions .primary {
+  background: var(--starlight);
+  color: var(--night);
+  border: 0;
+  font-weight: 600;
+}
+.actions .primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.hint {
+  font-size: 14px;
+  color: var(--quiet) !important;
+}
+
+/* Evidence: the two looks side by side, and beside them how sure we are. */
+.evidence {
+  /* The two looks and "how sure" side by side when there's room, stacked when there isn't. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 22px;
+}
+.evidence > * {
+  flex: 1 1 100%;
+}
+.evidence > .looks {
+  flex: 0 0 auto;
+}
+.evidence > .how-sure {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.evidence .looks {
+  display: flex;
+  gap: 10px;
+}
+.evidence p {
+  font-size: 13.5px;
+  margin: 10px 0 0;
+}
+.evidence figure,
+.how-sure,
+.windows {
+  margin: 0;
+}
+.evidence figcaption,
+.how-sure figcaption,
+.windows figcaption {
+  font-size: 12.5px;
+  color: var(--quiet);
+  margin-top: 4px;
+}
+.thumb {
+  display: block;
+  image-rendering: pixelated;
+  border-radius: 6px;
+  background: var(--panel);
+}
+.thumb.empty {
+  display: inline-block;
+  width: 56px;
+  height: 56px;
+}
+/* A live look's photos in time order; the one in the lens is outlined in the look's blue. */
+.look-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+.look-strip .thumb {
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.look-strip .thumb.on {
+  outline-color: var(--look);
+}
+.how-sure {
+  margin-top: 0;
+}
+.how-sure .legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--quiet);
+}
+.wobble-swatch {
+  width: 14px;
+  height: 8px;
+  background: color-mix(in srgb, var(--predicted) 30%, transparent);
+}
+
+.windows {
+  margin-top: 18px;
+}
+.windows figcaption {
+  font: 600 14px var(--sans);
+  color: var(--mist);
+}
+.windows ol {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 14px;
+  font-size: 13px;
+}
+.windows li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.windows .swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--c);
+}
+.windows .count {
+  color: var(--quiet);
+  margin-left: auto;
+}
+
+/* ---------- band: the case rail on the sky, the ribbon and chips in a show ---------- */
+
+.band {
+  margin: 8px 28px 18px;
+}
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.strip-label {
+  font: italic 15px var(--serif);
+  color: var(--quiet);
+  white-space: nowrap;
+}
+.rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+/* A chip, not a card: no border or fill until it's pointed at. */
+.card {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: none;
+}
+.card:hover:not(:disabled),
+.card:focus-visible {
+  background: color-mix(in srgb, var(--dusk) 70%, transparent);
+  border-color: var(--dusk-line);
+}
+.card:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.card .thumb {
+  border-radius: 50%;
+  flex: none;
+}
+.card-text {
+  display: grid;
+  gap: 0;
+  font-size: 12.5px;
+  color: var(--mist);
+  min-width: 0;
+  /* A long name is cut with "…" (src/ui/fit.ts), never widens the rail. */
+  max-width: 13em;
+}
+.card-text strong {
+  color: var(--starlight);
+  font-size: 14px;
+  font-weight: 600;
+}
+/* The status vocabulary: a teal dot for measured, an open ring for not confirmed, a dashed
+   ring for not measured yet. Same marks as the show's measured and predicted. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--quiet);
+}
+.chip::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--quiet);
+}
+.chip.measured::before,
+.chip.brightness::before {
+  background: var(--measured);
+  border-color: var(--measured);
+}
+/* Not confirmed: half filled, so the "holds still" ring in the lens stays a plain ring. */
+.chip.unconfirmed::before {
+  border-color: var(--mist);
+  background: linear-gradient(90deg, var(--mist) 50%, transparent 50%);
+}
+.chip.unmeasured::before {
+  border-style: dotted;
+}
+.chip.predicted::before {
+  border-radius: 1px;
+  transform: rotate(45deg) scale(0.85);
+  border-color: var(--predicted);
+}
+.chip.look::before {
+  border-radius: 1px;
+  border-color: var(--look);
+}
+/* The full status line, above the chip on hover or keyboard focus. */
+.card-more {
+  display: none;
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: 280px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border: 1px solid var(--dusk-line);
+  font-size: 13px;
+  color: var(--mist);
+  z-index: 5;
+}
+.card:hover .card-more,
+.card:focus .card-more {
+  display: block;
+}
+
+.ribbon-figure {
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel) 85%, transparent);
+  border: 1px solid var(--dusk-line);
+}
+.ribbon-figure p {
+  margin: 0;
+  font-size: 13.5px;
+}
+.ribbon-figure svg {
+  display: block;
+  width: 100%;
+  height: 36px;
+}
+.ribbon-labels {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--quiet);
+}
+.ribbon-labels .gap {
+  position: absolute;
+  transform: translateX(-50%);
+  font-style: italic;
+}
+.meet {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: var(--quiet);
+}
+.meet button {
+  border: 1px solid var(--dusk-line);
+  background: var(--dusk);
+  border-radius: 16px;
+  padding: 4px 12px;
+  color: var(--starlight);
+}
+
+[data-room='watch'] .words p,
+[data-room='watch'] .words .eyebrow {
+  opacity: 0.8;
+  transition: opacity var(--dial-ms) var(--ease-in-out);
+}
+
+/* Below this width the cards stack their photo above the words, so the band grows. */
+@media (max-width: 980px) {
+  #app {
+    --hero: min(calc(100vh - 260px), 92vw);
+    height: auto;
+  }
+  .stage {
+    /* minmax(0, …) so no child's intrinsic size can widen the page past the screen. */
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+  .words {
+    max-height: none;
+  }
+  /* One swipeable row of chips. */
+  .strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .rail {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 6px;
+  }
+  .rail li {
+    scroll-snap-align: start;
+  }
+  /* The header wraps: search gets its own full-width row rather than a cut placeholder. */
+  .top {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .top .search {
+    order: 9;
+    flex: 1 1 100%;
+    width: auto;
+  }
+}
+
+/* Where five chips and the label don't fit on one line, the label goes above them. */
+@media (max-width: 1280px) {
+  .strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+
+/* Phones: the header wraps, and the search gets its own full-width row. */
+@media (max-width: 600px) {
+  .top {
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    padding: 12px 16px 6px;
+  }
+  .top .search {
+    order: 9;
+    flex: 1 1 100%;
+    width: auto;
+  }
+  /* Row one: the wordmark, then appearance and credits on the right; the room dial gets a
+     centred row of its own, and search the full-width row under it. */
+  .top .scheme-switch {
+    margin-left: auto;
+  }
+  .top .dial {
+    order: 5;
+    margin: 0 auto;
+  }
+  /* Whole pills wrap, never their words: the capsule becomes a two-row rounded block. */
+  .entry-switch {
+    flex-wrap: wrap;
+    border-radius: 18px;
+    right: 0;
+  }
+  .entry-switch button {
+    white-space: nowrap;
+  }
+  .stage {
+    padding: 0 16px;
+  }
+}
+
+/* "What am I seeing?": a quiet disclosure under the hero words. */
+.legend {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--quiet);
+  pointer-events: auto;
+}
+.legend summary {
+  cursor: pointer;
+  color: var(--mist);
+  width: max-content;
+}
+.legend ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  max-width: 48ch;
+}
+.legend li {
+  margin-bottom: 4px;
+}
+
+/* The show's numbers as status chips (copy round 1, variant A), same marks as the strip. */
+.words .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 4px 0 16px;
+  font-size: 14px;
+}
+.words .chip {
+  color: var(--mist);
+}
+.chip.predicted::before {
+  border-style: dashed;
+  border-color: var(--predicted);
+}
+/* A key label inside a button: what to press instead of clicking. */
+.actions kbd {
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  font: 600 11px var(--sans);
+  opacity: 0.8;
+}
+/* One question, one tap: the steady-star explanation, and anything like it. */
+.why {
+  margin: 10px 0;
+}
+.why summary {
+  cursor: pointer;
+  color: var(--mist);
+  font-size: 14px;
+}
+.why p {
+  margin-top: 8px;
+  font-size: 14px;
+}
+.hint.small {
+  font-size: 12.5px;
+}
+
+/* Embedded in another site (?embed=1): the sky, the lens and the words, nothing else. */
+[data-embed='1'] .dial,
+[data-embed='1'] .search,
+[data-embed='1'] .credits-link,
+[data-embed='1'] .band {
+  display: none;
+}
+[data-embed='1'] .wordmark a {
+  color: inherit;
+  text-decoration: none;
+}
+.actions button.quiet {
+  background: none;
+  border-color: transparent;
+  color: var(--quiet);
+}
+
+/* The live look's field-of-view choice: small pills, like the view indicator. */
+.field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--quiet);
+}
+.field span {
+  margin-right: 6px;
+}
+.field button {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--quiet);
+  padding: 1px 10px;
+}
+.field button[aria-pressed='true'] {
+  border-color: var(--dusk-line);
+  background: color-mix(in srgb, var(--dusk) 80%, transparent);
+  color: var(--starlight);
+}
+
+/* The flags panel: one row per kind, with its outline style as a swatch and a count. */
+.flags label,
+.flags .flag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--mist);
+}
+.flags .n {
+  margin-left: auto;
+  color: var(--quiet);
+  font-size: 12.5px;
+}
+.flags .flag::before {
+  content: '';
+  flex: none;
+  width: 14px;
+  height: 10px;
+  border: 1.5px solid var(--flag);
+}
+.flags label::before {
+  content: none;
+}
+.flags .rejected input {
+  accent-color: var(--mist);
+}
+.flags .source input {
+  accent-color: var(--predicted);
+}
+.flags .outlier input {
+  accent-color: var(--look);
+}
+
+/* A spectrum, photo by photo: dots on the infrared ramp, quiet grid and axes. */
+.spectrum {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  color: var(--quiet);
+  font: 11px var(--sans);
+}
+.spectrum text {
+  fill: currentColor;
+}
+.spectrum .axis {
+  font-size: 11.5px;
+}
+.spectrum .grid {
+  stroke: color-mix(in srgb, var(--dusk-line) 70%, transparent);
+  stroke-width: 1;
+}
+
+.actions .quiet-link {
+  align-self: center;
+  margin-left: 4px;
+  font-size: 13.5px;
+  color: var(--quiet);
+  text-decoration: none;
+}
+.actions .quiet-link:hover {
+  color: var(--mist);
+}
+
+/* The Watch room's colour windows double as play buttons for every photo in that colour. */
+.windows .window {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+.windows .window:hover:not(:disabled),
+.windows .window[aria-pressed='true'] {
+  border-color: var(--dusk-line);
+  background: color-mix(in srgb, var(--dusk) 60%, transparent);
+}
+.windows .window:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Six co-adds, one per colour range: small pictures to pick from. */
+.coadd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+.coadd-grid button {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--quiet);
+  font-size: 12px;
+  text-align: left;
+}
+.coadd-grid button:hover .thumb {
+  outline: 2px solid var(--look);
+  outline-offset: 2px;
+}
+
+/* The tour: one sentence at a time, set large enough to read at a glance. */
+.tour {
+  margin-bottom: 18px;
+  pointer-events: auto;
+}
+.tour .tour-line {
+  font: 400 clamp(22px, 2.2vw, 30px) / 1.25 var(--serif);
+  color: var(--starlight);
+  max-width: 26ch;
+  margin: 8px 0 14px;
+}
+
+/* Earlier · Play/Pause · Later under the colour windows while a series plays. */
+.series-bar {
+  margin-top: 8px;
+}
+
+/* About this photo: a small definition list under the series controls. */
+.photo-meta dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.photo-meta dt {
+  color: var(--quiet);
+}
+.photo-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The tour's progress: one dot per step, the current one ember. */
+.tour .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tour-dots {
+  display: inline-flex;
+  gap: 5px;
+}
+.tour-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--quiet);
+}
+.tour-dots i.done {
+  background: var(--quiet);
+}
+.tour-dots i.on {
+  background: var(--starlight);
+  border-color: var(--starlight);
+}
+
+/* The sweep's key: the same two washes the sky draws. */
+.sweep-key {
+  display: flex;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 8px 0 4px;
+  font-size: 12.5px;
+  color: var(--quiet);
+}
+.sweep-key i {
+  width: 18px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--look) 40%, transparent);
+}
+.sweep-key i.sofar {
+  background: color-mix(in srgb, var(--look) 14%, transparent);
+}
+.sweep-key i.week {
+  margin-left: 10px;
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--look) 65%, var(--starlight)) 45%,
+    transparent
+  );
+}
+
+/* No keyboard hints where there's no keyboard to speak of. */
+@media (hover: none) {
+  kbd {
+    display: none;
+  }
+}
+
+/* ---------- round 3: one number, one line, one mark; then the same rows for every object ---------- */
+
+.words .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.words .eyebrow {
+  flex-wrap: wrap;
+}
+.words .eyebrow .chip {
+  white-space: nowrap;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--dusk-line);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+/* The hero number: "about 6″ ↑ arcseconds north". */
+.hero-move {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: end;
+  column-gap: 12px;
+  margin: 6px 0 2px;
+}
+.hero-move .about {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--quiet);
+}
+.hero-move .big {
+  font: 400 clamp(54px, 6vw, 76px) / 0.9 var(--serif);
+  color: var(--starlight);
+  font-variant-numeric: lining-nums;
+}
+.hero-move .dir {
+  align-self: center;
+  font: 300 34px / 1 var(--sans);
+  color: var(--measured);
+}
+.hero-move .unit {
+  display: grid;
+  font-size: 15px;
+  color: var(--mist);
+  padding-bottom: 6px;
+}
+.hero-move .dates {
+  font-size: 12.5px;
+  color: var(--quiet);
+}
+
+/* The number line: pixels above, arcseconds below. */
+.how-sure {
+  margin: 8px 0 0;
+}
+.number-line {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  overflow: visible;
+}
+.nl-axis {
+  stroke: var(--dusk-line);
+  stroke-width: 1;
+}
+.nl-band {
+  fill: color-mix(in srgb, var(--mist) 14%, transparent);
+}
+.nl-error {
+  stroke: var(--measured);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.nl-measured {
+  fill: var(--measured);
+}
+.nl-pred {
+  fill: var(--night);
+  stroke: var(--predicted);
+  stroke-width: 1.6;
+}
+.nl-px,
+.nl-unit {
+  font: 10.5px var(--sans);
+  fill: var(--quiet);
+}
+.nl-arcsec {
+  font: 10.5px var(--sans);
+  fill: color-mix(in srgb, var(--quiet) 75%, transparent);
+}
+.how-sure .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--mist);
+}
+.how-sure .legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coin-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--quiet);
+  margin: 6px 0 14px;
+}
+.coin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--quiet);
+}
+
+/* One mark vocabulary, by shape first and colour second. */
+.mk {
+  display: inline-block;
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--quiet);
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.mk.measured {
+  background: var(--measured);
+  border-color: var(--measured);
+}
+.mk.unconfirmed {
+  border-color: var(--mist);
+  background: linear-gradient(90deg, var(--mist) 50%, transparent 50%);
+}
+.mk.unmeasured {
+  border-style: dotted;
+}
+.mk.predicted {
+  border-radius: 1px;
+  border-color: var(--predicted);
+  transform: rotate(45deg) scale(0.85);
+}
+.mk.steady {
+  border-radius: 2px;
+  border: 0;
+  width: 14px;
+  height: 8px;
+  background: color-mix(in srgb, var(--mist) 22%, transparent);
+}
+.mk.photo {
+  border-radius: 1px;
+  border-color: var(--mist);
+  background: repeating-linear-gradient(90deg, var(--mist) 0 2px, transparent 2px 4px);
+  opacity: 0.8;
+}
+.mk.look {
+  border-radius: 1px;
+  border-color: var(--look);
+}
+
+/* The facts: the same rows in the same order, a dash and a reason where a fact is missing. */
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin: 4px 0 10px;
+  font-size: 13.5px;
+  border-top: 1px solid var(--dusk-line);
+}
+.facts dt,
+.facts dd {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--dusk-line);
+}
+.facts dt {
+  display: flex;
+  align-items: baseline;
+  color: var(--quiet);
+  padding-right: 16px;
+  white-space: nowrap;
+}
+.facts dd {
+  margin: 0;
+  color: var(--starlight);
+}
+
+.status-line {
+  font-size: 17px;
+  color: var(--starlight);
+  margin: 2px 0 12px;
+}
+.looks figcaption b {
+  color: var(--starlight);
+  font-weight: 600;
+}
+
+.words .looks {
+  display: flex;
+  gap: 10px;
+}
+.words .looks figure {
+  margin: 0;
+}
+.words .looks figcaption {
+  font-size: 12px;
+  color: var(--quiet);
+  margin-top: 4px;
+}
+
+/* Which pair of looks to compare, when a pack has three or more passes. */
+.words .pairs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+.words .pairs-label {
+  font-size: 12px;
+  color: var(--quiet);
+  margin-right: 2px;
+}
+.words .pairs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--mist) 35%, transparent);
+  background: transparent;
+  color: var(--mist);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.words .pairs button.on {
+  border-color: var(--starlight);
+  color: var(--starlight);
+  background: color-mix(in srgb, var(--starlight) 10%, transparent);
+}
+.words .pairs .mk {
+  width: 7px;
+  height: 7px;
+}
+.words .release-line {
+  font-size: 12px;
+  color: var(--quiet);
+  margin: 8px 0 0;
+}
+
+/* ---------- round 3: the dock ---------- */
+
+.dock-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.ribbon-figure {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+.ribbon-count {
+  display: grid;
+  margin: 0;
+  max-width: 7.5em;
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: var(--quiet);
+}
+.ribbon-count b {
+  font: 400 28px / 1 var(--serif);
+  color: var(--starlight);
+}
+.ribbon-plot {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px;
+}
+.ribbon-figure .ribbon-plot svg {
+  height: 52px;
+}
+.rb-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0 14px;
+  font-size: 10px;
+  color: var(--quiet);
+  text-align: right;
+}
+.rb-bracket {
+  fill: none;
+  stroke: var(--quiet);
+  stroke-width: 1.2;
+}
+.rb-bracket.on {
+  stroke: var(--starlight);
+  stroke-width: 2;
+}
+.rb-num {
+  font: 600 11px var(--sans);
+  fill: var(--quiet);
+}
+.rb-num.on {
+  fill: var(--starlight);
+}
+
+.mark-key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 3px 14px;
+  font-size: 11.5px;
+  color: var(--quiet);
+}
+.mark-key li {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+/* Without a chart beside it (a look still loading), the key runs as one line. */
+.band > .mark-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 6px;
+}
+.mk.flag {
+  border-radius: 1px;
+  border-color: var(--flag);
+}
+.mk.catalogue {
+  border: 0;
+  border-radius: 0;
+  width: 9px;
+  height: 9px;
+  background:
+    linear-gradient(var(--quiet), var(--quiet)) center / 100% 1px no-repeat,
+    linear-gradient(var(--quiet), var(--quiet)) center / 1px 100% no-repeat;
+}
+.card.current {
+  border-color: var(--mist);
+  background: color-mix(in srgb, var(--dusk) 80%, transparent);
+}
+
+/* The landing's three verbs. */
+.verbs {
+  list-style: none;
+  margin: 14px 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.verbs li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+}
+.verbs b {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--starlight);
+}
+.verbs small {
+  display: block;
+  font-size: 12.5px;
+  color: var(--quiet);
+}
+.verb-icon {
+  flex: none;
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+/* A lantern, in starlight: some of the five were measured, some not. */
+.verb-icon.pick {
+  background: radial-gradient(
+    circle,
+    var(--starlight) 0 4px,
+    color-mix(in srgb, var(--starlight) 25%, transparent) 5px,
+    transparent 13px
+  );
+}
+/* A crosshair: a click anywhere. */
+.verb-icon.anywhere {
+  border: 1.5px solid var(--look);
+  background:
+    linear-gradient(var(--look), var(--look)) center / 1.5px 10px no-repeat,
+    linear-gradient(var(--look), var(--look)) center / 10px 1.5px no-repeat;
+  width: 22px;
+  height: 22px;
+  margin: 2px;
+}
+/* Two arrows: drag. */
+.verb-icon.move {
+  border-radius: 0;
+}
+.verb-icon.move::before {
+  content: '⟷';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: var(--mist);
+}
+
+/* ---------- round 3: a live look ---------- */
+
+.hero-count {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 6px 0 10px;
+}
+.hero-count .big {
+  font: 400 clamp(48px, 5.5vw, 68px) / 0.9 var(--serif);
+  color: var(--starlight);
+  font-variant-numeric: lining-nums;
+}
+.hero-count .unit {
+  display: grid;
+  font-size: 15px;
+  color: var(--mist);
+  padding-bottom: 4px;
+}
+.hero-count .dates {
+  font-size: 12.5px;
+  color: var(--quiet);
+}
+
+/* The fair-colour rule, drawn: every compared photo on one tick of SPHEREx's range. */
+.fair-colour {
+  margin: 4px 0 12px;
+  max-width: 420px;
+}
+.fc-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--starlight);
+}
+.fc-label .chip {
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.fc-label .chip::before {
+  display: none;
+}
+.fc-ramp {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  /* The same ramp as wavelengthColour (figures.ts), spaced by log wavelength. */
+  background: linear-gradient(
+    90deg,
+    rgb(247 244 200),
+    rgb(206 232 150),
+    rgb(150 212 128),
+    rgb(88 184 136),
+    rgb(44 150 140)
+  );
+  opacity: 0.85;
+}
+.fc-ramp i {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--starlight);
+  border-radius: 1px;
+}
+.words .fc-axis,
+.words .fc-label {
+  max-width: none;
+}
+.fc-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  color: var(--quiet);
+}
+
+.pips {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--quiet);
+}
+.pips i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--look);
+}
+.pips i.on {
+  background: var(--look);
+}
+.pips span {
+  margin-left: 8px;
+}
+.look-strip figure {
+  margin: 0;
+  text-align: center;
+}
+.look-strip figcaption {
+  font-size: 11px;
+  color: var(--quiet);
+}
+.field button small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--quiet);
+}
+
+/* Watch: the colour picker is the histogram of photos per colour range. */
+.windows ol {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  align-items: end;
+}
+.windows .window {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  text-align: center;
+}
+.windows .bar {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 56px;
+}
+.windows .bar span {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--c);
+  opacity: 0.8;
+}
+.windows .window[aria-pressed='true'] .bar span {
+  opacity: 1;
+  outline: 1.5px solid var(--starlight);
+  outline-offset: 1px;
+}
+.windows .count {
+  margin: 0;
+  font-size: 13px;
+  color: var(--starlight);
+}
+.windows .range {
+  font-size: 10.5px;
+  color: var(--quiet);
+  white-space: nowrap;
+}
+
+/* Flags and catalogue rows: a count per kind, each a toggle for drawing it on the lens. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+.flag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 8px 1px 6px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--mist);
+  font: inherit;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.flag-chip b {
+  font-weight: 600;
+  color: var(--starlight);
+  margin-right: 3px;
+}
+.flag-chip[aria-pressed='true'],
+.flag-chip.fixed {
+  border-color: var(--mist);
+  background: color-mix(in srgb, var(--dusk) 80%, transparent);
+}
+.flag-chip .mk {
+  margin-right: 4px;
+}
+.mk.flag.rejected {
+  border-color: var(--mist);
+  border-style: dashed;
+}
+.mk.flag.source {
+  border-color: var(--predicted);
+}
+.mk.flag.outlier {
+  border-color: var(--look);
+  border-style: dashed;
+}
+.mk.cat-gaia {
+  border-color: var(--predicted);
+}
+.mk.cat-catwise {
+  border-radius: 1px;
+  border-color: var(--mist);
+}
+
+/* Under the lens: which look is on screen, as a two-state pill. */
+.look-pill {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--night) 70%, transparent);
+}
+.look-pill > span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  color: var(--quiet);
+}
+.look-pill > span.on {
+  background: var(--dusk);
+  color: var(--starlight);
+}
+.look-pill b {
+  font-weight: 600;
+}
+.real-size {
+  color: var(--quiet);
+}
+
+/* The landing dock's weekly bars, and the series photo ringed in Watch. */
+.wk {
+  fill: color-mix(in srgb, var(--look) 45%, transparent);
+  cursor: pointer;
+}
+.wk:hover,
+.wk.on {
+  fill: var(--look);
+}
+.weeks svg {
+  display: block;
+  width: 100%;
+  height: 48px;
+}
+.rb-current {
+  fill: none;
+  stroke: var(--starlight);
+  stroke-width: 1.5;
+}
+
+/* Phones: the dock stacks (photos, then key), date labels without the gap note, names on one line. */
+@media (max-width: 600px) {
+  .dock-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ribbon-figure {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .ribbon-count {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    max-width: none;
+  }
+  .ribbon-count b {
+    font-size: 22px;
+  }
+  .ribbon-labels .gap {
+    display: none;
+  }
+  .card-text strong,
+  .card-text .chip {
+    white-space: nowrap;
+  }
+  .mark-key {
+    grid-template-columns: repeat(3, max-content);
+  }
+}
+
+/* ---------- long text (src/ui/fit.ts): one line cut with "…", or a few lines and "More" ---------- */
+
+[data-fit='1'] {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* An inline label needs a box of its own to be cut. */
+strong[data-fit='1'],
+span[data-fit='1'] {
+  display: block;
+}
+.fit-body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--fit-lines);
+  line-clamp: var(--fit-lines);
+  overflow: hidden;
+}
+.fit-body.open {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+}
+.fit-more {
+  margin: 2px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mist);
+  font-size: 0.85em;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--dusk-line);
+  text-underline-offset: 3px;
+}
+.fit-more:hover {
+  color: var(--starlight);
+  text-decoration-color: currentColor;
+}
+
+/* The rail scrolls on narrow screens: a card keeps its natural width (names up to 13em). */
+.rail li {
+  flex: none;
+}
+/* The minimap is an all-sky ellipse: clip its night to the ellipse, so a light page shows no box. */
+.view canvas.locator {
+  clip-path: ellipse(50% 50% at 50% 50%);
+}
+
+/* The difference view (14 Nov): pressed like the pair buttons, and its key under the actions. */
+.actions .diff-toggle[aria-pressed='true'] {
+  background: var(--dusk);
+  border-color: var(--starlight);
+}
+.diff-pill {
+  padding: 2px 12px;
+  color: var(--starlight);
+}
+.diff-key {
+  margin: 4px 0 10px;
+}
+.diff-key .hint {
+  margin: 4px 0;
+}
+.diff-scale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--mist);
+}
+.diff-scale i {
+  flex: 1;
+  max-width: 180px;
+  height: 10px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px var(--dusk-line);
+}
+
+/* The context map (14 Nov): Aladin Lite in a rounded box, the colour slider under it. */
+.context-map {
+  height: 280px;
+  margin: 8px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--sky-night);
+  box-shadow: inset 0 0 0 1px var(--dusk-line);
+}
+.context-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--mist);
+}
+.context-bar input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--starlight);
+}
+.context-um {
+  min-width: 5.5em;
+  text-align: right;
+  color: var(--starlight);
+  font-variant-numeric: tabular-nums;
+}
+.diff-hatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(135deg, #78809a 0 1.5px, #161a28 1.5px 4px);
+}
+.actions .diff-toggle[aria-busy='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}

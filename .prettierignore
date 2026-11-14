@@ -1,0 +1,12 @@
+docs/
+public/data/
+dist/
+coverage/
+package-lock.json
+public/catalog/
+src-event-v0/
+pipeline/
+public/packs/
+*.md
+.claude/
+.github/

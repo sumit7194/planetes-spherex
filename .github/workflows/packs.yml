@@ -1,19 +1,13 @@
 name: Build a pack (runs next to NASA's S3 bucket)
 
-# Builds a SPHEREx pack for a target or any position on a US runner, close to s3://nasa-irsa-spherex,
-# and commits it to public/packs. Re-run for every target when IRSA publishes a new release.
+# Builds a target's SPHEREx pack (planetes-pack/1, measurements, spectrum, overlay) on a US runner,
+# close to s3://nasa-irsa-spherex, and commits it to public/data. Re-run for every target when IRSA publishes a new release.
 on:
   workflow_dispatch:
     inputs:
       target:
-        description: "Target slug from pipeline/targets.json (leave empty to use ra/dec)"
-        required: false
-      ra:
-        description: "RA in degrees"
-        required: false
-      dec:
-        description: "Dec in degrees"
-        required: false
+        description: "Target id from pipeline/targets.json"
+        required: true
 
 permissions:
   contents: write
@@ -29,15 +23,11 @@ jobs:
         working-directory: pipeline
         run: |
           uv sync
-          if [ -n "${{ inputs.target }}" ]; then
-            uv run python build_pack.py "${{ inputs.target }}" --conc 48
-          else
-            uv run python build_pack.py --ra "${{ inputs.ra }}" --dec "${{ inputs.dec }}" --conc 48
-          fi
+          uv run python planetes_pack.py "${{ inputs.target }}" --conc 48
       - name: Commit
         run: |
           git config user.name "planetes-bot"
           git config user.email "planetes-bot@users.noreply.github.com"
-          git add public/packs
-          git commit -m "Pack: ${{ inputs.target }}${{ inputs.ra }} ${{ inputs.dec }}" || echo "nothing to commit"
+          git add public/data
+          git commit -m "Pack: ${{ inputs.target }} (built on GitHub Actions)" || echo "nothing to commit"
           git push

@@ -1,0 +1,159 @@
+/* A page to scan, not to read: a table of sources, three short cards, small print. */
+#credits {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+#credits .credits-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--starlight);
+  font: 600 17px var(--serif);
+  text-decoration: none;
+}
+.credits-back .mark {
+  width: 24px;
+  height: 24px;
+}
+#credits h1 {
+  font: 400 clamp(30px, 4vw, 42px) / 1.15 var(--serif);
+  margin: 36px 0 6px;
+}
+.lede {
+  color: var(--mist);
+  margin: 0 0 24px;
+}
+#credits h2 {
+  font: 600 13px var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin: 40px 0 12px;
+}
+#credits a {
+  color: var(--look);
+  text-decoration-color: color-mix(in srgb, var(--look) 40%, transparent);
+  text-underline-offset: 3px;
+}
+
+/* Sources: what you see, where it's from, on what terms. */
+.sources {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.sources th,
+.sources td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--dusk-line);
+}
+.sources thead th {
+  font: 600 12px var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+.sources tbody th {
+  color: var(--starlight);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sources td {
+  color: var(--mist);
+}
+.sources .terms {
+  color: var(--quiet);
+  font-size: 13px;
+}
+
+/* Makers: one row each, a role on the left, who · when · what on the right. */
+.makers {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0 18px;
+  margin: 0;
+  font-size: 14px;
+}
+.makers dt,
+.makers dd {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--dusk-line);
+}
+.makers dt {
+  color: var(--starlight);
+  font-weight: 600;
+}
+.makers dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  color: var(--mist);
+}
+.makers .when {
+  color: var(--quiet);
+  font-variant-numeric: tabular-nums;
+}
+.makers .facts {
+  flex-basis: 100%;
+  color: var(--quiet);
+  font-size: 13px;
+}
+.makers details {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--quiet);
+}
+.makers summary {
+  cursor: pointer;
+}
+.makers details p {
+  margin: 8px 0 0;
+  max-width: 48rem;
+}
+
+/* The archives' own words, small. */
+.acks p {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--quiet);
+  margin: 0 0 8px;
+  max-width: 48rem;
+}
+
+#credits footer {
+  margin-top: 40px;
+  padding-top: 14px;
+  border-top: 1px solid var(--dusk-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-size: 12px;
+  color: var(--quiet);
+}
+
+@media (max-width: 640px) {
+  .sources thead {
+    display: none;
+  }
+  .sources tr {
+    display: grid;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--dusk-line);
+  }
+  .sources th,
+  .sources td {
+    border: 0;
+    padding: 2px 0;
+  }
+  .makers {
+    grid-template-columns: 1fr;
+  }
+  .makers dt {
+    border: 0;
+    padding-bottom: 0;
+  }
+}

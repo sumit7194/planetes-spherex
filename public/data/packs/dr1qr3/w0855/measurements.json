@@ -1,0 +1,380 @@
+[
+ {
+  "key": "proper-motion-arcsec-per-yr",
+  "value": 8.1458,
+  "unit": "arcsec/yr",
+  "status": "PREDICTED",
+  "method": "catalogue proper motion (Luhman & Esplin 2016)",
+  "basis": [
+   "Luhman & Esplin 2016"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-east-px-s0s1",
+  "value": null,
+  "unit": "px",
+  "status": "NOT_RELIABLE",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "basis": [
+   "one-detector stacks, passes 1 and 2, detectors 5",
+   "fitted together with 1 catalogued neighbour(s) within 5 px",
+   "4 Gaia DR3 still stars in the field",
+   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": -0.5334,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-east-arcsec-s0s1",
+  "value": null,
+  "unit": "arcsec",
+  "status": "NOT_RELIABLE",
+  "method": "shift-east-px-s0s1 x 6.15 arcsec per pixel",
+  "basis": [
+   "shift-east-px-s0s1"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": -3.28,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-north-px-s0s1",
+  "value": null,
+  "unit": "px",
+  "status": "NOT_RELIABLE",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "basis": [
+   "one-detector stacks, passes 1 and 2, detectors 5",
+   "fitted together with 1 catalogued neighbour(s) within 5 px",
+   "4 Gaia DR3 still stars in the field",
+   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": 0.0155,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-north-arcsec-s0s1",
+  "value": null,
+  "unit": "arcsec",
+  "status": "NOT_RELIABLE",
+  "method": "shift-north-px-s0s1 x 6.15 arcsec per pixel",
+  "basis": [
+   "shift-north-px-s0s1"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": 0.096,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "season-span-days-s0s1",
+  "value": 185.4764,
+  "unit": "days",
+  "status": "MEASURED",
+  "method": "difference of the passes' median photo times",
+  "basis": [
+   "one-detector stacks, passes 1 and 2, detectors 5"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-east-px-raw-s0s1",
+  "value": -0.6694,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "fitted shift before the still-star correction",
+  "basis": [
+   "one-detector stacks, passes 1 and 2, detectors 5"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-north-px-raw-s0s1",
+  "value": 0.1089,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "fitted shift before the still-star correction",
+  "basis": [
+   "one-detector stacks, passes 1 and 2, detectors 5"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "still-star-shift-px-s0s1",
+  "value": 0.0576,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "median distance of still stars from their common shift",
+  "basis": [
+   "fitted together with 1 catalogued neighbour(s) within 5 px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "still-star-shift-p90-px-s0s1",
+  "value": 0.1808,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "90th percentile distance of still stars from their common shift",
+  "basis": [
+   "fitted together with 1 catalogued neighbour(s) within 5 px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-east-px-s0s2",
+  "value": null,
+  "unit": "px",
+  "status": "NOT_RELIABLE",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "basis": [
+   "one-detector stacks, passes 1 and 3, detectors 5",
+   "fitted together with 1 catalogued neighbour(s) within 5 px",
+   "4 Gaia DR3 still stars in the field",
+   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": -1.3045,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-east-arcsec-s0s2",
+  "value": null,
+  "unit": "arcsec",
+  "status": "NOT_RELIABLE",
+  "method": "shift-east-px-s0s2 x 6.15 arcsec per pixel",
+  "basis": [
+   "shift-east-px-s0s2"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": -8.023,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-north-px-s0s2",
+  "value": null,
+  "unit": "px",
+  "status": "NOT_RELIABLE",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "basis": [
+   "one-detector stacks, passes 1 and 3, detectors 5",
+   "fitted together with 1 catalogued neighbour(s) within 5 px",
+   "4 Gaia DR3 still stars in the field",
+   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": 0.106,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-north-arcsec-s0s2",
+  "value": null,
+  "unit": "arcsec",
+  "status": "NOT_RELIABLE",
+  "method": "shift-north-px-s0s2 x 6.15 arcsec per pixel",
+  "basis": [
+   "shift-north-px-s0s2"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "prediction": {
+   "value": 0.652,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "season-span-days-s0s2",
+  "value": 360.9566,
+  "unit": "days",
+  "status": "MEASURED",
+  "method": "difference of the passes' median photo times",
+  "basis": [
+   "one-detector stacks, passes 1 and 3, detectors 5"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-east-px-raw-s0s2",
+  "value": -1.4641,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "fitted shift before the still-star correction",
+  "basis": [
+   "one-detector stacks, passes 1 and 3, detectors 5"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-north-px-raw-s0s2",
+  "value": 0.3148,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "fitted shift before the still-star correction",
+  "basis": [
+   "one-detector stacks, passes 1 and 3, detectors 5"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "still-star-shift-px-s0s2",
+  "value": 0.0244,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "median distance of still stars from their common shift",
+  "basis": [
+   "fitted together with 1 catalogued neighbour(s) within 5 px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "still-star-shift-p90-px-s0s2",
+  "value": 0.1035,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "90th percentile distance of still stars from their common shift",
+  "basis": [
+   "fitted together with 1 catalogued neighbour(s) within 5 px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-east-px",
+  "value": -0.7259,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "basis": [
+   "one-detector stacks, passes 2 and 3, detectors 5, 6",
+   "fitted together with 1 catalogued neighbour(s) within 5 px",
+   "4 Gaia DR3 still stars in the field",
+   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0698,
+  "prediction": {
+   "value": -0.7711,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-east-arcsec",
+  "value": -4.4642,
+  "unit": "arcsec",
+  "status": "MEASURED",
+  "method": "shift-east-px x 6.15 arcsec per pixel",
+  "basis": [
+   "shift-east-px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.4291,
+  "prediction": {
+   "value": -4.742,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-north-px",
+  "value": 0.1418,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors",
+  "basis": [
+   "one-detector stacks, passes 2 and 3, detectors 5, 6",
+   "fitted together with 1 catalogued neighbour(s) within 5 px",
+   "4 Gaia DR3 still stars in the field",
+   "flags masked: saturated and artefact pixels (OUTLIER kept)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0945,
+  "prediction": {
+   "value": 0.0905,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "shift-north-arcsec",
+  "value": 0.872,
+  "unit": "arcsec",
+  "status": "MEASURED",
+  "method": "shift-north-px x 6.15 arcsec per pixel",
+  "basis": [
+   "shift-north-px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.581,
+  "prediction": {
+   "value": 0.557,
+   "source": "Luhman & Esplin 2016 proper motion plus parallax"
+  }
+ },
+ {
+  "key": "season-span-days",
+  "value": 175.4803,
+  "unit": "days",
+  "status": "MEASURED",
+  "method": "difference of the passes' median photo times",
+  "basis": [
+   "one-detector stacks, passes 2 and 3, detectors 5, 6"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-east-px-raw",
+  "value": -0.7242,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "fitted shift before the still-star correction",
+  "basis": [
+   "one-detector stacks, passes 2 and 3, detectors 5, 6"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "shift-north-px-raw",
+  "value": 0.1729,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "fitted shift before the still-star correction",
+  "basis": [
+   "one-detector stacks, passes 2 and 3, detectors 5, 6"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "still-star-shift-px",
+  "value": 0.0612,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "median distance of still stars from their common shift",
+  "basis": [
+   "fitted together with 1 catalogued neighbour(s) within 5 px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "still-star-shift-p90-px",
+  "value": 0.1161,
+  "unit": "px",
+  "status": "MEASURED",
+  "method": "90th percentile distance of still stars from their common shift",
+  "basis": [
+   "fitted together with 1 catalogued neighbour(s) within 5 px"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ }
+]

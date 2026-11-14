@@ -20,11 +20,22 @@ CATWISE_EPOCH_MJD = 57170.0  # CatWISE2020 reference epoch for ra_pm/dec_pm
 def _tap(adql: str, timeout: float = 180, url: str = TAP) -> list[dict]:
     q = urllib.parse.urlencode({"REQUEST": "doQuery", "LANG": "ADQL", "QUERY": adql, "FORMAT": "csv"})
     req = urllib.request.Request(f"{url}?{q}", headers={"User-Agent": "planetes-pipeline/0.1"})
-    txt = urllib.request.urlopen(req, timeout=timeout).read().decode()
+    for attempt in range(4):
+        try:
+            txt = urllib.request.urlopen(req, timeout=timeout).read().decode()
+            break
+        except Exception:  # noqa: BLE001 - archives drop connections under load; retry
+            if attempt == 3:
+                raise
+            import time
+            time.sleep(3 * (attempt + 1))
     out = []
     for r in csv.DictReader(io.StringIO(txt)):
         d = {}
         for k, v in r.items():
+            if k in ("source_id", "source_name"):  # identifiers: keep every digit
+                d[k] = v
+                continue
             try:
                 d[k] = float(v) if v not in ("", None) else None
             except ValueError:
@@ -41,7 +52,7 @@ def gaia_dr3(ra: float, dec: float, radius_deg: float, gmax: float = 19.0) -> li
     """Gaia DR3 sources (positions at epoch 2016.0) within radius, brighter than gmax."""
     q = (f"SELECT source_id, ra, dec, pmra, pmdec, parallax, phot_g_mean_mag FROM gaiadr3.gaia_source "
          f"WHERE {_cone(ra, dec, radius_deg)} AND phot_g_mean_mag < {gmax}")
-    return [dict(cat="Gaia DR3", id=str(int(r["source_id"])), ra=r["ra"], dec=r["dec"],
+    return [dict(cat="Gaia DR3", id=str(r["source_id"]), ra=r["ra"], dec=r["dec"],
                  pmra=r["pmra"] or 0.0, pmdec=r["pmdec"] or 0.0, plx=r["parallax"], epoch=2016.0,
                  mag=round(r["phot_g_mean_mag"], 2), band="G")
             for r in _tap(q, url=GAIA_TAP)]

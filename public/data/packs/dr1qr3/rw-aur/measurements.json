@@ -1,0 +1,255 @@
+[
+ {
+  "key": "brightness-ratio-detector-1-s0s1",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "20 photo pairs matched in wavelength (within lambda/80), detector 1, passes 1 and 2",
+   "ring 3-6 px: 1.054; ring 5-9 px: 2.255",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-2-s0s1",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "18 photo pairs matched in wavelength (within lambda/80), detector 2, passes 1 and 2",
+   "ring 3-6 px: 1.387; ring 5-9 px: 1.636",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-3-s0s1",
+  "value": 1.2618,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "24 photo pairs matched in wavelength (within lambda/80), detector 3, passes 1 and 2",
+   "ring 3-6 px: 1.262; ring 5-9 px: 1.164",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0665
+ },
+ {
+  "key": "brightness-ratio-detector-4-s0s1",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "20 photo pairs matched in wavelength (within lambda/80), detector 4, passes 1 and 2",
+   "ring 3-6 px: 0.922; ring 5-9 px: 0.906",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-5-s0s1",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "54 photo pairs matched in wavelength (within lambda/80), detector 5, passes 1 and 2",
+   "ring 3-6 px: 0.835; ring 5-9 px: 0.830",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-6-s0s1",
+  "value": 0.709,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "70 photo pairs matched in wavelength (within lambda/80), detector 6, passes 1 and 2",
+   "ring 3-6 px: 0.709; ring 5-9 px: 0.703",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0603
+ },
+ {
+  "key": "brightness-ratio-detector-1",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "19 photo pairs matched in wavelength (within lambda/80), detector 1, passes 1 and 3",
+   "ring 3-6 px: 1.568; ring 5-9 px: 2.154",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-2",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "17 photo pairs matched in wavelength (within lambda/80), detector 2, passes 1 and 3",
+   "ring 3-6 px: 1.375; ring 5-9 px: 1.757",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-3",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "18 photo pairs matched in wavelength (within lambda/80), detector 3, passes 1 and 3",
+   "ring 3-6 px: 1.084; ring 5-9 px: 1.025",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-4",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "19 photo pairs matched in wavelength (within lambda/80), detector 4, passes 1 and 3",
+   "ring 3-6 px: 0.756; ring 5-9 px: 0.745",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-5",
+  "value": 0.5207,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "52 photo pairs matched in wavelength (within lambda/80), detector 5, passes 1 and 3",
+   "ring 3-6 px: 0.521; ring 5-9 px: 0.508",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0597
+ },
+ {
+  "key": "brightness-ratio-detector-6",
+  "value": 0.5175,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "72 photo pairs matched in wavelength (within lambda/80), detector 6, passes 1 and 3",
+   "ring 3-6 px: 0.518; ring 5-9 px: 0.543",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0596
+ },
+ {
+  "key": "brightness-ratio-detector-1-s1s2",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "18 photo pairs matched in wavelength (within lambda/80), detector 1, passes 2 and 3",
+   "ring 3-6 px: 1.378; ring 5-9 px: 1.661",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-2-s1s2",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "19 photo pairs matched in wavelength (within lambda/80), detector 2, passes 2 and 3",
+   "ring 3-6 px: 0.989; ring 5-9 px: 1.017",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-3-s1s2",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "19 photo pairs matched in wavelength (within lambda/80), detector 3, passes 2 and 3",
+   "ring 3-6 px: 0.978; ring 5-9 px: 0.903",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-4-s1s2",
+  "value": null,
+  "unit": "ratio",
+  "status": "NOT_RELIABLE",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "18 photo pairs matched in wavelength (within lambda/80), detector 4, passes 2 and 3",
+   "ring 3-6 px: 0.780; ring 5-9 px: 0.863",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026"
+ },
+ {
+  "key": "brightness-ratio-detector-5-s1s2",
+  "value": 0.6537,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "55 photo pairs matched in wavelength (within lambda/80), detector 5, passes 2 and 3",
+   "ring 3-6 px: 0.654; ring 5-9 px: 0.641",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0594
+ },
+ {
+  "key": "brightness-ratio-detector-6-s1s2",
+  "value": 0.7287,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "ratio of PSF-wing brightness between passes (saturated core left out), photos paired at matching wavelengths",
+  "basis": [
+   "56 photo pairs matched in wavelength (within lambda/80), detector 6, passes 2 and 3",
+   "ring 3-6 px: 0.729; ring 5-9 px: 0.789",
+   "comparison stars: 4 Gaia stars; systematic error 0.059 (their scatter beyond their own noise, at least 0.05)"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0594
+ },
+ {
+  "key": "brightness-change",
+  "value": 0.5191,
+  "unit": "ratio",
+  "status": "MEASURED",
+  "method": "median over the detectors that pass, of the wing-brightness ratio, last pass / first pass; it differs by wavelength",
+  "basis": [
+   "D5 0.52, D6 0.52",
+   "passes 1 -> 3"
+  ],
+  "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
+  "error": 0.0596
+ }
+]

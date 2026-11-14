@@ -1,8 +1,9 @@
-/* Reused from the pre-event Planetes practice viewer (src/styles/tokens.css); see PRIOR_WORK.md. */
 /* Design tokens. Theme B, "Infrared", is the default (Sumit, 29 Oct): a deep night, ember for
    what was measured, teal-blue for an honest look, Source Serif 4 and Source Sans 3. Theme A,
    "Night observatory", stays available under ?theme=observatory. Fonts are bundled (OFL), so
    the viewer looks the same on every device and needs no network. */
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/atkinson-hyperlegible-next';
 @import '@fontsource-variable/source-serif-4/opsz.css';
 @import '@fontsource-variable/source-sans-3';
 

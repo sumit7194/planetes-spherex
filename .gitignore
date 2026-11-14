@@ -6,3 +6,4 @@ pipeline/logs/
 pipeline/__pycache__/
 pipeline/pm_lookup.out
 .DS_Store
+public/packs/

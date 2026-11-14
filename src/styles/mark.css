@@ -1,0 +1,62 @@
+/* The Planetes mark (src/ui/mark.ts), shared by every page. */
+.mark {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+}
+.mark-ring {
+  fill: none;
+  stroke: var(--mist);
+  stroke-opacity: 0.5;
+  stroke-width: 1.5;
+}
+.mark-trail {
+  fill: none;
+  stroke: var(--show);
+  stroke-opacity: 0.7;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 2.6;
+}
+.mark-then {
+  fill: var(--starlight);
+  fill-opacity: 0.45;
+}
+.mark-glow {
+  fill: var(--show);
+  fill-opacity: 0.22;
+}
+.mark-now {
+  fill: var(--show);
+}
+/* Hover: a blink comparator. Hard cuts between the two looks, under 2 Hz, never a fade. */
+@media (prefers-reduced-motion: no-preference) {
+  .home:hover .mark-then,
+  .home:focus-visible .mark-then {
+    animation: blink-then 1.2s steps(1) infinite;
+  }
+  .home:hover .mark-now,
+  .home:hover .mark-glow,
+  .home:focus-visible .mark-now,
+  .home:focus-visible .mark-glow {
+    animation: blink-now 1.2s steps(1) infinite;
+  }
+}
+@keyframes blink-then {
+  0% {
+    fill: var(--show);
+    fill-opacity: 1;
+  }
+  50% {
+    fill: var(--starlight);
+    fill-opacity: 0.45;
+  }
+}
+@keyframes blink-now {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}

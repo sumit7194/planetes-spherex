@@ -1,0 +1,98 @@
+/* Reused from the pre-event Planetes practice viewer (src/styles/glass.css); see PRIOR_WORK.md. */
+/*
+ * Liquid glass, for controls that float over the sky only (13 Nov): the room dial, search, the
+ * map-style capsule and the appearance switch. Its job is to let the moving sky show through
+ * a control without the control losing its edge. Reading surfaces (the words column, cards
+ * with sentences) never get it; they keep their solid or scrim backing.
+ *
+ * Layers, from the back: a blurred, saturated copy of what's behind (backdrop-filter); a tint;
+ * a sheen falling from the top edge; a hairline rim lit from above and shaded below; a soft
+ * drop shadow that lifts it off the sky. In Chromium a lens (src/ui/glass.ts) also bends the
+ * sky at the rim; elsewhere the blur alone carries it. Reduce transparency or more contrast
+ * makes it solid.
+ */
+
+:root {
+  --glass-tint: color-mix(in srgb, var(--sky-dusk) 46%, transparent);
+  --glass-solid: var(--sky-dusk);
+  --glass-ink: var(--sky-starlight);
+  --glass-ink-quiet: var(--sky-mist);
+  --glass-sheen: rgb(255 255 255 / 0.1);
+  --glass-rim: rgb(255 255 255 / 0.16);
+  --glass-light: rgb(255 255 255 / 0.32);
+  --glass-shade: rgb(0 0 0 / 0.28);
+  --glass-drop: rgb(0 0 0 / 0.5);
+  /* The pressed choice inside a glass control: a brighter, denser drop of glass. */
+  --glass-on: rgb(255 255 255 / 0.9);
+  --glass-on-ink: var(--sky-night);
+  --glass-blur: 14px;
+}
+:root[data-ui='light'] {
+  --glass-tint: rgb(255 255 255 / 0.74);
+  --glass-solid: #f8f9fb;
+  --glass-ink: #121826;
+  --glass-ink-quiet: #353d4e;
+  --glass-sheen: rgb(255 255 255 / 0.45);
+  --glass-rim: rgb(255 255 255 / 0.7);
+  --glass-light: rgb(255 255 255 / 0.95);
+  --glass-shade: rgb(18 24 38 / 0.1);
+  --glass-drop: rgb(10 16 32 / 0.3);
+  --glass-on: #121826;
+  --glass-on-ink: #f8f9fb;
+}
+
+/* Glass takes its tint from what it floats over, as Apple's does: over the sky it is the night
+   glass in either scheme (a white slab on the night sky had no reason to be there); over the
+   light page it is light. */
+.on-sky .glass,
+.on-sky.glass {
+  --glass-tint: color-mix(in srgb, var(--sky-dusk) 46%, transparent);
+  --glass-solid: var(--sky-dusk);
+  --glass-ink: var(--sky-starlight);
+  --glass-ink-quiet: var(--sky-mist);
+  --glass-sheen: rgb(255 255 255 / 0.1);
+  --glass-rim: rgb(255 255 255 / 0.16);
+  --glass-light: rgb(255 255 255 / 0.32);
+  --glass-shade: rgb(0 0 0 / 0.28);
+  --glass-drop: rgb(0 0 0 / 0.5);
+  --glass-on: rgb(255 255 255 / 0.9);
+  --glass-on-ink: var(--sky-night);
+}
+
+.glass {
+  color: var(--glass-ink);
+  background-color: var(--glass-tint);
+  background-image: linear-gradient(180deg, var(--glass-sheen), transparent 60%);
+  border: 0;
+  box-shadow:
+    inset 0 1px 0.5px var(--glass-light),
+    inset 0 -1px 1px var(--glass-shade),
+    inset 0 0 0 1px var(--glass-rim),
+    0 10px 28px -12px var(--glass-drop);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+}
+/* Chromium only (set by src/ui/glass.ts): the lens bends the sky at the rim, then blurs. */
+.glass[data-lens] {
+  backdrop-filter: var(--glass-lens,) blur(calc(var(--glass-blur) * 0.6)) saturate(170%);
+}
+
+/* The focus ring in the glass's own ink, so it holds 3:1 on light glass and dark glass alike. */
+.glass:focus-visible,
+.glass :focus-visible {
+  outline-color: var(--glass-ink);
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass,
+  .glass[data-lens] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--glass-solid);
+  }
+}
+@media (forced-colors: active) {
+  .glass {
+    border: 1px solid CanvasText;
+  }
+}

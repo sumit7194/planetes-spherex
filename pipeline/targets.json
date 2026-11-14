@@ -20,7 +20,9 @@
         4,
         5,
         6
-      ]
+      ],
+      "plx": 546.976,
+      "plxSource": "Gaia DR3"
     },
     {
       "slug": "w0855",
@@ -37,7 +39,9 @@
       "motionDets": [
         5,
         6
-      ]
+      ],
+      "plx": 439.0,
+      "plxSource": "literature (Kirkpatrick et al. 2021)"
     },
     {
       "slug": "epsind-b",
@@ -58,7 +62,9 @@
         4,
         5,
         6
-      ]
+      ],
+      "plx": 274.843,
+      "plxSource": "Gaia DR3 (Epsilon Indi A)"
     },
     {
       "slug": "rw-aur",

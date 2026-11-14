@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://planetes/schema/pack.schema.json",
+  "title": "Planetes pack manifest (planetes-pack/1)",
+  "description": "One curated target for one data release. Mirrors src/data/pack/types.ts; keep the two in step.",
+  "type": "object",
+  "required": [
+    "format",
+    "release",
+    "pipelineVersions",
+    "generator",
+    "target",
+    "grid",
+    "eye",
+    "frames",
+    "stacks",
+    "measurements",
+    "layers"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "planetes-pack/1"
+    },
+    "release": {
+      "type": "string",
+      "examples": ["qr2"]
+    },
+    "pipelineVersions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "generator": {
+      "type": "object",
+      "required": ["name", "commit", "createdUtc"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "createdUtc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["id", "name", "ra", "dec", "epoch"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": ["barnard", "w0855", "epsind-b", "rw-aur", "r-dra"]
+        },
+        "name": {
+          "type": "string"
+        },
+        "ra": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 360
+        },
+        "dec": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "epoch": {
+          "type": "number"
+        }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "required": ["size", "pixelScaleArcsec", "centre", "orientation"],
+      "additionalProperties": false,
+      "properties": {
+        "size": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 256
+        },
+        "pixelScaleArcsec": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "centre": {
+          "type": "object",
+          "required": ["ra", "dec"],
+          "additionalProperties": false,
+          "properties": {
+            "ra": {
+              "type": "number"
+            },
+            "dec": {
+              "type": "number"
+            }
+          }
+        },
+        "orientation": {
+          "const": "north-up-east-left"
+        }
+      }
+    },
+    "eye": {
+      "type": "object",
+      "required": ["status", "testedUtc"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": ["seen-with-ring", "faint", "unseen", "untested"]
+        },
+        "testedUtc": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "frames": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/frame"
+      }
+    },
+    "stacks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/stack"
+      }
+    },
+    "measurements": {
+      "type": "string",
+      "examples": ["measurements.json"]
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "manifest"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "what-changed"
+          },
+          "manifest": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "frame": {
+      "type": "object",
+      "required": [
+        "id",
+        "obsId",
+        "detector",
+        "mjd",
+        "season",
+        "lambdaUm",
+        "bandwidthUm",
+        "colourUncertain",
+        "registrationPx",
+        "sha256",
+        "image",
+        "flags"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "obsId": {
+          "type": "string"
+        },
+        "detector": {
+          "enum": [1, 2, 3, 4, 5, 6]
+        },
+        "mjd": {
+          "type": "number"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lambdaUm": {
+          "type": "number",
+          "minimum": 0.7,
+          "maximum": 5.1
+        },
+        "bandwidthUm": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "colourUncertain": {
+          "type": "boolean"
+        },
+        "registrationPx": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "image": {
+          "type": "string",
+          "description": "float32 little-endian, size × size, MJy/sr, IMAGE − ZODI − frame median"
+        },
+        "flags": {
+          "type": "string",
+          "description": "uint8 mask: bit0 saturated, bit1 other FIT_REJECT, bit2 SOURCE, bit3 OUTLIER"
+        }
+      }
+    },
+    "stack": {
+      "type": "object",
+      "required": ["id", "kind", "season", "detectors", "frameIds", "image", "flags"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": ["all-colour", "one-detector", "same-colour"]
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "detectors": {
+          "type": "array",
+          "items": {
+            "enum": [1, 2, 3, 4, 5, 6]
+          },
+          "minItems": 1
+        },
+        "frameIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "lambdaWindowUm": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "image": {
+          "type": "string"
+        },
+        "flags": {
+          "type": "string"
+        }
+      }
+    },
+    "measurement": {
+      "description": "One entry of measurements.json (an array of these).",
+      "type": "object",
+      "required": ["key", "value", "unit", "status", "method", "basis", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "examples": ["shift-north-px"]
+        },
+        "value": {
+          "type": ["number", "null"]
+        },
+        "error": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unit": {
+          "enum": ["px", "arcsec", "arcsec/yr", "days", "K", "um", "ratio"]
+        },
+        "status": {
+          "enum": [
+            "MEASURED",
+            "PREDICTED",
+            "MODEL",
+            "NOT_RELIABLE",
+            "NOT_MEASURABLE_YET",
+            "NO_DATA",
+            "MOCK"
+          ]
+        },
+        "method": {
+          "type": "string"
+        },
+        "prediction": {
+          "type": "object",
+          "required": ["value", "source"],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "number"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
+        },
+        "basis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "provenance": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": ["NOT_RELIABLE", "NOT_MEASURABLE_YET", "NO_DATA"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

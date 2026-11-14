@@ -1,0 +1,622 @@
+{
+ "release": "dr1qr3",
+ "status": "MEASURED",
+ "nside": 16,
+ "scheme": "NESTED",
+ "meaning": "photos touching each nside-16 pixel in that planning week (any of its 16 nside-64 sub-centres inside the footprint)",
+ "caption": "SPHEREx keeps looking roughly at right angles to the Sun, so as Earth circles the Sun it sweeps the whole sky every six months.",
+ "source": "Prep build (13 Nov 2026) from IRSA TAP ivoa.obscore s_region polygons, collections spherex_dr1, spherex_dr1_deep, spherex_qr3, spherex_qr3_deep (L2 images); docs/hackathon/prep/coverage/build_coverage.py",
+ "weeks": [
+  {
+   "label": "2025W17",
+   "startMjd": 60789.75076,
+   "endMjd": 60793.00419,
+   "startUtc": "2025-04-24",
+   "endUtc": "2025-04-28",
+   "frames": 10416
+  },
+  {
+   "label": "2025W18",
+   "startMjd": 60793.54185,
+   "endMjd": 60800.00009,
+   "startUtc": "2025-04-28",
+   "endUtc": "2025-05-05",
+   "frames": 20479
+  },
+  {
+   "label": "2025W19",
+   "startMjd": 60800.00249,
+   "endMjd": 60807.00427,
+   "startUtc": "2025-05-05",
+   "endUtc": "2025-05-12",
+   "frames": 21762
+  },
+  {
+   "label": "2025W20",
+   "startMjd": 60807.00688,
+   "endMjd": 60813.99961,
+   "startUtc": "2025-05-12",
+   "endUtc": "2025-05-18",
+   "frames": 22393
+  },
+  {
+   "label": "2025W21",
+   "startMjd": 60814.00224,
+   "endMjd": 60821.00064,
+   "startUtc": "2025-05-19",
+   "endUtc": "2025-05-26",
+   "frames": 22125
+  },
+  {
+   "label": "2025W22",
+   "startMjd": 60821.00286,
+   "endMjd": 60828.00096,
+   "startUtc": "2025-05-26",
+   "endUtc": "2025-06-02",
+   "frames": 21943
+  },
+  {
+   "label": "2025W23",
+   "startMjd": 60828.00304,
+   "endMjd": 60834.99922,
+   "startUtc": "2025-06-02",
+   "endUtc": "2025-06-08",
+   "frames": 20046
+  },
+  {
+   "label": "2025W24",
+   "startMjd": 60835.00136,
+   "endMjd": 60842.00459,
+   "startUtc": "2025-06-09",
+   "endUtc": "2025-06-16",
+   "frames": 21353
+  },
+  {
+   "label": "2025W25",
+   "startMjd": 60842.00693,
+   "endMjd": 60849.00054,
+   "startUtc": "2025-06-16",
+   "endUtc": "2025-06-23",
+   "frames": 21331
+  },
+  {
+   "label": "2025W26",
+   "startMjd": 60849.00285,
+   "endMjd": 60856.00053,
+   "startUtc": "2025-06-23",
+   "endUtc": "2025-06-30",
+   "frames": 22029
+  },
+  {
+   "label": "2025W27",
+   "startMjd": 60856.00275,
+   "endMjd": 60863.00273,
+   "startUtc": "2025-06-30",
+   "endUtc": "2025-07-07",
+   "frames": 21755
+  },
+  {
+   "label": "2025W28",
+   "startMjd": 60863.00513,
+   "endMjd": 60870.00304,
+   "startUtc": "2025-07-07",
+   "endUtc": "2025-07-14",
+   "frames": 22322
+  },
+  {
+   "label": "2025W29",
+   "startMjd": 60870.00535,
+   "endMjd": 60876.99973,
+   "startUtc": "2025-07-14",
+   "endUtc": "2025-07-20",
+   "frames": 21480
+  },
+  {
+   "label": "2025W30",
+   "startMjd": 60877.00184,
+   "endMjd": 60884.00231,
+   "startUtc": "2025-07-21",
+   "endUtc": "2025-07-28",
+   "frames": 22205
+  },
+  {
+   "label": "2025W31",
+   "startMjd": 60884.00473,
+   "endMjd": 60891.00333,
+   "startUtc": "2025-07-28",
+   "endUtc": "2025-08-04",
+   "frames": 22031
+  },
+  {
+   "label": "2025W32",
+   "startMjd": 60891.00541,
+   "endMjd": 60898.0033,
+   "startUtc": "2025-08-04",
+   "endUtc": "2025-08-11",
+   "frames": 21864
+  },
+  {
+   "label": "2025W33",
+   "startMjd": 60898.00528,
+   "endMjd": 60905.00319,
+   "startUtc": "2025-08-11",
+   "endUtc": "2025-08-18",
+   "frames": 21136
+  },
+  {
+   "label": "2025W34",
+   "startMjd": 60905.00558,
+   "endMjd": 60912.0019,
+   "startUtc": "2025-08-18",
+   "endUtc": "2025-08-25",
+   "frames": 21956
+  },
+  {
+   "label": "2025W35",
+   "startMjd": 60912.00375,
+   "endMjd": 60918.99908,
+   "startUtc": "2025-08-25",
+   "endUtc": "2025-08-31",
+   "frames": 22155
+  },
+  {
+   "label": "2025W36",
+   "startMjd": 60919.00112,
+   "endMjd": 60926.00179,
+   "startUtc": "2025-09-01",
+   "endUtc": "2025-09-08",
+   "frames": 21772
+  },
+  {
+   "label": "2025W37",
+   "startMjd": 60926.00397,
+   "endMjd": 60932.99902,
+   "startUtc": "2025-09-08",
+   "endUtc": "2025-09-14",
+   "frames": 21665
+  },
+  {
+   "label": "2025W38",
+   "startMjd": 60933.00154,
+   "endMjd": 60940.00054,
+   "startUtc": "2025-09-15",
+   "endUtc": "2025-09-22",
+   "frames": 21623
+  },
+  {
+   "label": "2025W39",
+   "startMjd": 60940.00276,
+   "endMjd": 60947.00112,
+   "startUtc": "2025-09-22",
+   "endUtc": "2025-09-29",
+   "frames": 22240
+  },
+  {
+   "label": "2025W40",
+   "startMjd": 60947.00371,
+   "endMjd": 60954.00453,
+   "startUtc": "2025-09-29",
+   "endUtc": "2025-10-06",
+   "frames": 20700
+  },
+  {
+   "label": "2025W41",
+   "startMjd": 60954.00665,
+   "endMjd": 60961.00369,
+   "startUtc": "2025-10-06",
+   "endUtc": "2025-10-13",
+   "frames": 21148
+  },
+  {
+   "label": "2025W42",
+   "startMjd": 60961.00634,
+   "endMjd": 60968.00503,
+   "startUtc": "2025-10-13",
+   "endUtc": "2025-10-20",
+   "frames": 21178
+  },
+  {
+   "label": "2025W43",
+   "startMjd": 60968.0073,
+   "endMjd": 60975.00443,
+   "startUtc": "2025-10-20",
+   "endUtc": "2025-10-27",
+   "frames": 21799
+  },
+  {
+   "label": "2025W44",
+   "startMjd": 60975.00667,
+   "endMjd": 60981.99792,
+   "startUtc": "2025-10-27",
+   "endUtc": "2025-11-02",
+   "frames": 21245
+  },
+  {
+   "label": "2025W45",
+   "startMjd": 60982.00156,
+   "endMjd": 60988.99873,
+   "startUtc": "2025-11-03",
+   "endUtc": "2025-11-09",
+   "frames": 21522
+  },
+  {
+   "label": "2025W46",
+   "startMjd": 60989.00077,
+   "endMjd": 60995.99932,
+   "startUtc": "2025-11-10",
+   "endUtc": "2025-11-16",
+   "frames": 19486
+  },
+  {
+   "label": "2025W47",
+   "startMjd": 60996.00165,
+   "endMjd": 61003.0012,
+   "startUtc": "2025-11-17",
+   "endUtc": "2025-11-24",
+   "frames": 21289
+  },
+  {
+   "label": "2025W48",
+   "startMjd": 61003.00356,
+   "endMjd": 61009.99966,
+   "startUtc": "2025-11-24",
+   "endUtc": "2025-11-30",
+   "frames": 20938
+  },
+  {
+   "label": "2025W49",
+   "startMjd": 61010.00167,
+   "endMjd": 61017.00011,
+   "startUtc": "2025-12-01",
+   "endUtc": "2025-12-08",
+   "frames": 21397
+  },
+  {
+   "label": "2025W50",
+   "startMjd": 61017.00249,
+   "endMjd": 61023.99941,
+   "startUtc": "2025-12-08",
+   "endUtc": "2025-12-14",
+   "frames": 21299
+  },
+  {
+   "label": "2025W51",
+   "startMjd": 61024.00118,
+   "endMjd": 61031.00313,
+   "startUtc": "2025-12-15",
+   "endUtc": "2025-12-22",
+   "frames": 21641
+  },
+  {
+   "label": "2025W52",
+   "startMjd": 61031.00567,
+   "endMjd": 61037.99869,
+   "startUtc": "2025-12-22",
+   "endUtc": "2025-12-28",
+   "frames": 21689
+  },
+  {
+   "label": "2026W01",
+   "startMjd": 61038.00116,
+   "endMjd": 61045.00064,
+   "startUtc": "2025-12-29",
+   "endUtc": "2026-01-05",
+   "frames": 21790
+  },
+  {
+   "label": "2026W02",
+   "startMjd": 61045.00326,
+   "endMjd": 61051.99903,
+   "startUtc": "2026-01-05",
+   "endUtc": "2026-01-11",
+   "frames": 21648
+  },
+  {
+   "label": "2026W03",
+   "startMjd": 61052.00143,
+   "endMjd": 61058.99921,
+   "startUtc": "2026-01-12",
+   "endUtc": "2026-01-18",
+   "frames": 21546
+  },
+  {
+   "label": "2026W04",
+   "startMjd": 61059.00161,
+   "endMjd": 61065.99932,
+   "startUtc": "2026-01-19",
+   "endUtc": "2026-01-25",
+   "frames": 19805
+  },
+  {
+   "label": "2026W05",
+   "startMjd": 61066.00146,
+   "endMjd": 61073.00241,
+   "startUtc": "2026-01-26",
+   "endUtc": "2026-02-02",
+   "frames": 20235
+  },
+  {
+   "label": "2026W06",
+   "startMjd": 61073.00473,
+   "endMjd": 61079.99875,
+   "startUtc": "2026-02-02",
+   "endUtc": "2026-02-08",
+   "frames": 21260
+  },
+  {
+   "label": "2026W07",
+   "startMjd": 61080.0009,
+   "endMjd": 61087.00203,
+   "startUtc": "2026-02-09",
+   "endUtc": "2026-02-16",
+   "frames": 21667
+  },
+  {
+   "label": "2026W08",
+   "startMjd": 61087.00413,
+   "endMjd": 61094.00119,
+   "startUtc": "2026-02-16",
+   "endUtc": "2026-02-23",
+   "frames": 21654
+  },
+  {
+   "label": "2026W09",
+   "startMjd": 61094.00348,
+   "endMjd": 61101.00258,
+   "startUtc": "2026-02-23",
+   "endUtc": "2026-03-02",
+   "frames": 21644
+  },
+  {
+   "label": "2026W10",
+   "startMjd": 61101.00482,
+   "endMjd": 61108.00372,
+   "startUtc": "2026-03-02",
+   "endUtc": "2026-03-09",
+   "frames": 22021
+  },
+  {
+   "label": "2026W11",
+   "startMjd": 61108.00612,
+   "endMjd": 61114.99888,
+   "startUtc": "2026-03-09",
+   "endUtc": "2026-03-15",
+   "frames": 21793
+  },
+  {
+   "label": "2026W12",
+   "startMjd": 61115.00103,
+   "endMjd": 61122.00317,
+   "startUtc": "2026-03-16",
+   "endUtc": "2026-03-23",
+   "frames": 21976
+  },
+  {
+   "label": "2026W13",
+   "startMjd": 61122.00544,
+   "endMjd": 61129.00308,
+   "startUtc": "2026-03-23",
+   "endUtc": "2026-03-30",
+   "frames": 20858
+  },
+  {
+   "label": "2026W14",
+   "startMjd": 61129.00534,
+   "endMjd": 61136.00232,
+   "startUtc": "2026-03-30",
+   "endUtc": "2026-04-06",
+   "frames": 21519
+  },
+  {
+   "label": "2026W15",
+   "startMjd": 61136.00465,
+   "endMjd": 61142.9995,
+   "startUtc": "2026-04-06",
+   "endUtc": "2026-04-12",
+   "frames": 21528
+  },
+  {
+   "label": "2026W16",
+   "startMjd": 61143.00162,
+   "endMjd": 61150.00066,
+   "startUtc": "2026-04-13",
+   "endUtc": "2026-04-20",
+   "frames": 22052
+  },
+  {
+   "label": "2026W17",
+   "startMjd": 61150.0028,
+   "endMjd": 61157.00522,
+   "startUtc": "2026-04-20",
+   "endUtc": "2026-04-27",
+   "frames": 21463
+  },
+  {
+   "label": "2026W18",
+   "startMjd": 61157.00749,
+   "endMjd": 61164.0,
+   "startUtc": "2026-04-27",
+   "endUtc": "2026-05-04",
+   "frames": 21406
+  },
+  {
+   "label": "2026W19",
+   "startMjd": 61164.00192,
+   "endMjd": 61171.00276,
+   "startUtc": "2026-05-04",
+   "endUtc": "2026-05-11",
+   "frames": 20021
+  },
+  {
+   "label": "2026W20",
+   "startMjd": 61171.00486,
+   "endMjd": 61178.0013,
+   "startUtc": "2026-05-11",
+   "endUtc": "2026-05-18",
+   "frames": 21282
+  },
+  {
+   "label": "2026W21",
+   "startMjd": 61178.00348,
+   "endMjd": 61185.0017,
+   "startUtc": "2026-05-18",
+   "endUtc": "2026-05-25",
+   "frames": 22115
+  },
+  {
+   "label": "2026W22",
+   "startMjd": 61185.00371,
+   "endMjd": 61192.00528,
+   "startUtc": "2026-05-25",
+   "endUtc": "2026-06-01",
+   "frames": 22270
+  },
+  {
+   "label": "2026W23",
+   "startMjd": 61192.00744,
+   "endMjd": 61199.00026,
+   "startUtc": "2026-06-01",
+   "endUtc": "2026-06-08",
+   "frames": 22022
+  },
+  {
+   "label": "2026W24",
+   "startMjd": 61199.0028,
+   "endMjd": 61206.00215,
+   "startUtc": "2026-06-08",
+   "endUtc": "2026-06-15",
+   "frames": 22034
+  },
+  {
+   "label": "2026W25",
+   "startMjd": 61206.00442,
+   "endMjd": 61213.00214,
+   "startUtc": "2026-06-15",
+   "endUtc": "2026-06-22",
+   "frames": 21746
+  },
+  {
+   "label": "2026W26",
+   "startMjd": 61213.00454,
+   "endMjd": 61220.0033,
+   "startUtc": "2026-06-22",
+   "endUtc": "2026-06-29",
+   "frames": 21818
+  },
+  {
+   "label": "2026W27",
+   "startMjd": 61220.00565,
+   "endMjd": 61227.00343,
+   "startUtc": "2026-06-29",
+   "endUtc": "2026-07-06",
+   "frames": 22038
+  },
+  {
+   "label": "2026W28",
+   "startMjd": 61227.0058,
+   "endMjd": 61234.00186,
+   "startUtc": "2026-07-06",
+   "endUtc": "2026-07-13",
+   "frames": 21363
+  },
+  {
+   "label": "2026W29",
+   "startMjd": 61234.00444,
+   "endMjd": 61241.00256,
+   "startUtc": "2026-07-13",
+   "endUtc": "2026-07-20",
+   "frames": 22101
+  },
+  {
+   "label": "2026W30",
+   "startMjd": 61241.00478,
+   "endMjd": 61248.00216,
+   "startUtc": "2026-07-20",
+   "endUtc": "2026-07-27",
+   "frames": 21921
+  },
+  {
+   "label": "2026W31",
+   "startMjd": 61248.00428,
+   "endMjd": 61255.0019,
+   "startUtc": "2026-07-27",
+   "endUtc": "2026-08-03",
+   "frames": 22099
+  },
+  {
+   "label": "2026W32",
+   "startMjd": 61255.00425,
+   "endMjd": 61262.00355,
+   "startUtc": "2026-08-03",
+   "endUtc": "2026-08-10",
+   "frames": 21445
+  },
+  {
+   "label": "2026W33",
+   "startMjd": 61262.00545,
+   "endMjd": 61268.99938,
+   "startUtc": "2026-08-10",
+   "endUtc": "2026-08-16",
+   "frames": 22192
+  },
+  {
+   "label": "2026W34",
+   "startMjd": 61269.00157,
+   "endMjd": 61276.0039,
+   "startUtc": "2026-08-17",
+   "endUtc": "2026-08-24",
+   "frames": 21813
+  },
+  {
+   "label": "2026W35",
+   "startMjd": 61276.00601,
+   "endMjd": 61282.9994,
+   "startUtc": "2026-08-24",
+   "endUtc": "2026-08-30",
+   "frames": 21993
+  },
+  {
+   "label": "2026W36",
+   "startMjd": 61283.00164,
+   "endMjd": 61290.00189,
+   "startUtc": "2026-08-31",
+   "endUtc": "2026-09-07",
+   "frames": 21401
+  },
+  {
+   "label": "2026W37",
+   "startMjd": 61290.00447,
+   "endMjd": 61297.00201,
+   "startUtc": "2026-09-07",
+   "endUtc": "2026-09-14",
+   "frames": 22092
+  },
+  {
+   "label": "2026W38",
+   "startMjd": 61297.00426,
+   "endMjd": 61303.99933,
+   "startUtc": "2026-09-14",
+   "endUtc": "2026-09-20",
+   "frames": 21946
+  },
+  {
+   "label": "2026W39",
+   "startMjd": 61304.00173,
+   "endMjd": 61311.00108,
+   "startUtc": "2026-09-21",
+   "endUtc": "2026-09-28",
+   "frames": 21995
+  },
+  {
+   "label": "2026W40",
+   "startMjd": 61311.00298,
+   "endMjd": 61318.00139,
+   "startUtc": "2026-09-28",
+   "endUtc": "2026-10-05",
+   "frames": 21246
+  }
+ ],
+ "sha256": {
+  "weekly.bin": "f790fc1e6d04ef22e4be12edc0812a5ab5f8a256b99a408838555bb99dab2388"
+ }
+}
