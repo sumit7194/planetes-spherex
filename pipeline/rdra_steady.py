@@ -218,10 +218,41 @@ def step3():
         perDetector={d: [c["hip"] for c in plan[d]] for d in DETS}), indent=1))
 
 
+def outer():
+    doc = json.loads((REG / "chosen.json").read_text())
+    plan = stars_per_detector(doc)
+    res = {}
+    for c in {c["hip"]: c for d in DETS for c in plan[d]}.values():
+        ra, dec = c["at2026"]
+        exps, _ = asyncio.run(hc.fetch_all_helper(rows_for(ra, dec), ra, dec, 30, 32, HERE / "cache"))
+        ratios, _ = measure.wing_ratios(exps, ra, dec, 8.0, 13.0)
+        res[str(c["hip"])] = {str(d): {f"s{a}s{b} 8-13px": [round(m, 3), round(e, 3), n]
+                                      for (a, b, dd), (m, e, n) in sorted(ratios.items()) if dd == d and n >= 10}
+                              for d in DETS if any(x["hip"] == c["hip"] for x in plan[d])}
+        print(f"HIP {c['hip']} 8-13px:", res[str(c["hip"])])
+    prev = json.loads((HERE / "rdra_steady.json").read_text())
+    trusted = []
+    for d in prev["testable"]:
+        ok = True
+        for c in plan[d]:
+            inner = prev["stars"][str(c["hip"])].get(str(d), {})
+            outer_v = res[str(c["hip"])].get(str(d), {})
+            vals = list(inner.values()) + list(outer_v.values())
+            ok = ok and bool(inner) and bool(outer_v) and all(abs(v[0] - 1) <= 0.06 for v in vals)
+        if ok:
+            trusted.append(d)
+    print("trusted detectors (both rings):", trusted)
+    prev.update(outer=res, trustedBothRings=trusted)
+    (HERE / "rdra_steady.json").write_text(json.dumps(prev, indent=1))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--select", action="store_true")
     ap.add_argument("--test", action="store_true")
+    # The outer ring needs r_out + 7 = 20 px of margin: ±20 px boxes couldn't hold it (found after
+    # step 3; told to Physics before any 8-13 px value was seen). Same stars, same rule.
+    ap.add_argument("--outer", action="store_true")
     a = ap.parse_args()
     if a.select:
         # The catalogue step is deterministic: reuse its list when a rerun follows a network failure.
@@ -236,6 +267,8 @@ def main():
         print("chosen:", [(c["hip"], c["sp"], c["radius"]) for c in chosen])
     if a.test:
         step3()
+    if a.outer:
+        outer()
 
 
 if __name__ == "__main__":
