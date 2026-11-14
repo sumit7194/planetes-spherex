@@ -3468,3 +3468,60 @@ span[data-fit='1'] {
 .words.tabbed .date-key .date-scale {
   margin-bottom: 2px;
 }
+
+/* "Light by colour": two panels side by side, the key in a column beside them. */
+.colour-shift {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.colour-shift figure {
+  margin: 0;
+}
+.colour-shift canvas {
+  display: block;
+  width: 108px;
+  height: 108px;
+  image-rendering: pixelated;
+  border-radius: 4px;
+}
+.colour-shift figcaption {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--quiet);
+}
+.cs-key {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--quiet);
+}
+.cs-key li {
+  margin: 0 0 4px;
+}
+.cs-glyph {
+  display: inline-block;
+  min-width: 1.2em;
+  font-weight: 700;
+  text-align: center;
+}
+.cs-glyph.light {
+  color: #ffffff;
+}
+.cs-glyph.neighbour {
+  color: #6fd3ff;
+}
+.cs-glyph.target {
+  color: #ffb347;
+}
+.colour-shift-key p {
+  max-width: none;
+}
+.colour-shift-key > .hint {
+  margin: 4px 0 2px;
+}
+/* Keys use the panel's full width (a reading-width cap on hints made them wrap). */
+.diff-key p {
+  max-width: none;
+}

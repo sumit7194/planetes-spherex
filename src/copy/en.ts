@@ -332,7 +332,34 @@ export const copy = {
     /** Colour by date (E3, Viewer's design): the shown pair as one blue/orange picture. */
     byDate: 'Colour by date',
     /** Compare's views, one at a time (Viewer's audit, 15 Nov). */
-    modes: { label: 'Views', diff: 'Difference', byDate: 'Colour by date', fade: 'Fade' },
+    modes: {
+      label: 'Views',
+      diff: 'Difference',
+      byDate: 'Colour by date',
+      fade: 'Fade',
+      shift: 'Light by colour',
+    },
+    /** Physics' demonstration (15 Nov): where the light sits in a short and a long colour. */
+    colourShift: {
+      panel: (det: number, range: string) => `D${det} · ${range}`,
+      keyLight: "light's centre",
+      keyNeighbour: (g: string) => `neighbour (Gaia, G ${g})`,
+      keyTarget: (name: string) => `${name}, predicted`,
+      caption: (
+        shortRange: string,
+        n1: string,
+        longRange: string,
+        n2: string,
+        t2: string,
+        name: string,
+      ) =>
+        `In ${shortRange} the light sits ${n1}″ from the neighbour; in ${longRange}, ${n2}″ from it and ${t2}″ from ${name}'s predicted place.`,
+      alt: (range: string, n: string, t: string, name: string) =>
+        `${range}: the light's centre is ${n}″ from the neighbour and ${t}″ from ${name}'s predicted place.`,
+      howHeading: 'How this was measured',
+      how: (date: string) =>
+        `The later look (${date}), 15 × 15 SPHEREx pixels, each colour stretched on its own. The light's centre is found as in "What's at this spot?": the brightest pixel near the spot, then the light-weighted middle of the 3 × 3 around it. Both places are moved to the look's date. A rough centre (about 1″ at this brightness), so no shares of light are given.`,
+    },
     /** Fade between the two looks (3b, Viewer's design): the pixel values blended. */
     fade: {
       name: 'Fade between the two looks',

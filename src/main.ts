@@ -81,6 +81,8 @@ import {
   type Entry as SearchEntry,
 } from './app/searchIndex';
 import { DEEP_MAX_FOV, deepMark, patchesForView, type Patch } from './app/deepStars';
+import { COLOUR_SHIFT, colourPanels } from './app/colourShift';
+import { colourShiftFigure } from './ui/colourShift';
 import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
@@ -1847,6 +1849,7 @@ async function openWanderer(id: TargetId): Promise<void> {
   dropDifference();
   endSpot(false);
   diffAllColours = false;
+  colourShiftOn = false;
   lens.setOverlay({ contract: 'show', catalogue: null });
   dispatch({ type: 'tapLantern', target: id });
   writeUrl();
@@ -4239,15 +4242,18 @@ function endFade(redraw = true): void {
 function compareModes(look: LiveLook | null): HTMLElement {
   const m = copy.show.modes;
   const five = !look;
-  const active = differencing
-    ? 'diff'
-    : (five ? colouring : liveColouring)
-      ? 'date'
-      : fadeAt !== null
-        ? 'fade'
-        : null;
+  const shiftCase = five && current ? COLOUR_SHIFT[current.pack.manifest.target.id] : undefined;
+  const active = colourShiftOn
+    ? 'shift'
+    : differencing
+      ? 'diff'
+      : (five ? colouring : liveColouring)
+        ? 'date'
+        : fadeAt !== null
+          ? 'fade'
+          : null;
   const seg = (
-    key: 'diff' | 'date' | 'fade',
+    key: 'diff' | 'date' | 'fade' | 'shift',
     label: string,
     start: () => void,
     end: () => void,
@@ -4266,6 +4272,8 @@ function compareModes(look: LiveLook | null): HTMLElement {
     b.addEventListener('click', () => {
       // A view takes the path figure's slot (Viewer: the two never stack).
       pathShown = false;
+      // "Light by colour" doesn't take the lens; any other view ends it.
+      if (key !== 'shift') colourShiftOn = false;
       if (on) end();
       else start();
     });
@@ -4299,8 +4307,99 @@ function compareModes(look: LiveLook | null): HTMLElement {
           () => endFade(),
         )
       : null,
+    // Physics' demonstration, only on a page that has one (WISE 0855).
+    shiftCase
+      ? seg(
+          'shift',
+          m.shift,
+          () => {
+            if (differencing) endDifference(false);
+            if (colouring) endTimeColour(false);
+            endFade(false);
+            colourShiftOn = true;
+            render();
+          },
+          () => {
+            colourShiftOn = false;
+            render();
+          },
+        )
+      : null,
   );
   return h('div', { class: 'mode-bar' }, views, markButton());
+}
+
+/** "Light by colour" is open (Physics' D2 vs D6 demonstration; the five's pages only). */
+let colourShiftOn = false;
+
+/** The demonstration's block: the two colours side by side, the marks, and the distances. */
+function colourShiftBlock(): HTMLElement | null {
+  if (!current) return null;
+  const pack = current.pack;
+  const id = pack.manifest.target.id as TargetId;
+  const c = COLOUR_SHIFT[id];
+  const w = WANDERERS.find((x) => x.id === id);
+  const late = current.show.seasons[1];
+  const stack = (d: number) => {
+    const s = pack.manifest.stacks.find(
+      (x) => x.kind === 'one-detector' && x.season === late && x.detectors[0] === d,
+    );
+    return s ? pack.stacks.get(s.id) : undefined;
+  };
+  const a = c && stack(c.detectors[0]);
+  const b = c && stack(c.detectors[1]);
+  if (!c || !w || !a || !b) return null;
+  const frames = pack.manifest.frames.filter((f) => f.season === late);
+  const mjd = frames.reduce((s, f) => s + f.mjd, 0) / Math.max(1, frames.length);
+  const g = pack.manifest.grid;
+  const panels = colourPanels(
+    c,
+    [tileGrid(a), tileGrid(b)],
+    tileGrid(current.pair[1]),
+    { size: g.size, scaleArcsec: g.pixelScaleArcsec, centre: g.centre },
+    { at: w.at, pmRa: w.pm.ra, pmDec: w.pm.dec, epoch: WANDERER_EPOCH },
+    yearOfMjd(mjd),
+  );
+  const t = copy.show.colourShift;
+  const name = copy.wanderers[id].name;
+  const range = (d: number) => detectorRange([d]);
+  const [p, q] = panels;
+  return h(
+    'div',
+    { class: 'diff-key colour-shift-key' },
+    colourShiftFigure({
+      panels,
+      tiles: [a, b],
+      labels: [t.panel(p.detector, range(p.detector)), t.panel(q.detector, range(q.detector))],
+      alts: [
+        t.alt(range(p.detector), p.fromNeighbour.toFixed(1), p.fromTarget.toFixed(1), name),
+        t.alt(range(q.detector), q.fromNeighbour.toFixed(1), q.fromTarget.toFixed(1), name),
+      ],
+      key: {
+        light: t.keyLight,
+        neighbour: t.keyNeighbour(c.neighbour.g.toFixed(1)),
+        target: t.keyTarget(name),
+      },
+    }),
+    h(
+      'p',
+      { class: 'hint' },
+      t.caption(
+        range(p.detector),
+        p.fromNeighbour.toFixed(1),
+        range(q.detector),
+        q.fromNeighbour.toFixed(1),
+        q.fromTarget.toFixed(1),
+        name,
+      ),
+    ),
+    h(
+      'details',
+      { class: 'why' },
+      h('summary', {}, t.howHeading),
+      h('p', { class: 'hint' }, t.how(monthYear(mjd))),
+    ),
+  );
 }
 
 /** The one block under the views: the path figure, or the spot card, or the active view's own. */
@@ -4310,6 +4409,7 @@ function compareModeBlock(look: LiveLook | null, pathFig: HTMLElement | null): H
   // The fade's slider stays with the card (it's one line); the keys give way to it.
   if (fadeAt !== null) return card ? h('div', {}, fadeControl() ?? '', card) : fadeControl();
   if (card) return card;
+  if (colourShiftOn && !look) return colourShiftBlock();
   if (differencing) return differenceKey();
   return look ? liveTimeColourKey(look) : timeColourKey();
 }
@@ -5343,7 +5443,7 @@ function showWords(): Node[] {
   compare.splice(modeBar + 1, 0, compareModeBlock(null, pathFig));
   // The chooser is labelled "Compare looks" itself, so no heading (Viewer's audit: fit).
   // While marking, the lens shows the look, so the thumbnails give way to the card (fit).
-  compare.push(pairChooser(id), markMode ? null : looksRow(), spotRow);
+  compare.push(pairChooser(id), markMode || colourShiftOn ? null : looksRow(), spotRow);
   const facts: (Node | null)[] = [
     ...factsTop,
     h('dl', { class: 'facts' }, ...rows),
