@@ -444,6 +444,33 @@ function markRide(): void {
   // Riding is motion, so under reduced motion it's off and the control is hidden.
   rideButton.hidden = state.entry !== 'inside' || sky.steppedOut || prefersReducedMotion();
 }
+/**
+ * Zoomed out as far as Look around goes: on the homepage that's the end (stepping out to Earth
+ * lives in Learn); a quiet offer of the whole-sky map appears under the view switch, once.
+ */
+const wholeSkyHint = h(
+  'button',
+  { type: 'button', class: 'whole-sky-hint', hidden: true },
+  copy.sky.wholeSky,
+);
+entrySwitch.after(wholeSkyHint);
+let wholeSkyOffered = false;
+let wholeSkyTimer = 0;
+sky.onWiderWanted = () => {
+  if (wholeSkyOffered || state.place.kind !== 'sky') return;
+  wholeSkyOffered = true;
+  wholeSkyHint.hidden = false;
+  window.clearTimeout(wholeSkyTimer);
+  wholeSkyTimer = window.setTimeout(() => (wholeSkyHint.hidden = true), 8000);
+};
+wholeSkyHint.addEventListener('click', () => {
+  wholeSkyHint.hidden = true;
+  const at = { ra: sky.centre.ra, dec: sky.centre.dec };
+  switchEntry('flat');
+  // The spot you were looking at, centred on the map.
+  sky.centreOn(at);
+});
+
 sky.onRide = () => {
   markRide();
   if (state.room === 'learn') render();
@@ -5228,6 +5255,9 @@ function toggleSweep(): void {
 
 function render(): void {
   markRide();
+  // Scrolling out steps out to Earth only in Learn; on the homepage it stops at the widest sky.
+  sky.stepOutByScroll = state.room === 'learn';
+  if (state.place.kind !== 'sky' || state.entry !== 'inside') wholeSkyHint.hidden = true;
   sky.marks = state.place.kind === 'sky';
   app.dataset['place'] = state.place.kind;
   // On the sky, the header, the words and the band sit on the night in either scheme.
@@ -5363,6 +5393,8 @@ watchQuality(
 if (import.meta.env.DEV) Object.assign(window, { sky });
 const wanted = WANDERERS.find((w) => w.id === q.get('target') && w.ready);
 const wantedAt = positionFromQuery(q);
+// The flat map's projection: Hammer–Aitoff by default; ?flatmap=equalearth tries Equal Earth.
+if (q.get('flatmap') === 'equalearth') sky.flatProjection = 'equalEarth';
 const wantedLooks = q
   .get('looks')
   ?.split('-')

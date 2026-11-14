@@ -16,6 +16,7 @@ import { glowAt, type GlowMap } from './milkyway';
 import { channels, mixHex, readTheme, rgba, type Theme } from './theme';
 import { wheelPixels } from './wheel';
 import { hammer, unhammer } from './hammer';
+import { EE_XMAX, EE_YMAX, equalEarth, unEqualEarth } from './equalEarth';
 import { Earth2D, type ScreenAxes } from './earth2d';
 import { EARTH_EQ_KM, orbitFrame, SPHEREX_ORBIT } from './scene/orbit';
 import type { Scene3DView } from './scene/scene3d';
@@ -392,6 +393,20 @@ export class SkyView {
   /** The optical axis in canvas pixels, and the radius the field of view is measured across. */
   #axis(): { x: number; y: number; r: number } {
     const { width: w, height: h } = this.canvas;
+    // The flat map behind the page takes the page (Sumit, 14 Nov: "too small to be of any use"):
+    // as wide as the window allows, centred between the header and the band. The flat map's
+    // size is 3.4 r wide (#flatSize), so r is set from the width it should have.
+    if (this.#entry === 'flat' && this.#focus && this.#quiet.length) {
+      const dpr = w / Math.max(1, this.canvas.getBoundingClientRect().width);
+      let top = 0;
+      let bottom = h;
+      for (const q of this.#quiet) {
+        if (q.y + q.h < h * 0.25) top = Math.max(top, q.y + q.h);
+        else if (q.y > h * 0.6 && q.w > w * 0.5) bottom = Math.min(bottom, q.y);
+      }
+      const width = Math.min(w - 48 * dpr, 2 * (bottom - top) - 24 * dpr);
+      return { x: w / 2, y: (top + bottom) / 2, r: width / 3.4 };
+    }
     return this.#focus ?? { x: w / 2, y: h / 2, r: Math.min(w, h) / 2 };
   }
 
@@ -491,9 +506,9 @@ export class SkyView {
     if (this.#entry === 'flat') {
       const { pan, dy, zoom } = this.#flat;
       const { w: mw, h: mh } = this.#flatSize();
-      const hx = (-(sx - a.x) / ((mw / 2) * zoom)) * 2 * Math.SQRT2;
-      const hy = (-((sy - a.y) / zoom + dy) / (mh / 2)) * Math.SQRT2;
-      const back = unhammer(hx, hy);
+      const nx = -(sx - a.x) / ((mw / 2) * zoom);
+      const ny = -((sy - a.y) / zoom + dy) / (mh / 2);
+      const back = this.#flatInverse(nx, ny);
       if (!back) return null;
       return { ra: (((pan + 180 + back[0] / RAD) % 360) + 360) % 360, dec: back[1] / RAD };
     }
@@ -1013,11 +1028,30 @@ export class SkyView {
     const { w: mw, h: mh } = this.#flatSize();
     let lambda = ((((p.ra - pan - 180) % 360) + 540) % 360) - 180;
     if (side && Math.sign(lambda) !== side && Math.abs(lambda) > 90) lambda = side * 180;
-    const [hx, hy] = hammer(lambda * RAD, p.dec * RAD);
+    const [nx, ny] = this.#flatForward(lambda * RAD, p.dec * RAD);
     return {
-      x: a.x - (hx / (2 * Math.SQRT2)) * (mw / 2) * zoom,
-      y: a.y + (-(hy / Math.SQRT2) * (mh / 2) - dy) * zoom,
+      x: a.x - nx * (mw / 2) * zoom,
+      y: a.y + (-ny * (mh / 2) - dy) * zoom,
     };
+  }
+
+  /**
+   * The flat map's projection: Hammer–Aitoff (an ellipse) or Equal Earth (a rounded rectangle
+   * that fills more of the page). Both equal-area, so the coverage and the poles stay honest.
+   */
+  flatProjection: 'hammer' | 'equalEarth' = 'hammer';
+  /** λ, φ (radians) to the map's box, each in [−1, 1]. */
+  #flatForward(lambda: number, phi: number): [number, number] {
+    if (this.flatProjection === 'equalEarth') {
+      const [x, y] = equalEarth(lambda, phi);
+      return [x / EE_XMAX, y / EE_YMAX];
+    }
+    const [hx, hy] = hammer(lambda, phi);
+    return [hx / (2 * Math.SQRT2), hy / Math.SQRT2];
+  }
+  #flatInverse(nx: number, ny: number): [number, number] | null {
+    if (this.flatProjection === 'equalEarth') return unEqualEarth(nx * EE_XMAX, ny * EE_YMAX);
+    return unhammer(nx * 2 * Math.SQRT2, ny * Math.SQRT2);
   }
 
   /** The flat map's size on the canvas at zoom 1: as wide as the axis allows, 2:1. */
@@ -1041,6 +1075,34 @@ export class SkyView {
     // A canvas laid out at no size yet (leaving a show for the flat map) has no ellipse to trim.
     if (!(rx > 0 && ry > 0)) return;
     const f = Math.min(70 * (this.canvas.width / 1120), mw * 0.1);
+    if (this.flatProjection === 'equalEarth') {
+      // Equal Earth's outline (its edge meridians and flat poles), kept with a soft edge.
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.filter = `blur(${(f / 3).toFixed(1)}px)`;
+      ctx.beginPath();
+      for (let i = 0; i <= 90; i++) {
+        const phi = (-90 + i * 2) * RAD;
+        const [nx, ny] = this.#flatForward(Math.PI, phi);
+        const x = a.x - nx * rx;
+        const y = a.y - ny * ry - this.#flat.dy * z;
+        if (i) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      }
+      for (let i = 90; i >= 0; i--) {
+        const phi = (-90 + i * 2) * RAD;
+        const [nx, ny] = this.#flatForward(-Math.PI, phi);
+        ctx.lineTo(a.x - nx * rx, a.y - ny * ry - this.#flat.dy * z);
+      }
+      ctx.closePath();
+      ctx.fillStyle = '#000';
+      ctx.fill();
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'destination-over';
+      this.#glow();
+      ctx.restore();
+      return;
+    }
     // The map is the Hammer ellipse: keep what's inside it, fading out over its last `f` px.
     ctx.save();
     ctx.globalCompositeOperation = 'destination-in';
@@ -1727,6 +1789,14 @@ export class SkyView {
    */
   #near = 0;
   #nearGoal = 0;
+
+  /**
+   * Whether scrolling (or pinching) out past the widest sky steps out to Earth. Off on the
+   * homepage (Viewer, 14 Nov: an accidental mode change mid-scroll); Learn turns it on.
+   * When off, pushing past the widest view tells the page once (`onWiderWanted`).
+   */
+  stepOutByScroll = true;
+  onWiderWanted: () => void = () => {};
 
   /** The detent at Look around's widest: true once enough scroll has gathered against it. */
   #detentPassed(dy: number): boolean {
@@ -2868,7 +2938,10 @@ export class SkyView {
       if (
         this.#nearGoal > 0 ||
         this.#near > 0 ||
-        (next > FOV.max && this.#fov >= FOV.max - 0.01 && this.#detentPassed(dy))
+        (this.stepOutByScroll &&
+          next > FOV.max &&
+          this.#fov >= FOV.max - 0.01 &&
+          this.#detentPassed(dy))
       ) {
         if (this.#near <= 0 && this.#nearGoal <= 0) {
           this.#nearFrom = { ra: this.#centre.ra, dec: this.#centre.dec };
@@ -2908,6 +2981,8 @@ export class SkyView {
       }
       if (next > FOV.max && this.#fov >= FOV.max - 0.01) {
         // Holding at the detent (see #detentPassed): a flick of the trackpad doesn't throw you out.
+        // On the homepage there's no stepping out: the page offers the whole-sky map instead.
+        if (!this.stepOutByScroll && dy > 0) this.onWiderWanted();
         this.draw();
         return;
       }

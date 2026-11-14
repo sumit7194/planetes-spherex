@@ -97,6 +97,8 @@ export const copy = {
     photoDetail: 'about 7 full Moons across',
     moonToScale: 'the Moon, to scale',
     stepOut: 'Keep scrolling to step outside the sky',
+    /** Zoomed out as far as Look around goes, on the homepage (Viewer, 14 Nov). */
+    wholeSky: 'See the whole sky: Flat map',
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
     sunToday: 'The Sun today, on its yearly path',
