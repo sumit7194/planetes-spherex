@@ -590,9 +590,32 @@ const KEEP = new Set(['/v1/frame', '/v1/probe', '/v1/native', '/v1/psf']);
 /** Headers kept with a stored answer (the rest are rebuilt). */
 const KEPT_HEADERS = ['cache-control', 'x-planetes-ms', 'x-planetes-upstream-bytes'];
 
-function storeKey(route: string, url: URL): string {
-  const q = [...url.searchParams.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  return `${VERSION}${route}?${new URLSearchParams(q).toString()}`;
+/**
+ * The stored answer's name: only the parameters the answer depends on, rounded as the Workers
+ * cache key is, so extra or reshuffled parameters can't create new stored copies (security
+ * review, 15 Nov). Null when the request isn't valid; it then isn't stored (handle() refuses it).
+ */
+function storeKey(route: string, url: URL): string | null {
+  const p = url.searchParams;
+  const key = p.get('key') ?? '';
+  if (!KEY_RE.test(key) || key.split('/').some((s) => s === '.' || s === '..')) return null;
+  const q = new URLSearchParams({ key });
+  if (route !== '/v1/psf') {
+    const ra = Number(p.get('ra'));
+    const dec = Number(p.get('dec'));
+    if (!p.has('ra') || !p.has('dec') || !Number.isFinite(ra) || !Number.isFinite(dec)) return null;
+    q.set('ra', ra.toFixed(6));
+    q.set('dec', dec.toFixed(6));
+  }
+  if (route === '/v1/native') {
+    q.set('half', String(Math.round(Number(p.get('half') ?? 20))));
+    if (p.get('extra') === '1') q.set('extra', '1');
+  }
+  if (route === '/v1/frame') {
+    q.set('size', String(Math.round(Number(p.get('size') ?? 64))));
+    q.set('scale', Number(Number(p.get('scale') ?? 6.15).toFixed(3)).toFixed(3));
+  }
+  return `${VERSION}${route}?${q.toString()}`;
 }
 
 export default {
@@ -601,6 +624,7 @@ export default {
     const route = url.pathname.replace(/\/+$/, '');
     if (request.method !== 'GET' || !env.FRAMES || !KEEP.has(route)) return handle(request, ctx);
     const key = storeKey(route, url);
+    if (!key) return handle(request, ctx);
     try {
       const obj = await env.FRAMES.get(key);
       if (obj) {
