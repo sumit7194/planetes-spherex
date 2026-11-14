@@ -1628,13 +1628,15 @@ function typedPathFigure(
       ? // The drawing is straight motion only, so the prediction's "+ parallax" doesn't apply.
         predictionLabel(current.show.predictionSource).replace(/ \+ parallax$/, '')
       : t.catalogue;
+  // ε Indi B's path is its companion's motion, not its own (B orbits A; Physics, 15 Nov).
+  const sourceText = /Indi A/.test(source) ? t.companion : source;
   const ticks = trackTicks(path.year);
   const every = ticks.length > 1 ? (ticks[1] ?? 0) - (ticks[0] ?? 0) : WANDERER_EPOCH - path.year;
   return h(
     'figure',
     { class: 'past-path-fig' },
     fig,
-    h('figcaption', { class: 'hint' }, t.caption(source, Math.round(every))),
+    h('figcaption', { class: 'hint' }, t.caption(sourceText, Math.round(every))),
   );
 }
 

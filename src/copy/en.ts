@@ -891,6 +891,8 @@ export const copy = {
       show: 'See the path',
       hide: 'Hide the path',
       catalogue: 'catalogue proper motion',
+      companion:
+        'motion of its companion star ε Indi A (Gaia DR3); B orbits A, so its own motion differs slightly',
     },
   },
   share: {
