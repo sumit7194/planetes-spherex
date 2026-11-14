@@ -46,3 +46,9 @@
   - **Empty checks:** each needs a box that covers the place in the other visit's photo. If the box centred on that photo's own predicted place doesn't cover the measured place with a ≥ 3 px margin, an extra box is read there. A cached box that doesn't cover it is never used.
   - **V/T exclusion** is run on the candidates' actual measured positions, not just field centres.
   - If none passes, N5 ends as **"no asteroid shown"**, with the counts per test.
+- 15 Nov 2026, 04:40 IST: **final result (amendment 2): no asteroid shown. N5 is closed for this build.** Counts per test: 3 candidates → 3 move ≥ 5 px → **0 reach ≥ 3 detections (S/N ≥ 5 with a profile) over 2 visits** → nothing further tested.
+  - 4306 Dunaevskij (V 17.7; 2025W39_1A_0457 → _0480, D1, 13.6 px): off the detector in _0457_1; S/N −0.6 and 0.1 in _0480_1/_2.
+  - 1340 Yvette (V 16.7; D1), pair _0334 → _0348 (6.6 px): only one photo per visit (S/N 5.3 with light in 1 pixel, S/N 4.7 with 2), so it can't reach 3 detections and fails the profile test.
+  - 1340 Yvette, pair _0348 → _0373 (14.8 px): S/N 4.7 (2 px of light), then 0.5, 0.9, 1.1, 1.5 in the four _0373 exposures.
+  - A bug found and fixed before this final run: photos with two cached boxes appeared twice in a visit and could have counted as two detections. Visits now hold one entry per photo; the result didn't change.
+  - Why so few candidates: our cached photos are around our five targets and the live looks, mostly far from the ecliptic (58 distinct fields, 2 within 1° of it), so few bright asteroids pass through them.

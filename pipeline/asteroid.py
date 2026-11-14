@@ -65,7 +65,13 @@ def skybot_cone(ra: float, dec: float, radius_deg: float, mjd: float) -> list[di
 def visits(rows: list[dict]) -> dict:
     """(obsId stem, det) -> its photos, in time order."""
     v: dict = defaultdict(list)
+    seen = set()
     for r in rows:
+        # One entry per photo: a photo with two cached boxes (around two targets) appears twice in
+        # the index, and must never count as two detections (found 15 Nov).
+        if (r["obs"], r["det"]) in seen:
+            continue
+        seen.add((r["obs"], r["det"]))
         v[(r["obs"].rsplit("_", 1)[0], r["det"])].append(r)
     return {k: sorted(x, key=lambda r: r["mjd"]) for k, x in v.items()}
 
@@ -308,5 +314,150 @@ def search() -> None:
         print(r["num"], r["name"], r["V"], r["visits"], r["det"], r["gap_h"], r["motion"])
 
 
+def fresh_box(row: dict, ra: float, dec: float) -> dict:
+    """A fresh 32x32 box of this photo centred on (ra, dec), read from the photo's own file
+    (amendment 2), with its header for the WCS. Kept in our cache."""
+    import asyncio
+    import hashlib
+
+    import aiohttp
+
+    import spherex as sx
+    key = hashlib.sha1(f"{row['path']}|{ra:.7f}|{dec:.7f}|32".encode()).hexdigest()[:16]
+    out = CACHE / f"ast_fresh_{key}.pkl"
+    if not out.exists():
+        # Our own cache, written only by this pipeline on this machine.
+        e = pickle.loads((CACHE / row["path"]).read_bytes())
+
+        async def go():
+            async with aiohttp.ClientSession() as s_:
+                return await sx.read_box(sx.RangeReader(s_), dict(url=e["url"], t=row["mjd"]), ra, dec, 16)
+        b_ = asyncio.run(go())
+        if b_ is None:
+            out.write_bytes(pickle.dumps(None))
+        else:
+            out.write_bytes(pickle.dumps(dict(img=b_["img"], fl=b_["fl"], bits=b_["bits"], x0=b_["x0"], y0=b_["y0"],
+                                              wcs_hdr=b_["hdr"].tostring(), url=e["url"])))
+    # Our own cache, written only by this pipeline on this machine.
+    return pickle.loads(out.read_bytes())
+
+
+def measure_box(b: dict | None, row: dict, ra: float, dec: float, margin: float = 2) -> dict | None:
+    """measure_masked and the recentred position at (ra, dec) in a fresh box, or None if the
+    place isn't inside it with `margin` px to spare."""
+    if b is None:
+        return None
+    w = WCS(fits.Header.fromstring(b["wcs_hdr"]))
+    px, py = w.all_world2pix(ra, dec, 0)
+    x, y = float(px) - b["x0"], float(py) - b["y0"]
+    h, W = b["img"].shape
+    if not (margin <= x < W - 1 - margin and margin <= y < h - 1 - margin):
+        return None
+    m = fg.measure_masked(b, x, y)
+    if not m:
+        return None
+    cx, cy = fg.recentre(b["img"].astype(float), x, y)
+    cra, cdec = w.all_pix2world(cx + b["x0"], cy + b["y0"], 0)
+    return dict(m, x=x, y=y, cx=cx, cy=cy, ra=float(cra), dec=float(cdec), mjd=row["mjd"], obs=row["obs"],
+                off_px=math.hypot(cx - x, cy - y))
+
+
+def at_place(row: dict, ra: float, dec: float, own: tuple[float, float]) -> dict | None:
+    """Measure (ra, dec) in this photo: in the box centred on the photo's own predicted place if it
+    covers it with a 3 px margin, else in an extra box centred on (ra, dec) (amendment 2)."""
+    m = measure_box(fresh_box(row, *own), row, ra, dec, margin=3)
+    if m is not None:
+        return dict(m, box="own")
+    m = measure_box(fresh_box(row, ra, dec), row, ra, dec, margin=3)
+    return None if m is None else dict(m, box="extra")
+
+
+def fresh() -> None:
+    """Amendment 2: every test on all 3 candidates, in fresh boxes at SkyBoT's places."""
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    flds = revisit_fields(fg.fields(idx["rows"]))
+    fg.gaia_for_fields(flds)
+    sb = json.loads((CACHE / "asteroid_skybot.json").read_text())
+    reserved = fg.reserved()
+    results, counts = [], defaultdict(int)
+    for f in flds:
+        for a, b, dh in f["pairs"]:
+            photos = f["visits"][a] + f["visits"][b]
+            objs: dict = {}
+            for r in photos:
+                key = f"{round(f['ra'], 4)},{round(f['dec'], 4)},{round(f['radius'], 3)},{bucket(r['mjd'])}"
+                for o in sb.get(key, []):
+                    n = NUM_(o)
+                    if n and V_(o) <= VMAX and not str(o.get("Class", "")).startswith("NEA"):
+                        objs.setdefault(n, {})[bucket(r["mjd"])] = o
+            for n, recs in objs.items():
+                def pr(r, recs=recs):
+                    t0 = min(recs, key=lambda t: abs(t - r["mjd"]))
+                    return predicted(recs[t0], t0, r)
+                o = next(iter(recs.values()))
+                move = fg.sep_deg(*pr(photos[0]), *pr(photos[-1])) * 3600 / PIX
+                rec = dict(num=n, name=o.get("Name"), V=V_(o), cls=o.get("Class"), err_arcsec=ERR_(o),
+                           visits=[a[0], b[0]], det=a[1], gap_h=round(dh, 2), move_px=round(move, 1), tests={})
+                results.append(rec)
+                T = rec["tests"]
+                counts["candidates"] += 1
+                T["moves>=5px"] = move >= MIN_MOVE_PX
+                if not T["moves>=5px"]:
+                    continue
+                counts["moves >= 5 px"] += 1
+                pts, all_m = [], []
+                for r in photos:
+                    pra, pdec = pr(r)
+                    m = measure_box(fresh_box(r, pra, pdec), r, pra, pdec)
+                    all_m.append(dict(obs=r["obs"], pred=[pra, pdec], m=m))
+                    if m and m["sn"] >= SN_MIN and m["profile"] >= 3 and m["off_px"] <= MATCH_PX:
+                        pts.append(dict(m, pred_ra=pra, pred_dec=pdec))
+                rec["measurements"] = all_m
+                vis = {p["obs"].rsplit("_", 1)[0] for p in pts}
+                T["detections"] = f"{len(pts)} photos over {len(vis)} visits"
+                if len(pts) < 3 or len(vis) < 2:
+                    continue
+                counts[">= 3 detections over 2 visits"] += 1
+                T["outside V/T"] = all(fg.sep_deg(p["ra"], p["dec"], pra_, pdec_) >= fg.EXCLUDE_DEG
+                                       for p in pts for _, pra_, pdec_ in reserved)
+                if not T["outside V/T"]:
+                    continue
+                counts["outside V/T patches"] += 1
+                T["no Gaia within 2 px"] = not any(fg.sep_deg(g["ra"], g["dec"], p["ra"], p["dec"]) * 3600 / PIX < GAIA_PX
+                                                   for g in f["gaia"] for p in pts)
+                if not T["no Gaia within 2 px"]:
+                    continue
+                counts["no Gaia within 2 px"] += 1
+                empties = []
+                for p in pts:
+                    for r in photos:
+                        if r["obs"].rsplit("_", 1)[0] == p["obs"].rsplit("_", 1)[0]:
+                            continue
+                        m = at_place(r, p["ra"], p["dec"], pr(r))
+                        empties.append(dict(place_from=p["obs"], photo=r["obs"], m=m))
+                rec["empty_checks"] = empties
+                by_place = defaultdict(list)
+                for e_ in empties:
+                    by_place[e_["place_from"]].append(e_["m"])
+                T["each place empty in the other visit"] = all(
+                    any(m for m in ms) and all(m is None or m["sn"] < SN_GONE for m in ms) for ms in by_place.values())
+                if not T["each place empty in the other visit"]:
+                    continue
+                counts["each place empty in the other visit"] += 1
+                mo = motion(pts, ERR_(o) if ERR_(o) > 0 else 1.0)
+                rec["motion"] = mo
+                T["motion agrees with SkyBoT"] = mo["ok"]
+                if mo["ok"]:
+                    counts["motion agrees with SkyBoT"] += 1
+                rec["points"] = pts
+                rec["passed"] = mo["ok"]
+    passed = sorted([r for r in results if r.get("passed")], key=lambda r: r["V"])
+    out = dict(rule="amendment 2", counts=dict(counts), results=results, pick=passed[0] if passed else None)
+    (CACHE / "asteroid_fresh.json").write_text(json.dumps(out, indent=1, default=float))
+    print(json.dumps(dict(counts), indent=1))
+    for r in results:
+        print(r["num"], r["name"], r["V"], r["visits"], r["move_px"], r["tests"], r.get("motion"))
+
+
 if __name__ == "__main__":
-    {"query": query, "search": search}[sys.argv[1]]()
+    {"query": query, "search": search, "fresh": fresh}[sys.argv[1]]()
