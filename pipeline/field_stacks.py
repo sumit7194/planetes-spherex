@@ -46,7 +46,7 @@ ROWS_FROM = "irsa"
 def search_rows(ra, dec):
     if ROWS_FROM == "index":
         import sky_index
-        rows = sky_index.search(ra, dec)
+        rows = sky_index.search(ra, dec, margin_deg=0.0)
         sx.group_passes(rows)
         return rows
     for attempt in range(7):

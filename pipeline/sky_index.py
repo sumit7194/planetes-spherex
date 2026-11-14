@@ -90,13 +90,15 @@ def footprint_holds(p: dict, ra: float, dec: float, margin_deg: float = 0.02) ->
     return abs(u) <= half and abs(w) <= half
 
 
-def search(ra: float, dec: float) -> list[dict]:
-    """Every DR1 + QR3 photo whose footprint holds (ra, dec), in time order, as spherex.search rows."""
+def search(ra: float, dec: float, margin_deg: float = 0.02) -> list[dict]:
+    """Every DR1 + QR3 photo whose footprint holds (ra, dec), in time order, as spherex.search rows.
+    margin_deg: how far inside the footprint the point must be (the browser keeps 0.02°; the
+    yardstick uses 0, as IRSA's search does, 14 Nov)."""
     m = meta()
     rows = []
     for k, b in tiles_near(ra, dec, m["maxHalfDeg"] + 0.05):
         for p in tile(k, b):
-            if footprint_holds(p, ra, dec):
+            if footprint_holds(p, ra, dec, margin_deg):
                 rows.append(dict(url=BUCKET + p["key"], obs_id=p["obs_id"], det=p["det"], t=float(p["t"]),
                                  release=p["release"], deep=p["deep"]))
     rows.sort(key=lambda r: r["t"])
