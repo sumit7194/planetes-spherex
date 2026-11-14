@@ -3362,7 +3362,10 @@ function differenceKey(): HTMLElement | null {
       h('i', { style: `background: ${diffGradient()}`, 'aria-hidden': 'true' }),
       h('span', {}, copy.show.diffBrighter(DIFF_LIMIT)),
     ),
-    differencing.canNarrow ? diffScopeToggle(differencing) : null,
+    // Which colours make the picture, and the switch where there is one: in view (Viewer).
+    differencing.canNarrow
+      ? diffScopeToggle(differencing)
+      : h('p', { class: 'hint' }, copy.show.diffScope(differencing.range, false)),
     // The explanations fold so Compare fits at 1280x720 (Viewer's audit); the scale stays.
     h(
       'details',
@@ -3390,8 +3393,10 @@ type CheckState = 'asking' | 'done' | 'failed';
 interface SpotMatch {
   name: string;
   sep: number;
-  /** Gaia G, when known (for which stars count in a blend). */
+  /** Which catalogue, and its magnitude (G or W1) and Gaia colour, for which stars count. */
+  cat?: 'gaia' | 'catwise';
   mag?: number | null;
+  bpRp?: number | null;
 }
 
 interface SpotCheckResult {
@@ -3623,7 +3628,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     name: string,
     posAt: (year: number) => SkyPosition,
     blends: boolean,
-    mag: number | null = null,
+    star: { cat: 'gaia' | 'catwise'; mag: number | null; bpRp?: number | null },
   ) => {
     for (const look of [0, 1] as const) {
       const sep = sepOf(posAt(lookYears[look]));
@@ -3632,7 +3637,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
         if (!facts.stars[look].includes(name)) facts.stars[look].push(name);
         note(result.matches, name, sep);
         const m = result.matches.find((x) => x.name === name);
-        if (m) m.mag = mag;
+        if (m) Object.assign(m, star);
       }
     }
   };
@@ -3663,7 +3668,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
         name,
         (yr) => placeAt({ ra: s.ra, dec: s.dec }, s.pmra || 0, s.pmdec || 0, 2016.0, yr),
         s.g !== null && s.g < 19,
-        s.g,
+        { cat: 'gaia', mag: s.g, bpRp: s.bpRp ?? null },
       );
     }
     update();
@@ -3676,6 +3681,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
         `CatWISE2020 ${s.id}`,
         (yr) => placeAt({ ra: s.ra, dec: s.dec }, s.pmra, s.pmdec, yearOfMjd(57170), yr),
         true,
+        { cat: 'catwise', mag: s.w1 },
       );
     update();
   });
@@ -5363,7 +5369,14 @@ function showWords(): Node[] {
     );
   }
   if (story)
-    facts.push(h('details', { class: 'why' }, h('summary', {}, copy.show.why), h('p', {}, story)));
+    facts.push(
+      h(
+        'details',
+        { class: 'why' },
+        h('summary', {}, copy.show.whyNamed(w.name)),
+        h('p', {}, story),
+      ),
+    );
   // In the Watch room the summary (with the measured result) is the same; only the tab differs.
   return panelOf(
     summary,
@@ -6699,13 +6712,17 @@ function factsFooter(at: SkyPosition, release: string | null, tests: boolean): H
   return h(
     'div',
     { class: 'facts-foot' },
-    release ? h('p', { class: 'hint' }, release) : null,
-    h(
-      'p',
-      { class: 'hint' },
-      ...Array.from(links.childNodes),
-      ...(tests ? [' · ', h('a', { href: 'tests.html' }, copy.tests.title)] : []),
-    ),
+    // The data and how it was tested on one line; places to open this spot on the other (Viewer).
+    release || tests
+      ? h(
+          'p',
+          { class: 'hint' },
+          release ?? '',
+          release && tests ? ' · ' : '',
+          tests ? h('a', { href: 'tests.html' }, copy.tests.linkShort) : null,
+        )
+      : null,
+    h('p', { class: 'hint' }, ...Array.from(links.childNodes)),
   );
 }
 

@@ -356,7 +356,8 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
   if (!(r >= 1 && r <= 120)) return bad('r must be 1..120 arcsec');
   const cacheKey = new Request(
-    `https://cache.planetes/${VERSION}/v1/gaia?ra=${ra}&dec=${dec}&r=${r}`,
+    // c=2: answers carry BP−RP (Physics' colour guard, 15 Nov); older cached answers don't.
+    `https://cache.planetes/${VERSION}/v1/gaia?ra=${ra}&dec=${dec}&r=${r}&c=2`,
   );
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(cacheKey);
@@ -366,7 +367,7 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
     return new Response(hit.body, { status: hit.status, headers: h });
   }
   const adql =
-    'SELECT source_id, ra, dec, pmra, pmdec, phot_g_mean_mag FROM gaiadr3.gaia_source ' +
+    'SELECT source_id, ra, dec, pmra, pmdec, phot_g_mean_mag, bp_rp FROM gaiadr3.gaia_source ' +
     `WHERE CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1 ` +
     'AND phot_g_mean_mag < 21';
   const q = new URLSearchParams({ REQUEST: 'doQuery', LANG: 'ADQL', FORMAT: 'csv', QUERY: adql });
@@ -392,7 +393,7 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   }
   const lines = text.trim().split(/\r?\n/);
   const head = (lines.shift() ?? '').split(',');
-  const names = ['source_id', 'ra', 'dec', 'pmra', 'pmdec', 'phot_g_mean_mag'] as const;
+  const names = ['source_id', 'ra', 'dec', 'pmra', 'pmdec', 'phot_g_mean_mag', 'bp_rp'] as const;
   const at = Object.fromEntries(names.map((n) => [n, head.indexOf(n)])) as Record<
     (typeof names)[number],
     number
@@ -412,6 +413,7 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
       pmra: num(f[at.pmra]) ?? 0,
       pmdec: num(f[at.pmdec]) ?? 0,
       g: num(f[at.phot_g_mean_mag]),
+      bpRp: num(f[at.bp_rp]),
     };
   });
   const body = JSON.stringify({

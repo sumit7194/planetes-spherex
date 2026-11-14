@@ -318,7 +318,7 @@ export const copy = {
       `Looks ${a} and ${b} have a measurement, but it isn't verified yet, so we don't show its number; looks ${pa} and ${pb} carry the measured move.`,
     release: (release: string, parts: string[]) =>
       release === 'dr1qr3'
-        ? `Data: SPHEREx ${parts.join(' + ')} (IRSA)${parts.includes('QR3') ? '' : '; no QR3 photos here yet'}.`
+        ? `Data: SPHEREx ${parts.join(' + ')} (IRSA${parts.includes('QR3') ? '' : '; no QR3 here yet'})`
         : `Data: SPHEREx ${release.toUpperCase()}, an older release; this target's DR1 + QR3 pack isn't built yet.`,
     shifted: (range: string, metres: number, direction: string) =>
       `Between these two looks it moved ${range} ${direction}, like a 2 cm coin seen from ${metres} metres.`,
@@ -384,6 +384,7 @@ export const copy = {
     allColours: 'Let go: all colours, which is fine for position.',
     replay: 'Replay',
     why: 'Why?',
+    whyNamed: (name: string) => `Why ${name}?`,
   },
   /**
    * A saturated star's brightness from the unsaturated edges of its image (event pipeline,
@@ -967,7 +968,7 @@ export const copy = {
     /** Facts about one of the five that help read a blend (Physics, 15 Nov; sources in targets.json). */
     targetFacts: {
       w0855: {
-        text: 'WISE 0855 is very faint below about 4 µm and much brighter near 4.5 µm (Spitzer, Vega magnitudes: 17.4 at 3.6 µm, 13.9 at 4.5 µm), so in shorter colours this light is mostly the neighbour; Compare adds all colours.',
+        text: "WISE 0855 is very faint below about 4 µm and much brighter near 4.5 µm (Spitzer, Vega magnitudes: 17.4 at 3.6 µm, 13.9 at 4.5 µm), so in shorter colours this light is mostly the neighbour; Compare adds all colours. Measured on this page: in 0.75–3.8 µm the light is centred within 0.8″ of the neighbour; in 3.8–5 µm it moves 2.6–6.2″ towards WISE 0855's predicted place.",
         source:
           'Luhman 2014, ApJL 786, L18 (Spitzer 3.6 and 4.5 µm); Schneider et al. 2016, ApJL 823, L35 (HST, J ≈ 26.4)',
       },

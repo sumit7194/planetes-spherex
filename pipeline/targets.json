@@ -54,7 +54,36 @@
           "Luhman 2014, ApJ 786, L18 (Spitzer [3.6], [4.5]); arXiv:1404.6501",
           "Schneider et al. 2016, ApJ 823, L35 (HST F125W, F160W); arXiv:1605.05618"
         ],
-        "checked": "2026-11-15, by the event build; Physics' memory value J ≈ 25 was Faherty et al. 2014's tentative 2.6σ ground-based value"
+        "checked": "2026-11-15, by the event build; Physics' memory value J ≈ 25 was Faherty et al. 2014's tentative 2.6σ ground-based value",
+        "centreShift": {
+          "what": "Light centre (app's recentre: brightest pixel within 1 px, then 3x3 flux-weighted centroid) in each per-detector stack, started from the all-colour later look's recentred spot; distances to Gaia DR3 5756956644387831296 (G 16.3, BP-RP 0.72) and to WISE 0855's predicted place, each moved to the look's mean date.",
+          "measured": "2026-11-15, event build; fixed before writing any text (Physics' rule: write the clause only if the centre moves by more than ~2 arcsec)",
+          "nov2025": {
+            "separationArcsec": 9.5,
+            "D1_D4_fromGaia": "0.2-0.8",
+            "D5": {
+              "fromGaia": 5.3,
+              "fromW0855": 4.3
+            },
+            "D6": {
+              "fromGaia": 6.2,
+              "fromW0855": 3.4
+            }
+          },
+          "may2026": {
+            "separationArcsec": 6.4,
+            "D1_D4_fromGaia": "0.3-0.7",
+            "D5": {
+              "fromGaia": 2.6,
+              "fromW0855": 3.8
+            },
+            "D6": {
+              "fromGaia": 3.5,
+              "fromW0855": 2.9
+            }
+          },
+          "caveat": "A 3x3 centroid pulls towards the peak pixel and pixel phase adds error, so these are rough; the shift is clear (more than 2 arcsec in every D5/D6 stack)."
+        }
       }
     },
     {

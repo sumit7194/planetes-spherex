@@ -199,15 +199,30 @@ describe('masked pixels in a photo (15 Nov)', () => {
   });
 });
 
-describe('which stars count in a blend (provisional)', () => {
-  it('leaves out Gaia stars more than 5 mag fainter than the brightest there', () => {
+describe("which stars count in a blend (Physics' rule)", () => {
+  it('leaves out Gaia stars more than 5 mag fainter in G, unless red', () => {
     const stars = [
-      { name: 'Barnard', mag: 8.2 },
-      { name: 'faint', mag: 20.9 },
-      { name: 'CatWISE x', mag: null },
+      { name: 'Barnard', cat: 'gaia' as const, mag: 8.2, bpRp: 2.8 },
+      { name: 'faint blue', cat: 'gaia' as const, mag: 20.9, bpRp: 0.9 },
+      { name: 'faint red', cat: 'gaia' as const, mag: 20.5, bpRp: 3.1 },
+      { name: 'faint, no colour', cat: 'gaia' as const, mag: 21.0, bpRp: null },
     ];
-    expect(relevantStars(stars).map((x) => x.name)).toEqual(['Barnard', 'CatWISE x']);
+    expect(relevantStars(stars).map((x) => x.name)).toEqual([
+      'Barnard',
+      'faint red',
+      'faint, no colour',
+    ]);
   });
-  it('keeps a lone faint star', () =>
-    expect(relevantStars([{ name: 'faint', mag: 20.9 }]).length).toBe(1));
+  it('compares CatWISE only among itself, in W1, never against G', () => {
+    const stars = [
+      { name: 'G 8', cat: 'gaia' as const, mag: 8, bpRp: 1 },
+      { name: 'W1 15', cat: 'catwise' as const, mag: 15 },
+      { name: 'W1 21', cat: 'catwise' as const, mag: 21 },
+    ];
+    expect(relevantStars(stars).map((x) => x.name)).toEqual(['G 8', 'W1 15']);
+  });
+  it('keeps a lone faint star and anything without a magnitude', () => {
+    expect(relevantStars([{ cat: 'gaia', mag: 20.9, bpRp: 0.5 }]).length).toBe(1);
+    expect(relevantStars([{ cat: 'catwise', mag: null }]).length).toBe(1);
+  });
 });

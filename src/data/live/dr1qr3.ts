@@ -1302,6 +1302,8 @@ export interface GaiaStar {
   pmra: number;
   pmdec: number;
   g: number | null;
+  /** BP−RP colour (null when Gaia has none, as for many faint red stars). */
+  bpRp?: number | null;
 }
 
 /**
@@ -1317,7 +1319,7 @@ export async function gaiaNear(
   if (!helperActive()) return null;
   try {
     const r = await helperGet(
-      `${helperBase}/v1/gaia?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}`,
+      `${helperBase}/v1/gaia?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}&c=2`,
       'gaia',
       signal,
     );

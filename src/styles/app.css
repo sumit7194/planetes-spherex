@@ -3397,6 +3397,7 @@ span[data-fit='1'] {
 }
 
 .facts-foot p {
+  max-width: none;
   margin: 0;
   font-size: 12px;
   line-height: 1.35;

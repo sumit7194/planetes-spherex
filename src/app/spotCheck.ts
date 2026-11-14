@@ -335,18 +335,35 @@ export function photoGrid(
 }
 
 /**
- * Which known stars within R count toward the verdict (provisional, 15 Nov, for Physics to
- * confirm): a Gaia star more than `dmag` magnitudes fainter than the brightest Gaia star there
- * gives under 1% of its light, so it isn't named in a blend. Found on Barnard's Star (G 8.2) with
- * three G ≈ 21 stars inside R. Sources without a G magnitude (CatWISE) always count.
+ * Which known stars within R count toward the verdict (Physics' rule, 15 Nov; fixed in code, not
+ * tuned on spots). Within each catalogue only, never mixing bands: a Gaia star more than `dmag`
+ * fainter in G than the brightest Gaia star there drops out unless it's red (BP−RP ≥ 2.5, or no
+ * BP−RP: many faint red stars have none), since a late M or L dwarf faint in G can be bright at
+ * 1–5 µm; CatWISE sources the same way among themselves in W1 (3.4 µm, inside SPHEREx's range).
+ * A source without a magnitude always counts. Found on Barnard's Star (G 8.2) with three G ≈ 21
+ * stars inside R.
  */
 export const BLEND_DMAG = 5;
-export function relevantStars<T extends { mag?: number | null }>(
-  stars: T[],
-  dmag = BLEND_DMAG,
-): T[] {
-  const mags = stars.map((x) => x.mag).filter((m): m is number => typeof m === 'number');
-  if (!mags.length) return stars;
-  const brightest = Math.min(...mags);
-  return stars.filter((x) => typeof x.mag !== 'number' || x.mag <= brightest + dmag);
+export const RED_BP_RP = 2.5;
+export interface CountedStar {
+  /** Which catalogue; a source without one always counts. */
+  cat?: 'gaia' | 'catwise' | undefined;
+  /** G for Gaia, W1 for CatWISE. */
+  mag?: number | null | undefined;
+  /** Gaia BP−RP. */
+  bpRp?: number | null | undefined;
+}
+export function relevantStars<T extends CountedStar>(stars: T[], dmag = BLEND_DMAG): T[] {
+  const brightest = (cat: CountedStar['cat']) =>
+    Math.min(
+      ...stars
+        .filter((x) => x.cat === cat && typeof x.mag === 'number')
+        .map((x) => x.mag as number),
+    );
+  const top = { gaia: brightest('gaia'), catwise: brightest('catwise') };
+  return stars.filter((x) => {
+    if (!x.cat || typeof x.mag !== 'number') return true;
+    if (x.mag <= top[x.cat] + dmag) return true;
+    return x.cat === 'gaia' && (x.bpRp === null || x.bpRp === undefined || x.bpRp >= RED_BP_RP);
+  });
 }
