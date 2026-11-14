@@ -20,6 +20,8 @@ import {
   pastPlace,
   offsetAt,
   motionDirection,
+  trackTicks,
+  WANDERER_EPOCH,
 } from './app/targets';
 import {
   blendingNeighbour,
@@ -1065,6 +1067,8 @@ for (const w of WANDERERS) {
 /* ---------- search: a typed position near a wanderer opens its case ---------- */
 
 /** Said in the summary when the visitor typed where a mover used to be. */
+/** Whether the arrival note's path figure is open (in Compare's body). */
+let pathShown = false;
 let typedNote: {
   id: TargetId;
   text: string;
@@ -1597,7 +1601,7 @@ function typedPathFigure(
     labels: {
       typed: t.typed,
       now: t.now,
-      spherex: t.spherex,
+      spherex: t.spherex(angleText(inSpherex)),
       closeUp: t.closeUp,
       north: t.north,
       east: t.east,
@@ -1611,11 +1615,18 @@ function typedPathFigure(
       ),
     },
   });
+  const source =
+    current.show.kind === 'motion' && current.show.predictionSource
+      ? // The drawing is straight motion only, so the prediction's "+ parallax" doesn't apply.
+        predictionLabel(current.show.predictionSource).replace(/ \+ parallax$/, '')
+      : t.catalogue;
+  const ticks = trackTicks(path.year);
+  const every = ticks.length > 1 ? (ticks[1] ?? 0) - (ticks[0] ?? 0) : WANDERER_EPOCH - path.year;
   return h(
     'figure',
     { class: 'past-path-fig' },
     fig,
-    h('figcaption', { class: 'hint' }, t.caption),
+    h('figcaption', { class: 'hint' }, t.caption(source, Math.round(every))),
   );
 }
 
@@ -4075,12 +4086,28 @@ function showWords(): Node[] {
     );
     close.addEventListener('click', () => {
       typedNote = null;
+      pathShown = false;
       render();
     });
-    summary.splice(1, 0, h('p', { class: 'typed-note', role: 'status' }, typedNote.text, close));
-    // The path from the typed year to today (queue #4), under the note.
-    const fig = typedPathFigure(id, typedNote.path);
-    if (fig) summary.splice(2, 0, fig);
+    // The path figure opens in Compare's body, not here: the summary must fit without scrolling
+    // and keep the measured result first (Viewer, 15 Nov). One control on every screen size.
+    const see = typedNote.path
+      ? h(
+          'button',
+          { type: 'button', class: 'link-button', 'aria-expanded': String(pathShown) },
+          pathShown ? copy.search.path.hide : copy.search.path.show,
+        )
+      : null;
+    see?.addEventListener('click', () => {
+      pathShown = !pathShown;
+      if (pathShown && activeTab() !== 'compare') selectTab('compare');
+      else render();
+    });
+    summary.splice(
+      1,
+      0,
+      h('p', { class: 'typed-note', role: 'status' }, typedNote.text, see ? ' ' : '', see, close),
+    );
   }
   // "How sure": its one-line legend (measured ± error, predicted) stays open; the chart folds.
   const factsTop = out.filter(isFact).map((n) => {
@@ -4152,9 +4179,15 @@ function showWords(): Node[] {
   if (story)
     facts.push(h('details', { class: 'why' }, h('summary', {}, copy.show.why), h('p', {}, story)));
   // In the Watch room the summary (with the measured result) is the same; only the tab differs.
+  // The path from the typed year to today, at the top of Compare while it's open (queue #4).
+  const pathFig = pathShown && typedNote?.id === id ? typedPathFigure(id, typedNote.path) : null;
   return panelOf(
     summary,
-    fiveTabs(state.room === 'watch' ? [] : compare, facts, spectrum ? [spectrum] : []),
+    fiveTabs(
+      state.room === 'watch' ? [] : pathFig ? [pathFig, ...compare] : compare,
+      facts,
+      spectrum ? [spectrum] : [],
+    ),
   );
 }
 

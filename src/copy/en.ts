@@ -854,15 +854,18 @@ export const copy = {
     path: {
       typed: (year: number) => `${year}: your numbers`,
       now: '2026',
-      spherex: 'SPHEREx',
+      spherex: (arcsec: string) => `SPHEREx (${arcsec})`,
       closeUp: 'the close-up',
       north: 'N',
       east: 'E',
       scale: (len: string) => len,
       alt: (name: string, year: number, moved: string, dir: string, spherex: string) =>
         `${name}'s path from ${year} to 2026: ${moved} towards the ${dir}, in a straight line. SPHEREx's photos cover only the last ${spherex} of it.`,
-      caption:
-        'North up, east left, as on the sky. Ticks mark the years; the bright stretch is what SPHEREx photographed; the square is the close-up. Straight motion only (Gaia/CatWISE): the yearly parallax wobble is far smaller than this drawing.',
+      caption: (source: string, every: number) =>
+        `North up, east left, as on the sky. Ticks every ${every} years; the bright stretch is what SPHEREx photographed; the square is the close-up. Straight motion from the ${source}: the yearly parallax wobble is far smaller than this drawing.`,
+      show: 'See the path',
+      hide: 'Hide the path',
+      catalogue: 'catalogue proper motion',
     },
   },
   share: {

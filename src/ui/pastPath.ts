@@ -133,7 +133,7 @@ export function pastPathFigure(p: PastPathInput): SVGSVGElement {
       text(X(0), below(Y(0)), p.labels.now, 'pp-label'),
       text(
         sx,
-        above(sy) - (Math.abs(sx - tx) < 70 ? 13 : 0),
+        above(sy) - (Math.abs(sx - tx) < 85 ? 13 : 0),
         p.labels.spherex,
         'pp-small pp-sphx-label',
       ),
