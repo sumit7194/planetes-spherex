@@ -781,8 +781,10 @@ function pumpDeep(): void {
       .then((d: { stars: [number, number, number, number | null, number, number][] }) => {
         const marks = d.stars
           .map((row) => deepMark(row, NOW_YEAR))
-          // Only the brightest tier can repeat a Hipparcos star (V ≤ 8).
-          .filter((m) => m[2] >= 10 || !isHipparcosStar(m[0], m[1]));
+          // Never a Hipparcos star twice, at any tier: a bright star with a poor Gaia magnitude
+          // could land in a fainter tier (Viewer, 14 Nov). Stars Gaia gives no motion (its
+          // 2-parameter solutions) keep their 2016 place: the helper sends 0 for them.
+          .filter((m) => !isHipparcosStar(m[0], m[1]));
         deepPatches.set(key, marks);
       })
       // ESA's archive is slow at times: a patch that fails is simply not drawn, and asked again

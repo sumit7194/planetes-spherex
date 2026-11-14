@@ -1016,6 +1016,7 @@ export class SkyView {
     // priority labels (the five, the Sun, SPHEREx, Earth, notes) took last frame. Star and
     // figure names give way to all of these.
     this.#taken = [...this.#quiet, ...this.#edges.map((e) => e.box), ...this.#priorityNext];
+    this.#takenThisFrame = this.#taken.length;
     this.#priorityNext = [];
     this.#nearView();
     this.#glow();
@@ -2736,6 +2737,15 @@ export class SkyView {
       ctx.textAlign = 'left';
       return;
     }
+    // A mark just off the screen has its label pulled in to the edge; two such (the Sun's and a
+    // wanderer's) could land in the same corner. Pulled in, it gives way to any label already
+    // placed (Viewer, 14 Nov: they overlapped at the lower left).
+    const off = p.x < 0 || p.y < 0 || p.x > this.canvas.width || p.y > this.canvas.height;
+    // Only against labels placed this frame: last frame's reservations include its own spot.
+    if (off && this.#taken.slice(this.#takenThisFrame).some((q) => overlaps(q, box))) {
+      ctx.textAlign = 'left';
+      return;
+    }
     this.#reserve(box);
     ctx.fillStyle = mixHex(this.#t.starlight, this.#t.mist, 0.5);
     ctx.font = `${13 * u}px ${this.#fontSans}`;
@@ -2972,6 +2982,8 @@ export class SkyView {
   #quiet: Box[] = [];
   /** Text boxes placed or reserved this frame, and the priority labels' boxes for the next. */
   #taken: Box[] = [];
+  /** Where this frame's own placements start in #taken (before them: the page, chips, last frame's). */
+  #takenThisFrame = 0;
   #priorityNext: Box[] = [];
   /** A priority label's box: reserved from now and for the next frame. */
   #reserve(box: Box): void {
