@@ -114,6 +114,7 @@ import {
   majorityFlags,
   photoGrid,
   placesOf,
+  relevantStars,
   samePixelProbes,
   stuckOnDetector,
   flagNamesNear,
@@ -2774,19 +2775,26 @@ function colourRow(look: LiveLook): HTMLElement | null {
   return h(
     'div',
     { class: 'colour-choice' },
-    h('p', { class: 'colour-label' }, t.label),
+    // The "Same colour" strip above heads this row; the group keeps its label for screen readers.
     group,
-    h(
-      'p',
-      { class: 'hint colour-why' },
-      why,
-      c.unavailable ? ` ${t.unavailable(rangeText(c.unavailable))}` : '',
-      c.checking ? ` ${t.checking(rangeText(c.checking))}` : '',
-    ),
+    // Physics' blend line stays in view; the reasons fold, so the summary leaves the tabs room
+    // at 1280x720 (Viewer's audit, 15 Nov).
     c.blend
       ? h('p', { class: 'hint colour-blend' }, t.blended(c.blend.g, c.blend.sepArcsec))
       : null,
-    c.chosen <= 3 ? h('p', { class: 'hint' }, t.cold) : null,
+    h(
+      'details',
+      { class: 'why colour-why' },
+      h('summary', {}, t.whyThis),
+      h(
+        'p',
+        { class: 'hint' },
+        why,
+        c.unavailable ? ` ${t.unavailable(rangeText(c.unavailable))}` : '',
+        c.checking ? ` ${t.checking(rangeText(c.checking))}` : '',
+      ),
+      c.chosen <= 3 ? h('p', { class: 'hint' }, t.cold) : null,
+    ),
   );
 }
 
@@ -3354,17 +3362,23 @@ function differenceKey(): HTMLElement | null {
       h('i', { style: `background: ${diffGradient()}`, 'aria-hidden': 'true' }),
       h('span', {}, copy.show.diffBrighter(DIFF_LIMIT)),
     ),
-    h('p', { class: 'hint' }, copy.show.diffHow(differencing.sigma.toPrecision(2))),
-    h('p', { class: 'hint' }, copy.show.diffColours(differencing.detectors)),
     differencing.canNarrow ? diffScopeToggle(differencing) : null,
-    differencing.masked
-      ? h(
-          'p',
-          { class: 'hint' },
-          h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }),
-          copy.show.diffMasked,
-        )
-      : null,
+    // The explanations fold so Compare fits at 1280x720 (Viewer's audit); the scale stays.
+    h(
+      'details',
+      { class: 'why' },
+      h('summary', {}, copy.show.diffHowToRead),
+      h('p', { class: 'hint' }, copy.show.diffHow(differencing.sigma.toPrecision(2))),
+      h('p', { class: 'hint' }, copy.show.diffColours(differencing.detectors)),
+      differencing.masked
+        ? h(
+            'p',
+            { class: 'hint' },
+            h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }),
+            copy.show.diffMasked,
+          )
+        : null,
+    ),
   );
 }
 
@@ -3376,6 +3390,8 @@ type CheckState = 'asking' | 'done' | 'failed';
 interface SpotMatch {
   name: string;
   sep: number;
+  /** Gaia G, when known (for which stars count in a blend). */
+  mag?: number | null;
 }
 
 interface SpotCheckResult {
@@ -3385,7 +3401,7 @@ interface SpotCheckResult {
   sn: [number | null, number | null];
   dates: [string, string];
   /** Seen at S/N >= 5 in N of the M photos read (null: photos not read). */
-  seen: { n: number; m: number } | null;
+  seen: { n: number; m: number; masked: number } | null;
   facts: SpotFacts;
   verdict: Verdict | null;
   checked: {
@@ -3579,7 +3595,11 @@ async function runSpotCheck(shift: Shift): Promise<void> {
         ? [{ name: facts.target, sep: result.targetSep, kind: 'target' as const }]
         : []),
       ...result.asteroidMatches.map((m) => ({ ...m, kind: 'asteroid' as const })),
-      ...result.matches.map((m) => ({ ...m, kind: 'star' as const })),
+      ...relevantStars(result.matches).map((m) => ({
+        name: m.name,
+        sep: m.sep,
+        kind: 'star' as const,
+      })),
     ];
     result.verdict = verdict(facts);
     render();
@@ -3599,13 +3619,20 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     else list.push({ name, sep });
   };
   /** A catalogue source moved to each look's date: matched within R, close within 2 px. */
-  const place = (name: string, posAt: (year: number) => SkyPosition, blends: boolean) => {
+  const place = (
+    name: string,
+    posAt: (year: number) => SkyPosition,
+    blends: boolean,
+    mag: number | null = null,
+  ) => {
     for (const look of [0, 1] as const) {
       const sep = sepOf(posAt(lookYears[look]));
       if (blends && sep <= BLEND_ARCSEC) note(result.close, name, sep);
       if (sep <= MATCH_ARCSEC) {
         if (!facts.stars[look].includes(name)) facts.stars[look].push(name);
         note(result.matches, name, sep);
+        const m = result.matches.find((x) => x.name === name);
+        if (m) m.mag = mag;
       }
     }
   };
@@ -3624,7 +3651,10 @@ async function runSpotCheck(shift: Shift): Promise<void> {
   };
 
   // Each check updates the card as it lands (Viewer 3).
-  const gaia = within(gaiaNear(at, 30), CHECK_MS).then((stars) => {
+  // Gaia's places are for 2016: a fast star has since moved far from them (Barnard's Star 10.4″
+  // a year, ~105″ by 2026), so the cone is the helper's widest, 120″, and each star is moved to
+  // the look's date before matching (found on Barnard's live look, 15 Nov).
+  const gaia = within(gaiaNear(at, 120), CHECK_MS).then((stars) => {
     if (stale()) return;
     result.checked.gaia = stars ? 'done' : 'failed';
     for (const s of stars ?? []) {
@@ -3633,6 +3663,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
         name,
         (yr) => placeAt({ ra: s.ra, dec: s.dec }, s.pmra || 0, s.pmdec || 0, 2016.0, yr),
         s.g !== null && s.g < 19,
+        s.g,
       );
     }
     update();
@@ -3696,7 +3727,9 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     }
     result.checked.flags = 'done';
     const shows = photos.filter((p) => p.sn !== null && p.sn >= SPOT_SN);
-    result.seen = { n: shows.length, m: photos.length };
+    // Only photos that gave a number count; masked ones (saturated, flagged) are said apart.
+    const measured = photos.filter((p) => p.sn !== null).length;
+    result.seen = { n: shows.length, m: measured, masked: photos.length - measured };
     // Physics' majority rule: a flag counts only if it's set in more than half of the photos
     // that show the spot, per look; every name's count is shown as information.
     for (const look of [0, 1] as const)
@@ -3858,7 +3891,12 @@ let spotScrollFor: string | null = null;
 function revealSpotCard(card: HTMLElement, key: string): HTMLElement {
   if (spotScrollFor !== key) {
     spotScrollFor = key;
-    requestAnimationFrame(() => card.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+    requestAnimationFrame(() =>
+      card.scrollIntoView({
+        block: 'nearest',
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      }),
+    );
   }
   return card;
 }
@@ -3941,8 +3979,26 @@ function spotCard(): HTMLElement | null {
         'div',
         { class: 'spot-check-card', 'aria-live': 'polite' },
         h('p', { class: 'hint', role: 'status' }, t.checking),
-        ...where,
-        gated ? checks : null,
+        // The S/N per look only; the position joins "How we checked" when done (fit).
+        where[1] ?? null,
+        // One compact line while checking, each check marked as it answers (fit at 1280x720).
+        gated
+          ? h(
+              'p',
+              { class: 'hint spot-check-progress' },
+              (
+                [
+                  [r.checked.asteroids, 'SkyBoT'],
+                  [r.checked.gaia, 'Gaia'],
+                  [r.checked.catwise, 'CatWISE'],
+                  [r.checked.flags, t.photosShort],
+                  [r.checked.detector, t.detectorShort],
+                ] as [CheckState, string][]
+              )
+                .map(([st, name]) => `${name} ${st === 'done' ? '✓' : st === 'failed' ? '✗' : '…'}`)
+                .join(' · '),
+            )
+          : null,
       ),
       `${spotSeq}:checking`,
     );
@@ -3968,7 +4024,7 @@ function spotCard(): HTMLElement | null {
           : v.kind === 'asteroid'
             ? t.asteroid(sourceList(r.asteroidMatches, t.away) || v.names.join(', '))
             : v.kind === 'star'
-              ? t.star(sourceList(r.matches, t.away) || v.names.join(', '))
+              ? t.star(sourceList(relevantStars(r.matches), t.away) || v.names.join(', '))
               : v.kind === 'artefact'
                 ? v.stuck && !v.flags.length
                   ? t.stuck
@@ -3976,18 +4032,28 @@ function spotCard(): HTMLElement | null {
                 : t.unknown;
   shown.push(h('p', { class: 'spot-check-verdict', role: 'status' }, head));
   // A fact about the page's target, when it's one of the sources (Physics; cited in targets.json).
+  // It folds into "How we checked" with a pointer here, so Compare fits (Viewer's fallback).
   const targetFact = spotContext()?.targetFact;
-  if (
-    targetFact &&
-    (v.kind === 'target' || (v.kind === 'blend' && v.sources.some((x) => x.kind === 'target')))
-  )
-    shown.push(h('p', { class: 'hint' }, targetFact.text));
+  const factHere =
+    !!targetFact &&
+    (v.kind === 'target' || (v.kind === 'blend' && v.sources.some((x) => x.kind === 'target')));
+
   if (v.kind === 'star' && v.flagged.length)
     shown.push(h('p', { class: 'hint' }, t.starFlagged(v.flagged.map(plainFlag).join(', '))));
   if (v.kind === 'artefact' && v.stuck && v.flags.length)
     shown.push(h('p', { class: 'hint' }, t.stuck));
   if (v.kind !== 'nothing') {
-    if (r.seen) shown.push(h('p', { class: 'hint' }, t.seen(r.seen.n, r.seen.m)));
+    // "Seen in N of M" and the pointer to the target's fact share one line (fit at 1280x720).
+    if (r.seen || factHere)
+      shown.push(
+        h(
+          'p',
+          { class: 'hint' },
+          r.seen ? t.seen(r.seen.n, r.seen.m, r.seen.masked) : '',
+          r.seen && factHere ? ' ' : '',
+          factHere ? t.factPointer : '',
+        ),
+      );
     // Physics' blend note: another known source within 2 px, beyond R, not already named.
     const named = new Set<string>(r.matches.map((m) => m.name));
     if (v.kind === 'blend') v.sources.forEach((x) => named.add(x.name));
@@ -3995,9 +4061,9 @@ function spotCard(): HTMLElement | null {
     if (v.kind === 'star' || v.kind === 'asteroid') v.names.forEach((n) => named.add(n));
     const other = r.close.find((x) => !named.has(x.name));
     if (other) shown.push(h('p', { class: 'hint' }, t.blend(other.name, other.sep.toFixed(1))));
+    if (factHere && targetFact)
+      folded.push(h('p', { class: 'hint' }, targetFact.text, ' ', t.factSource(targetFact.source)));
     folded.push(checks);
-    if (targetFact && spotContext()?.target)
-      folded.push(h('p', { class: 'hint' }, t.factSource(targetFact.source)));
     if (r.flagCounts.length && r.seen) {
       const n = r.seen.n;
       folded.push(
@@ -4069,8 +4135,8 @@ function spotCard(): HTMLElement | null {
       'div',
       { class: 'spot-check-card', 'aria-live': 'polite' },
       ...shown,
-      details,
-      h('p', {}, copyBtn),
+      // Copy report sits beside "How we checked", on one row.
+      h('div', { class: 'spot-check-foot' }, details, copyBtn),
     ),
     `${spotSeq}:done`,
   );
@@ -4087,7 +4153,7 @@ function spotReport(r: SpotCheckResult): string {
     `Position (ICRS): RA ${r.at.ra.toFixed(5)}°, Dec ${r.at.dec.toFixed(5)}° (${positionText(r.at)})`,
     `Looks: ${r.dates[0]} (S/N ${r.sn[0]?.toFixed(1) ?? 'n/a'}), ${r.dates[1]} (S/N ${r.sn[1]?.toFixed(1) ?? 'n/a'})`,
     r.seen
-      ? `Seen at S/N >= 5 in ${r.seen.n} of ${r.seen.m} photos read`
+      ? `Seen at S/N >= 5 in ${r.seen.n} of ${r.seen.m} photos with a number (${r.seen.masked} more masked at the spot: saturated or flagged)`
       : 'Photos: not read one by one',
     `Verdict: ${v?.kind ?? 'n/a'}${v?.kind === 'target' ? ` (${v.name}, predicted position ${r.targetSep?.toFixed(1) ?? '?'}" from the light's centre)` : v?.kind === 'blend' ? ` (${v.sources.map((x) => `${x.name}${x.kind === 'target' ? ' (predicted place)' : ''} at ${x.sep.toFixed(1)}"`).join('; ')}; can't be separated at 6" pixels)` : v?.kind === 'artefact' && v.stuck ? ' (stays put on the detector)' : ''}`,
     `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}" at a bright look's dates): ${r.checked.asteroids === 'done' ? r.asteroidMatches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}`,
@@ -4156,6 +4222,90 @@ function endFade(redraw = true): void {
     showLivePhoto(live.tiles.length - 1);
   }
   if (redraw) render();
+}
+
+/**
+ * Compare's views as one segmented row (Viewer's audit, 15 Nov): Difference (the five) · Colour by
+ * date · Fade, one at a time, then "What's at this spot?", which works on top of any of them (a
+ * change is clicked in the difference). Only the active view's controls render below the row, so
+ * Compare fits at 1280x720 with no scroll.
+ */
+function compareModes(look: LiveLook | null): HTMLElement {
+  const m = copy.show.modes;
+  const five = !look;
+  const active = differencing
+    ? 'diff'
+    : (five ? colouring : liveColouring)
+      ? 'date'
+      : fadeAt !== null
+        ? 'fade'
+        : null;
+  const seg = (
+    key: 'diff' | 'date' | 'fade',
+    label: string,
+    start: () => void,
+    end: () => void,
+  ) => {
+    const on = active === key;
+    const b = h(
+      'button',
+      {
+        type: 'button',
+        'aria-pressed': String(on),
+        class: on ? 'on' : '',
+        ...(key === 'diff' ? { 'aria-busy': String(diffBusy), disabled: diffBusy } : {}),
+      },
+      label,
+    );
+    b.addEventListener('click', () => {
+      // A view takes the path figure's slot (Viewer: the two never stack).
+      pathShown = false;
+      if (on) end();
+      else start();
+    });
+    return b;
+  };
+  const views = h(
+    'div',
+    { class: 'mode-row', role: 'group', 'aria-label': m.label },
+    five
+      ? seg(
+          'diff',
+          m.diff,
+          () => void showDifference(),
+          () => endDifference(),
+        )
+      : null,
+    seg(
+      'date',
+      m.byDate,
+      () => (look ? showLiveTimeColour(look) : showTimeColour()),
+      () => (look ? endLiveTimeColour() : endTimeColour()),
+    ),
+    fadePair()
+      ? seg(
+          'fade',
+          m.fade,
+          () => {
+            showFade(0);
+            render();
+          },
+          () => endFade(),
+        )
+      : null,
+  );
+  return h('div', { class: 'mode-bar' }, views, markButton());
+}
+
+/** The one block under the views: the path figure, or the spot card, or the active view's own. */
+function compareModeBlock(look: LiveLook | null, pathFig: HTMLElement | null): HTMLElement | null {
+  if (pathFig) return pathFig;
+  const card = spotCard();
+  // The fade's slider stays with the card (it's one line); the keys give way to it.
+  if (fadeAt !== null) return card ? h('div', {}, fadeControl() ?? '', card) : fadeControl();
+  if (card) return card;
+  if (differencing) return differenceKey();
+  return look ? liveTimeColourKey(look) : timeColourKey();
 }
 
 /** "Fade between the looks": a slider from the earlier look to the later (Viewer, 15 Nov). */
@@ -4262,10 +4412,15 @@ function liveTimeColourKey(look: LiveLook): HTMLElement | null {
       swatch([255, 255, 255]),
       h('span', {}, k.white),
     ),
-    h('p', { class: 'hint' }, k.brightness),
-    h('p', { class: 'hint' }, k.speckle),
-    h('p', { class: 'hint' }, k.fringes),
-    h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
+    h(
+      'details',
+      { class: 'why' },
+      h('summary', {}, k.howToRead),
+      h('p', { class: 'hint' }, k.brightness),
+      h('p', { class: 'hint' }, k.speckle),
+      h('p', { class: 'hint' }, k.fringes),
+      h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
+    ),
   );
 }
 
@@ -4338,9 +4493,15 @@ function timeColourKey(): HTMLElement | null {
     // How big this pair's move is, with the page's own numbers (Viewer, 15 Nov): under a pixel
     // the still can only show a faint fringe, and saying so points to the clearer views.
     smallMoveLine(k),
-    h('p', { class: 'hint' }, k.brightness),
-    h('p', { class: 'hint' }, k.fringes),
-    h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
+    // The caveats fold away so Compare fits at 1280x720 (Viewer's audit); the scale stays.
+    h(
+      'details',
+      { class: 'why' },
+      h('summary', {}, k.howToRead),
+      h('p', { class: 'hint' }, k.brightness),
+      h('p', { class: 'hint' }, k.fringes),
+      h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
+    ),
   );
 }
 
@@ -5077,37 +5238,13 @@ function showWords(): Node[] {
     dispatch({ type: 'packReady' });
     startReveal();
   });
-  const diff = h(
-    'button',
-    {
-      type: 'button',
-      'aria-pressed': String(!!differencing),
-      'aria-busy': String(diffBusy),
-      disabled: diffBusy,
-      class: 'diff-toggle',
-    },
-    copy.show.diffButton,
-  );
-  diff.addEventListener('click', () => (differencing ? endDifference() : void showDifference()));
-  // Colour by date (E3, Viewer's design): the same pair as one blue/orange picture; exclusive
-  // with the difference, since both take the lens.
-  const byDate = h(
-    'button',
-    { type: 'button', 'aria-pressed': String(colouring), class: 'diff-toggle' },
-    copy.show.byDate,
-  );
-  byDate.addEventListener('click', () => (colouring ? endTimeColour() : showTimeColour()));
-  const mark = markButton();
-  actions.append(diff, byDate, ...(mark ? [mark] : []), replay);
+  actions.append(replay);
   out.push(actions);
-  out.push(fadeControl());
-  const card = spotCard();
-  if (card) out.push(card);
+  // The views as one row; the active one's block is placed with the path figure below.
+  out.push(compareModes(null));
   // Only while the pack is still arriving; during the reveal, holding simply ends it.
   if (canHold && !ready && place.kind !== 'reveal')
     out.push(h('p', { class: 'hint' }, copy.show.holdNotYet));
-  const key = differenceKey() ?? timeColourKey();
-  if (key) out.push(key);
   out.push(spotSection(w.name));
   if (!touchOnly) out.push(h('p', { class: 'hint keys-hint' }, copy.keys.hint));
   if (diffTrouble) out.push(h('p', { class: 'hint', role: 'status' }, copy.show.diffTrouble));
@@ -5192,27 +5329,27 @@ function showWords(): Node[] {
         copy.keys.button,
       );
   keysBtn?.addEventListener('click', openKeys);
-  compare.push(
-    h('h3', {}, copy.facts.looks),
-    pairChooser(id),
-    looksRow(),
-    spotRow,
-    h('div', { class: 'actions links' }, copyLinkButton(), keysBtn),
-    aladinLink(current.pack.manifest.grid.centre),
-    h(
-      'p',
-      { class: 'release-line' },
+  // On the Hold/Replay line, which has room: no extra height (Viewer's audit).
+  actions.append(copyLinkButton(), ...(keysBtn ? [keysBtn] : []));
+  // The path from the typed year to today (queue #4) takes the active view's slot.
+  const pathFig = pathShown && typedNote?.id === id ? typedPathFigure(id, typedNote.path) : null;
+  const modeBar = compare.findIndex((n) => n?.classList.contains('mode-bar'));
+  compare.splice(modeBar + 1, 0, compareModeBlock(null, pathFig));
+  // The chooser is labelled "Compare looks" itself, so no heading (Viewer's audit: fit).
+  // While marking, the lens shows the look, so the thumbnails give way to the card (fit).
+  compare.push(pairChooser(id), markMode ? null : looksRow(), spotRow);
+  const facts: (Node | null)[] = [
+    ...factsTop,
+    h('dl', { class: 'facts' }, ...rows),
+    // Moved from Compare (Viewer's audit): the release, links out and the tests page, one line.
+    factsFooter(
+      current.pack.manifest.grid.centre,
       copy.show.release(
         current.pack.manifest.release,
         framesReleases(current.pack.manifest.frames.map((f) => f.mjd)),
       ),
+      true,
     ),
-  );
-  const facts: (Node | null)[] = [
-    ...factsTop,
-    h('dl', { class: 'facts' }, ...rows),
-    // This target is one of the challenge's tests: the page with every test's result.
-    h('p', { class: 'hint tests-link' }, h('a', { href: 'tests.html' }, copy.tests.link)),
   ];
   if (show.kind === 'motion' && show.stillStar?.common != null && show.relative) {
     const cause = id === 'barnard' ? copy.cases.barnard.sharedShift : null;
@@ -5228,15 +5365,9 @@ function showWords(): Node[] {
   if (story)
     facts.push(h('details', { class: 'why' }, h('summary', {}, copy.show.why), h('p', {}, story)));
   // In the Watch room the summary (with the measured result) is the same; only the tab differs.
-  // The path from the typed year to today, at the top of Compare while it's open (queue #4).
-  const pathFig = pathShown && typedNote?.id === id ? typedPathFigure(id, typedNote.path) : null;
   return panelOf(
     summary,
-    fiveTabs(
-      state.room === 'watch' ? [] : pathFig ? [pathFig, ...compare] : compare,
-      facts,
-      spectrum ? [spectrum] : [],
-    ),
+    fiveTabs(state.room === 'watch' ? [] : compare, facts, spectrum ? [spectrum] : []),
   );
 }
 
@@ -5474,15 +5605,6 @@ function lookWords(): HTMLElement[] {
         if (liveColouring) endLiveTimeColour(false);
         flipLook();
       });
-      // Colour by date for any spot (E3): the fair pair as one blue/orange picture.
-      const byDate = h(
-        'button',
-        { type: 'button', 'aria-pressed': String(liveColouring), class: 'diff-toggle' },
-        copy.show.byDate,
-      );
-      byDate.addEventListener('click', () =>
-        liveColouring ? endLiveTimeColour() : showLiveTimeColour(look),
-      );
       // Option A: the summary so far stays fixed; what to do with the spot goes in tabs.
       out.push(
         h(
@@ -5495,14 +5617,24 @@ function lookWords(): HTMLElement[] {
       const range = rangePhotos(look);
       return panelOf(out, [
         tabSpec('compare', [
-          h('h3', {}, copy.look.shownHeading(look.tiles.length, plan.total)),
-          strip,
-          h('div', { class: 'actions' }, replay, byDate, markButton(), copyLinkButton()),
-          fadeControl(),
-          spotCard(),
-          liveTimeColourKey(look),
-          aladinLink(look.at),
-          liveMoversLine(look),
+          // While marking, the lens shows the look; the thumbnails give way to the card (fit).
+          markMode ? null : strip,
+          // "N of M shown" rides on the actions line rather than a heading (fit at 1280x720).
+          h(
+            'div',
+            { class: 'actions' },
+            replay,
+            copyLinkButton(),
+            h(
+              'span',
+              { class: 'hint shown-count' },
+              copy.look.shownHeading(look.tiles.length, plan.total),
+            ),
+          ),
+          compareModes(look),
+          compareModeBlock(look, null),
+          // The field's asteroid line gives way to the spot card while marking (fit).
+          markMode ? null : liveMoversLine(look),
         ]),
         tabSpec('watch', [liveRangeSection(look), fieldControl(look.tiles.length)], {
           badge: range.photos.length > 2 ? String(range.photos.length) : null,
@@ -5522,6 +5654,8 @@ function lookWords(): HTMLElement[] {
             ...factRow('flag', copy.facts.flags, flagsControl(look.tiles)),
             ...factRow('catalogue', copy.facts.catalogue, copy.facts.dash.noCatalogue),
           ),
+          // Moved from Compare (Viewer's audit).
+          factsFooter(look.at, null, false),
           h(
             'details',
             { class: 'why' },
@@ -6554,6 +6688,25 @@ function aladinLink(at: { ra: number; dec: number }): HTMLElement {
   );
   // One labelled line, so the two read as a pair at any width (Viewer, 14 Nov).
   return h('p', { class: 'out-links' }, copy.share.openIn, ' ', aladin, ' · ', wise);
+}
+
+/**
+ * Facts' footer, one line (Viewer's audit): where the data comes from, this spot in Aladin and
+ * WiseView, and (on the five's pages) the tests page.
+ */
+function factsFooter(at: SkyPosition, release: string | null, tests: boolean): HTMLElement {
+  const links = aladinLink(at);
+  return h(
+    'div',
+    { class: 'facts-foot' },
+    release ? h('p', { class: 'hint' }, release) : null,
+    h(
+      'p',
+      { class: 'hint' },
+      ...Array.from(links.childNodes),
+      ...(tests ? [' · ', h('a', { href: 'tests.html' }, copy.tests.title)] : []),
+    ),
+  );
 }
 
 /** "RA 17h 57m 48s, Dec +4° 41′ 00″" for the eyebrow: the same format as the echo and readout. */

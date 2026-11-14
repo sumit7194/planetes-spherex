@@ -318,7 +318,7 @@ export const copy = {
       `Looks ${a} and ${b} have a measurement, but it isn't verified yet, so we don't show its number; looks ${pa} and ${pb} carry the measured move.`,
     release: (release: string, parts: string[]) =>
       release === 'dr1qr3'
-        ? `Data: SPHEREx ${parts.join(' + ')} (IRSA)${parts.includes('QR3') ? '' : '; no QR3 photos of this spot yet'}.`
+        ? `Data: SPHEREx ${parts.join(' + ')} (IRSA)${parts.includes('QR3') ? '' : '; no QR3 photos here yet'}.`
         : `Data: SPHEREx ${release.toUpperCase()}, an older release; this target's DR1 + QR3 pack isn't built yet.`,
     shifted: (range: string, metres: number, direction: string) =>
       `Between these two looks it moved ${range} ${direction}, like a 2 cm coin seen from ${metres} metres.`,
@@ -331,6 +331,8 @@ export const copy = {
     holdNotYet: 'Both looks are still coming in.',
     /** Colour by date (E3, Viewer's design): the shown pair as one blue/orange picture. */
     byDate: 'Colour by date',
+    /** Compare's views, one at a time (Viewer's audit, 15 Nov). */
+    modes: { label: 'Views', diff: 'Difference', byDate: 'Colour by date', fade: 'Fade' },
     /** Fade between the two looks (3b, Viewer's design): the pixel values blended. */
     fade: {
       name: 'Fade between the two looks',
@@ -341,11 +343,12 @@ export const copy = {
     byDateLabel: (early: string, late: string) =>
       `Colour by date: ${early} blue, ${late} orange, white where nothing moved`,
     byDateKey: {
+      howToRead: 'How to read the colours',
       white: "white: didn't move",
       brightness:
         'A star tinted all over changed brightness, not place: orange-heavy if it got brighter, blue-heavy if fainter (RW Aurigae flickers). A move shows as a blue copy and an orange copy side by side.',
       smallMove: (px: string, arcsec: string) =>
-        `This move is ${px} px (${arcsec}), under one SPHEREx pixel, so it shows only as a faint fringe here; Hold to compare or Show the difference show it more clearly.`,
+        `It moved ${px} px (${arcsec}), under one pixel: only a faint fringe here. Hold to compare or Difference shows it better.`,
       narrowMove: (px: string) =>
         `This move is ${px} px, so its fringe is narrow; Hold to compare shows it too.`,
       fringes:
@@ -355,6 +358,7 @@ export const copy = {
         'Coloured speckle in the dark background is noise: these are single photos, not stacks.',
     },
     diffButton: 'Show the difference',
+    diffHowToRead: 'How to read the difference',
     diffLabel: (later: number, earlier: number) => `Look ${later} minus look ${earlier}`,
     diffFainter: (limit: number) => `fainter later, −${limit}σ`,
     diffBrighter: (limit: number) => `+${limit}σ, brighter later`,
@@ -497,6 +501,7 @@ export const copy = {
           ? `${lo} to ${hi} microns${sn !== null ? `, the light at your spot at signal-to-noise ${Math.round(sn)}` : ''}`
           : `${lo} to ${hi} microns: no fair pair here`,
       choosing: 'Finding the colour where your spot shows clearest…',
+      whyThis: 'Why this colour?',
       whyClearest: (range: string) =>
         `Shown at ${range}, where the light at your spot stands out most clearly.`,
       whyShortest: (range: string) =>
@@ -967,7 +972,8 @@ export const copy = {
           'Luhman 2014, ApJL 786, L18 (Spitzer 3.6 and 4.5 µm); Schneider et al. 2016, ApJL 823, L35 (HST, J ≈ 26.4)',
       },
     },
-    factSource: (src: string) => `The target's magnitudes: ${src}.`,
+    factSource: (src: string) => `(${src})`,
+    factPointer: "Why it's mostly the neighbour here: see How we checked.",
     detectorName: 'Detector check',
     checkDetector: (places: number, brightText: string) =>
       `Detector check (information): it appears at ${places} different place${places === 1 ? '' : 's'} on SPHEREx's detectors. The detector pixel under it is bright ${brightText} photos of other parts of the sky. A detector defect would sit in the same pixel whatever SPHEREx points at.`,
@@ -983,7 +989,12 @@ export const copy = {
     next: "To take it further, check it in other surveys first. Backyard Worlds takes brown-dwarf candidates; asteroid reports go to the Minor Planet Center through an observatory code, so a single SPHEREx look isn't enough.",
     limits:
       "Two looks months apart can't show an object's path, so this check can't tell a new asteroid from an artefact.",
-    seen: (n: number, m: number) => `Seen at S/N 5 or more in ${n} of the ${m} photos read.`,
+    seen: (n: number, m: number, masked: number) =>
+      m
+        ? `Seen at S/N 5 or more in ${n} of the ${m} photos read${masked ? ` (${masked} more masked here: saturated or flagged)` : ''}.`
+        : `${masked === 1 ? 'The one photo read is' : masked === 2 ? 'Both photos read are' : `All ${masked} photos read are`} masked here (saturated or flagged), so none gives a number.`,
+    photosShort: 'photos',
+    detectorShort: 'detector',
     checkAsteroids: (names: string[]) =>
       `Known asteroids (SkyBoT, at the photos' dates): ${names.length ? names.join(', ') : 'none within 9″'}`,
     checkStars: (cat: string, names: string[]) =>

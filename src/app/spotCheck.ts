@@ -333,3 +333,20 @@ export function photoGrid(
     at: (x, y) => ((flags[y * w + x] ?? 0) & reject ? NaN : (image[y * w + x] ?? NaN)),
   };
 }
+
+/**
+ * Which known stars within R count toward the verdict (provisional, 15 Nov, for Physics to
+ * confirm): a Gaia star more than `dmag` magnitudes fainter than the brightest Gaia star there
+ * gives under 1% of its light, so it isn't named in a blend. Found on Barnard's Star (G 8.2) with
+ * three G ≈ 21 stars inside R. Sources without a G magnitude (CatWISE) always count.
+ */
+export const BLEND_DMAG = 5;
+export function relevantStars<T extends { mag?: number | null }>(
+  stars: T[],
+  dmag = BLEND_DMAG,
+): T[] {
+  const mags = stars.map((x) => x.mag).filter((m): m is number => typeof m === 'number');
+  if (!mags.length) return stars;
+  const brightest = Math.min(...mags);
+  return stars.filter((x) => typeof x.mag !== 'number' || x.mag <= brightest + dmag);
+}

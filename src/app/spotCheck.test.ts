@@ -4,6 +4,7 @@ import {
   distinctPlaces,
   majorityFlags,
   photoGrid,
+  relevantStars,
   samePixelProbes,
   stuckOnDetector,
   ARTEFACT_FLAGS,
@@ -196,4 +197,17 @@ describe('masked pixels in a photo (15 Nov)', () => {
     const flags = new Int32Array(4).fill(1 << 19);
     expect(photoGrid(img, flags, 2, 2, { OUTLIER: 19 }).at(0, 0)).toBe(1);
   });
+});
+
+describe('which stars count in a blend (provisional)', () => {
+  it('leaves out Gaia stars more than 5 mag fainter than the brightest there', () => {
+    const stars = [
+      { name: 'Barnard', mag: 8.2 },
+      { name: 'faint', mag: 20.9 },
+      { name: 'CatWISE x', mag: null },
+    ];
+    expect(relevantStars(stars).map((x) => x.name)).toEqual(['Barnard', 'CatWISE x']);
+  });
+  it('keeps a lone faint star', () =>
+    expect(relevantStars([{ name: 'faint', mag: 20.9 }]).length).toBe(1));
 });
