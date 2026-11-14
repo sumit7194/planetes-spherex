@@ -814,6 +814,31 @@ canvas.sky.backdrop {
 .coadds-fold > .context {
   margin-top: 8px;
 }
+/* "You typed where it was in 2010": the honest note for an old position. */
+.words .typed-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 6px 0 0 !important;
+  padding: 4px 4px 4px 10px;
+  border-left: 2px solid var(--look);
+  font-size: 13.5px;
+  color: var(--starlight) !important;
+  max-width: none;
+}
+.typed-close {
+  flex: none;
+  margin-left: auto;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: var(--quiet);
+  font-size: 13px;
+  cursor: pointer;
+}
+.typed-close:hover {
+  color: var(--starlight);
+}
 /* The measured result in the summary is ember: ember means measured. */
 .words.tabbed .panel-summary .hero-move .big {
   color: var(--measured);
@@ -832,7 +857,8 @@ canvas.sky.backdrop {
   margin-top: 4px;
 }
 .words.tabbed .release-line {
-  font-size: 12.5px;
+  max-width: none;
+  font-size: 12px;
   margin: 6px 0 0;
 }
 

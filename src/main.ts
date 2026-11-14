@@ -17,6 +17,7 @@ import {
   NEAR_WANDERER_DEG,
   PACK_RELEASES,
   WANDERERS,
+  pastPlace,
 } from './app/targets';
 import { planCandidates, probeChoice, type LiveCandidate, type LookPlan } from './app/live';
 import { playFlipbook, playReveal, showRevealStill } from './app/reveal';
@@ -727,6 +728,7 @@ function switchEntry(entry: Entry, fade = true): void {
 
 /** Leaves a show for the sky; from the inside view, aimed at the light just left. */
 function leaveShow(): void {
+  typedNote = null;
   const target = 'target' in state.place ? state.place.target : null;
   const lookedAt = live?.at ?? null;
   stopReveal?.();
@@ -791,6 +793,13 @@ for (const w of WANDERERS) {
 
 /* ---------- search: a typed position near a wanderer opens its case ---------- */
 
+/** Said in the summary when the visitor typed where a mover used to be. */
+let typedNote: { id: TargetId; text: string } | null = null;
+/** An angle for people: arcminutes from one, else arcseconds. */
+function angleText(arcsec: number): string {
+  return arcsec >= 60 ? `${(arcsec / 60).toFixed(1)}′` : `${Math.round(arcsec)}″`;
+}
+
 // Open the connections a live look will use while the visitor is still typing (once a page).
 search.addEventListener('focus', warmUp, { once: true });
 search.addEventListener('keydown', (e) => {
@@ -817,6 +826,19 @@ search.addEventListener('keydown', (e) => {
   }
   const near = WANDERERS.find((w) => separationDeg(w.at, parsed.position) < NEAR_WANDERER_DEG);
   searchNote = '';
+  // A typed spot on a mover's past track: say when it was there and how far it has moved since
+  // (the challenge's WISE 0855 coordinates are its 2010 place, 2.1′ from today's).
+  typedNote = null;
+  const past = near ? pastPlace(near, parsed.position) : null;
+  if (near && past)
+    typedNote = {
+      id: near.id,
+      text: copy.search.oldPlace(
+        copy.wanderers[near.id].name,
+        Math.floor(past.year),
+        angleText(past.movedArcsec),
+      ),
+    };
   if (near?.ready) void openWanderer(near.id);
   else if (near) {
     searchNote = copy.search.wandererSoon(copy.wanderers[near.id].name);
@@ -998,6 +1020,7 @@ async function go(id: TargetId): Promise<void> {
 }
 
 async function openWanderer(id: TargetId): Promise<void> {
+  if (typedNote?.id !== id) typedNote = null;
   stopReveal?.();
   watching = null;
   series = null;
@@ -2871,7 +2894,20 @@ function showWords(): Node[] {
     (n.classList.contains('how-sure') ||
       n.classList.contains('coin-line') ||
       (n.tagName === 'P' && n.classList.contains('hint') && n.textContent === copy.show.trueScale));
-  const summary = out.filter(isSummary);
+  const summary: (Node | null)[] = out.filter(isSummary);
+  if (typedNote?.id === id) {
+    // An arrival message: it closes with ✕, or by itself once another tab is opened.
+    const close = h(
+      'button',
+      { type: 'button', class: 'typed-close', 'aria-label': copy.search.closeNote },
+      '✕',
+    );
+    close.addEventListener('click', () => {
+      typedNote = null;
+      render();
+    });
+    summary.splice(1, 0, h('p', { class: 'typed-note', role: 'status' }, typedNote.text, close));
+  }
   // "How sure": its one-line legend (measured ± error, predicted) stays open; the chart folds.
   const factsTop = out.filter(isFact).map((n) => {
     if (!n?.classList.contains('how-sure')) return n;
@@ -3514,6 +3550,7 @@ function selectTab(tab: PanelTab): void {
   const key = pageKey();
   const was = activeTab();
   startTab = null;
+  typedNote = null;
   panelTabs.set(key, tab);
   if (tab === 'watch') watchOpened = true;
   if (key === 'live') {

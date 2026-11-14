@@ -651,6 +651,10 @@ export const copy = {
     unreadable: (reason: string) =>
       `We couldn't find that name or read that position (${reason}). Try a name like Vega or Barnard's Star, or a position like 17 57 48 +04 41 36.`,
     wandererSoon: (name: string) => `That's ${name}. Its show arrives in the next version.`,
+    /** The typed spot is where a moving target was in an earlier year. */
+    oldPlace: (name: string, year: number, moved: string) =>
+      `You typed where ${name} was in about ${year}; it has moved ${moved} since. Here it is now.`,
+    closeNote: 'Close this note',
   },
   share: {
     copy: 'Copy link',
