@@ -331,6 +331,13 @@ export const copy = {
     holdNotYet: 'Both looks are still coming in.',
     /** Colour by date (E3, Viewer's design): the shown pair as one blue/orange picture. */
     byDate: 'Colour by date',
+    /** Fade between the two looks (3b, Viewer's design): the pixel values blended. */
+    fade: {
+      name: 'Fade between the two looks',
+      valueText: (pct: number, late: string) => `${pct}% of the way to ${late}`,
+      label: (pct: number, late: string) => `Fade: ${pct}% of the way to ${late}`,
+      off: 'Back to the looks',
+    },
     byDateLabel: (early: string, late: string) =>
       `Colour by date: ${early} blue, ${late} orange, white where nothing moved`,
     byDateKey: {

@@ -106,6 +106,7 @@ import {
 import { differenceFilm, type DifferenceFrame, type FilmInput } from './data/live/film';
 import { targetPlaceAt, type PassPlaces } from './app/targetPlace';
 import { NEAR_DEG, SkyView, type CatalogueStar, type Figure, type Lantern } from './render/sky';
+import { fadedTile } from './render/fade';
 import { renderTimeColour, TIME_EARLY, TIME_LATE } from './render/timeColour';
 import { sharedStretch, type Stretch } from './render/stretch';
 import { parseGlow } from './render/milkyway';
@@ -163,6 +164,8 @@ let showing: 0 | 1 | null = null;
 let colouring = false;
 /** The same, for a live look's fair pair. */
 let liveColouring = false;
+/** Fade between the looks (3b): how far towards the later look, 0–1; null when off. */
+let fadeAt: number | null = null;
 let differencing: {
   sigma: number;
   masked: number;
@@ -2398,6 +2401,7 @@ async function openLook(
 ): Promise<void> {
   surprise = named;
   liveColouring = false;
+  fadeAt = null;
   stopReveal?.();
   stopLook();
   endSpot(false);
@@ -2919,8 +2923,9 @@ function livePhotoName(i: number): string {
 function showLivePhoto(i: number): void {
   if (liveRange?.playing) leaveLiveRange();
   // A single photo ends colour by date: the lens goes back to the photos first.
-  if (liveColouring) {
+  if (liveColouring || fadeAt !== null) {
     liveColouring = false;
+    fadeAt = null;
     if (live?.stretch) lens.setTiles(live.tiles, live.stretch);
     queueMicrotask(render);
   }
@@ -2936,6 +2941,7 @@ function showLivePhoto(i: number): void {
 function flipLook(): void {
   if (liveRange?.playing) leaveLiveRange();
   liveColouring = false;
+  fadeAt = null;
   stopReveal?.();
   const n = live?.tiles.length ?? 0;
   if (n < 2) return;
@@ -3040,6 +3046,7 @@ function photoTile(pack: LoadedPack, f: Frame): Promise<Tile> {
  */
 async function showDifference(): Promise<void> {
   if (!takeLens() || !current) return;
+  endFade(false);
   if (colouring) endTimeColour(false);
   endSpot(false);
   const shown = current;
@@ -3117,6 +3124,7 @@ function endDifference(redraw = true): void {
 /** Forgets the difference, and any still loading, when something else takes the lens. */
 function dropDifference(): void {
   colouring = false;
+  fadeAt = null;
   const had = differencing !== null || diffBusy;
   diffRequest++;
   differencing = null;
@@ -3279,6 +3287,7 @@ function spotSection(name: string): HTMLElement | null {
 
 /** Puts the pair back on the lens first, for actions that draw on top of it. */
 function leaveDifference(): void {
+  endFade(false);
   if (colouring) endTimeColour(false);
   if (differencing) endDifference(false);
   dropDifference();
@@ -3326,6 +3335,100 @@ function differenceKey(): HTMLElement | null {
   );
 }
 
+/** The pair the fade blends: the five's shown looks, or a live look's fair pair. */
+function fadePair(): { a: Tile; b: Tile; early: string; late: string } | null {
+  if (current && 'target' in state.place) {
+    const [a, b] = current.pair;
+    return a && b ? { a, b, early: lookMonth(0), late: lookMonth(1) } : null;
+  }
+  const look = live;
+  const p = look ? livePairTiles(look) : null;
+  return p ? { a: p[0], b: p[1], early: monthYear(p[2]), late: monthYear(p[3]) } : null;
+}
+
+/** Shows the blend at `t` (0–1) in the lens; the first move takes the lens from the others. */
+function showFade(t: number): void {
+  const pair = fadePair();
+  if (!pair) return;
+  if (fadeAt === null) {
+    if (current && 'target' in state.place) {
+      if (!takeLens()) return;
+      if (differencing) endDifference(false);
+      if (colouring) endTimeColour(false);
+      endSpot(false);
+    } else {
+      if (liveRange?.playing) leaveLiveRange();
+      stopReveal?.();
+      if (liveColouring) liveColouring = false;
+    }
+  }
+  fadeAt = t;
+  const stretch = sharedStretch([pair.a.pixels, pair.b.pixels]);
+  lens.setTiles([fadedTile(pair.a, pair.b, t)], stretch);
+  lens.show(0);
+  lens.setOverlay({ measured: undefined, predicted: undefined, arrowProgress: 0 });
+  lensLabel.replaceChildren(
+    h(
+      'span',
+      { class: 'look-pill diff-pill' },
+      copy.show.fade.label(Math.round(t * 100), pair.late),
+    ),
+  );
+}
+
+/** Puts the photos back on the lens: the five's resting pair, or the live look's photos. */
+function endFade(redraw = true): void {
+  if (fadeAt === null) return;
+  fadeAt = null;
+  if (current && 'target' in state.place) {
+    lens.setTiles(current.pair, sharedStretch(current.pair.map((t) => t.pixels)));
+    showRevealStill(lens);
+    showing = 1;
+    setLensLabel(1, 8);
+  } else if (live?.stretch) {
+    lens.setTiles(live.tiles, live.stretch);
+    showLivePhoto(live.tiles.length - 1);
+  }
+  if (redraw) render();
+}
+
+/** "Fade between the looks": a slider from the earlier look to the later (Viewer, 15 Nov). */
+function fadeControl(): HTMLElement | null {
+  const pair = fadePair();
+  if (!pair) return null;
+  const f = copy.show.fade;
+  const value = Math.round((fadeAt ?? 0) * 100);
+  const input = h('input', {
+    type: 'range',
+    min: '0',
+    max: '100',
+    step: '5',
+    value: String(value),
+    class: 'fade-range',
+    'aria-label': f.name,
+    'aria-valuetext': f.valueText(value, pair.late),
+  }) as HTMLInputElement;
+  // Dragging redraws only the lens, never the page, so the slider keeps the pointer.
+  input.addEventListener('input', () => {
+    const v = Number(input.value);
+    input.setAttribute('aria-valuetext', f.valueText(v, pair.late));
+    showFade(v / 100);
+  });
+  // Other buttons' pressed states catch up once the drag ends.
+  input.addEventListener('change', () => render());
+  const reset =
+    fadeAt !== null ? h('button', { type: 'button', class: 'link-button' }, f.off) : null;
+  reset?.addEventListener('click', () => endFade());
+  return h(
+    'div',
+    { class: 'fade-control' },
+    h('span', { class: 'fade-end' }, pair.early),
+    input,
+    h('span', { class: 'fade-end' }, pair.late),
+    reset,
+  );
+}
+
 /** A live look's fair pair: the earlier and later photo's tiles, from those read. */
 function livePairTiles(look: LiveLook): [Tile, Tile, number, number] | null {
   const plan = look.plan;
@@ -3342,6 +3445,7 @@ function livePairTiles(look: LiveLook): [Tile, Tile, number, number] | null {
 function showLiveTimeColour(look: LiveLook): void {
   const pair = livePairTiles(look);
   if (!pair) return;
+  endFade(false);
   const [a, b, ta, tb] = pair;
   if (liveRange?.playing) leaveLiveRange();
   stopReveal?.();
@@ -3402,6 +3506,7 @@ function liveTimeColourKey(look: LiveLook): HTMLElement | null {
 /** Shows the pair as one picture: the earlier look blue, the later orange, white = didn't move. */
 function showTimeColour(): void {
   if (!takeLens() || !current) return;
+  endFade(false);
   if (differencing) endDifference(false);
   dropDifference();
   endSpot(false);
@@ -4228,6 +4333,7 @@ function showWords(): Node[] {
   byDate.addEventListener('click', () => (colouring ? endTimeColour() : showTimeColour()));
   actions.append(diff, byDate, replay);
   out.push(actions);
+  out.push(fadeControl());
   // Only while the pack is still arriving; during the reveal, holding simply ends it.
   if (canHold && !ready && place.kind !== 'reveal')
     out.push(h('p', { class: 'hint' }, copy.show.holdNotYet));
@@ -4623,6 +4729,7 @@ function lookWords(): HTMLElement[] {
           h('h3', {}, copy.look.shownHeading(look.tiles.length, plan.total)),
           strip,
           h('div', { class: 'actions' }, replay, byDate, copyLinkButton()),
+          fadeControl(),
           liveTimeColourKey(look),
           aladinLink(look.at),
           liveMoversLine(look),
@@ -5189,9 +5296,10 @@ interface SeriesSource {
  * unusable. Returns the series, so late answers (SkyBoT) can check it's still the one playing.
  */
 function runSeries(src: SeriesSource): NonNullable<typeof series> {
-  // A series (Watch, Play all, the film) takes the lens: colour by date ends (Viewer, 15 Nov).
+  // A series (Watch, Play all, the film) takes the lens: colour by date and the fade end.
   liveColouring = false;
   colouring = false;
+  fadeAt = null;
   const n = src.tiles.length;
   const stretch = sharedStretch(src.tiles.map((t) => t.pixels));
   let i = 0;

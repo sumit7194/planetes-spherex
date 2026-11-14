@@ -3306,3 +3306,22 @@ span[data-fit='1'] {
   border-radius: 3px;
   border: 1px solid var(--dusk-line);
 }
+
+/* Fade between the two looks: the earlier look's date, the slider, the later look's date. */
+.fade-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 4px 0 10px;
+  font-size: 12.5px;
+  color: var(--mist);
+}
+.fade-range {
+  flex: 1 1 120px;
+  min-width: 120px;
+  accent-color: var(--starlight);
+}
+.fade-end {
+  white-space: nowrap;
+}
