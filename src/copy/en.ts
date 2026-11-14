@@ -968,7 +968,7 @@ export const copy = {
     /** Facts about one of the five that help read a blend (Physics, 15 Nov; sources in targets.json). */
     targetFacts: {
       w0855: {
-        text: "WISE 0855 is very faint below about 4 µm and much brighter near 4.5 µm (Spitzer, Vega magnitudes: 17.4 at 3.6 µm, 13.9 at 4.5 µm), so in shorter colours this light is mostly the neighbour; Compare adds all colours. Measured on this page: in 0.75–3.8 µm the light is centred within 0.8″ of the neighbour; in 3.8–5 µm it moves 2.6–6.2″ towards WISE 0855's predicted place.",
+        text: "WISE 0855 is very faint below about 4 µm and much brighter near 4.5 µm (Spitzer, Vega magnitudes: 17.4 at 3.6 µm, 13.9 at 4.5 µm), so in shorter colours this light is mostly the neighbour; Compare adds all colours. Measured on this page: in 0.75–3.8 µm the light is centred within 0.8″ of the neighbour. In 3.8–5 µm it sits 2.6–6.2″ from the neighbour, on the line towards WISE 0855's predicted place (the two are 6.4–9.5″ apart, depending on the date).",
         source:
           'Luhman 2014, ApJL 786, L18 (Spitzer 3.6 and 4.5 µm); Schneider et al. 2016, ApJL 823, L35 (HST, J ≈ 26.4)',
       },

@@ -82,7 +82,8 @@
               "fromW0855": 2.9
             }
           },
-          "caveat": "A 3x3 centroid pulls towards the peak pixel and pixel phase adds error, so these are rough; the shift is clear (more than 2 arcsec in every D5/D6 stack)."
+          "caveat": "A 3x3 centroid pulls towards the peak pixel and pixel phase adds error, so these are rough; the shift is clear (more than 2 arcsec in every D5/D6 stack).",
+          "onTheLine": "Physics, 15 Nov: in all four D5/D6 cases the two distances add up to the separation (9.6 vs 9.5; 6.4 vs 6.4), so the centres lie on the line between the sources, as a two-source blend does. Fractions along the line (~40-65%) are information only: a 3x3 centroid is biased towards the peak pixel. Centroid error at S/N 9-14 is about 1 arcsec."
         }
       }
     },

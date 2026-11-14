@@ -5373,7 +5373,7 @@ function showWords(): Node[] {
       h(
         'details',
         { class: 'why' },
-        h('summary', {}, copy.show.whyNamed(w.name)),
+        h('summary', {}, copy.show.whyNamed(copy.wanderers[id].name)),
         h('p', {}, story),
       ),
     );
