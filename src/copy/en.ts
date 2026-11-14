@@ -919,13 +919,55 @@ export const copy = {
     blend: (name: string, sep: string) =>
       `Another source lies within 12″ (${name}, ${sep}″ away); at SPHEREx's 6″ pixels these blend.`,
     flagCounts: (list: string) => `Flags in the photos that show it (information): ${list}.`,
-    flagCount: (name: string, k: number, n: number) => `${name} in ${k} of ${n}`,
+    flagCount: (name: string, k: number) => `${name} in ${k}`,
     asking: (what: string) => `${what}: checking…`,
-    blendHead: (other: string, otherSep: string, target: string, targetSep: string) =>
-      `The light here is centred on ${other}, ${otherSep}″ away. ${target}, this page's target, is predicted ${targetSep}″ away: inside the same SPHEREx pixel, so the two blend here.`,
-    detectorName: 'Same detector pixel in other photos',
-    checkDetector: (places: number, bright: number, n: number) =>
-      `On the detectors (information): it shows at ${places} different detector place${places === 1 ? '' : 's'}; the detector pixel under it is bright (S/N 5+) in ${bright} of ${n} other photos looking elsewhere. A defect stays put on the detector; real sky moves on.`,
+    blendHead: (list: string) => `Blend: ${list}. At SPHEREx's 6″ pixels these can't be separated.`,
+    at: (name: string, sep: string) => `${name} at ${sep}″`,
+    lightCentre: (list: string) => `The light is centred ${list}.`,
+    predictedPlace: (name: string) => `${name}'s predicted place`,
+    stuck:
+      'Probably a detector defect: it sits in the same detector pixel whatever SPHEREx points at.',
+    howChecked: (n: number) => (n ? `How we checked (${n})` : 'Where and how bright'),
+    brightIn: (bright: number, n: number) =>
+      `in ${bright === 0 ? 'none' : bright * 2 <= n ? `only ${bright}` : String(bright)} of ${n}`,
+    andAtTheOther: ', and at its other place ',
+    flagCountFirst: (name: string, k: number, n: number) => `${name} in ${k} of ${n}`,
+    /** Plain names for the flags (Viewer, 15 Nov), by the files' own bit names. */
+    flagPlain: {
+      TRANSIENT: 'transient (cosmic ray)',
+      OVERFLOW: 'overflow',
+      SUR_ERROR: 'ramp-fit error',
+      PHANTOM: 'electronic echo',
+      REFERENCE: 'reference pixel',
+      NONFUNC: 'dead pixel',
+      DICHROIC: 'filter edge',
+      MISSING_DATA: 'missing data',
+      HOT: 'hot pixel',
+      COLD: 'cold pixel',
+      FULLSAMPLE: 'full-sample pixel',
+      PHANMISS: 'echo not corrected',
+      NONLINEAR: 'near saturation',
+      PERSIST: 'afterglow of an earlier bright source',
+      OUTLIER: 'outlier',
+      CROSSTALK: 'crosstalk',
+      SOURCE: 'known source',
+      GHOST: 'ghost image',
+      GHOST_FPA: 'ghost image',
+      GHOST_EXT: 'ghost image',
+      STREAK: 'streak',
+      BLOOM: 'bloom from a bright star',
+      SNOWBALL: 'cosmic-ray burst',
+      HALO: 'bright-star halo',
+      SATELLITE_HALO: 'satellite halo',
+    },
+    /** Facts about one of the five that help read a blend (Physics, 15 Nov; sources in targets.json). */
+    targetFacts: {
+      w0855:
+        'WISE 0855 is very faint below about 4 µm and bright near 4.5 µm (Spitzer: 17.4 mag at 3.6 µm, 13.9 at 4.5 µm), so in the shorter colours this light is mostly the neighbour. Compare adds all the colours together.',
+    },
+    detectorName: 'Detector check',
+    checkDetector: (places: number, brightText: string) =>
+      `Detector check (information): it appears at ${places} different place${places === 1 ? '' : 's'} on SPHEREx's detectors. The detector pixel under it is bright ${brightText} photos of other parts of the sky. A detector defect would sit in the same pixel whatever SPHEREx points at.`,
     asteroid: (names: string) => `A known asteroid: ${names}.`,
     star: (names: string) => `A known star: ${names}.`,
     starFlagged: (flags: string) =>
@@ -943,8 +985,8 @@ export const copy = {
       `Known asteroids (SkyBoT, at the photos' dates): ${names.length ? names.join(', ') : 'none within 9″'}`,
     checkStars: (cat: string, names: string[]) =>
       `${cat}, moved to each look's date: ${names.length ? names.join(', ') : 'none within 9″'}`,
-    checkFlags: (artefacts: string[], info: string[]) =>
-      `Artefact flags in most of the photos that show it: ${artefacts.length ? artefacts.join(', ') : 'none'}${info.length ? ` (information only: ${info.join(', ')})` : ''}`,
+    checkFlags: (artefacts: string[]) =>
+      `Artefact flags in most photos: ${artefacts.length ? artefacts.join(', ') : 'none'}.`,
     notChecked: (what: string) => `${what}: couldn't be checked just now`,
     asteroidsName: 'Known asteroids (SkyBoT)',
     catwiseName: 'CatWISE2020 (its archive at IRSA)',

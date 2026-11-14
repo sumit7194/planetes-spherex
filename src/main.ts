@@ -111,10 +111,11 @@ import { NEAR_DEG, SkyView, type CatalogueStar, type Figure, type Lantern } from
 import {
   apertureSN,
   BLEND_ARCSEC,
-  distinctPlaces,
   majorityFlags,
   photoGrid,
+  placesOf,
   samePixelProbes,
+  stuckOnDetector,
   flagNamesNear,
   INFO_FLAGS,
   MATCH_ARCSEC,
@@ -3396,8 +3397,13 @@ interface SpotCheckResult {
   };
   /** D6: how many different detector places the photos that show it put it (information). */
   places: number | null;
-  /** D6: the same detector pixel in other photos looking elsewhere: bright in `bright` of `n`. */
-  samePixel: { bright: number; n: number } | null;
+  /**
+   * D6: the same detector pixel in other photos looking elsewhere, bright in `bright` of `n`: at
+   * each place when there are at most 2 (Physics' rule), else at the clearest photo's (information).
+   */
+  samePixel: { bright: number; n: number }[] | null;
+  /** Known asteroids within R at a bright look's dates, at their closest (arcsec). */
+  asteroidMatches: SpotMatch[];
   /** Known stars within R, nearest first, each at its closest over the two looks (Viewer 1b). */
   matches: SpotMatch[];
   /** Each flag name's count among the photos that show the spot (information). */
@@ -3422,6 +3428,8 @@ function spotContext(): {
   photos: (at: SkyPosition) => Promise<{ photo: LivePhoto; look: 0 | 1 }[]>;
   /** On one of the five's pages: the page's own target (Physics' first check). */
   target?: { name: string; wanderer: (typeof WANDERERS)[number] };
+  /** A fact about the target that helps read a blend (Physics; cited in targets.json). */
+  targetFact?: string;
 } | null {
   if (current && 'target' in state.place) {
     const [early, late] = current.pair;
@@ -3447,6 +3455,9 @@ function spotContext(): {
       centre: g.centre,
       mjd: [mean(seasons[0]), mean(seasons[1])],
       ...(wd ? { target: { name: copy.wanderers[id].name, wanderer: wd } } : {}),
+      ...(id in copy.spotCheck.targetFacts
+        ? { targetFact: (copy.spotCheck.targetFacts as Record<string, string>)[id] }
+        : {}),
       // The looks' photos at the clicked spot, matched to the sky index by photo id; at most 40
       // per look, spread through time.
       photos: async (at) => {
@@ -3545,6 +3556,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     },
     places: null,
     samePixel: null,
+    asteroidMatches: [],
     matches: [],
     flagCounts: [],
     close: [],
@@ -3555,9 +3567,16 @@ async function runSpotCheck(shift: Shift): Promise<void> {
   const finish = () => {
     result.matches.sort((x, y) => x.sep - y.sep);
     result.close.sort((x, y) => x.sep - y.sep);
+    result.asteroidMatches.sort((x, y) => x.sep - y.sep);
     result.state = 'done';
-    facts.targetSep = result.targetSep;
-    facts.nearestOther = result.matches[0] ?? null;
+    // Physics' second rule: every known source within R, the page's target with no priority.
+    facts.sources = [
+      ...(facts.target && result.targetSep !== null
+        ? [{ name: facts.target, sep: result.targetSep, kind: 'target' as const }]
+        : []),
+      ...result.asteroidMatches.map((m) => ({ ...m, kind: 'asteroid' as const })),
+      ...result.matches.map((m) => ({ ...m, kind: 'star' as const })),
+    ];
     result.verdict = verdict(facts);
     render();
   };
@@ -3682,38 +3701,43 @@ async function runSpotCheck(shift: Shift): Promise<void> {
       ).counted;
     result.flagCounts = majorityFlags(shows.map((p) => p.flags)).fractions;
     facts.info = result.flagCounts.map(([n]) => n).filter((n) => INFO_FLAGS.has(n));
-    result.places = distinctPlaces(shows);
+    result.places = placesOf(shows).length;
     update();
     return { shows, all: photos };
   });
-  // D6: the detector pixel under the spot in its clearest photo, read in other photos of that
-  // detector where the spot itself lands elsewhere. A defect stays put; real sky moves on.
+  // D6 (Physics' rule): the detector pixel under the spot, read in other photos of that detector
+  // where the spot itself lands elsewhere. A defect stays put; real sky moves on. At each place
+  // when the spot shows at no more than 2; otherwise at its clearest photo, for information.
   const detector = photosDone.then(async (got) => {
     if (stale()) return;
-    const ref = got?.shows.reduce<PhotoRead | null>(
+    const shows = got?.shows ?? [];
+    const places = placesOf(shows);
+    const clearest = shows.reduce<PhotoRead | null>(
       (b, p) => (b && (b.sn ?? 0) >= (p.sn ?? 0) ? b : p),
       null,
     );
-    const probes = ref ? samePixelProbes(ref, got?.all ?? []) : [];
-    if (!ref || !probes.length) {
-      result.checked.detector = 'failed';
-      update();
-      return;
-    }
-    const sns: number[] = [];
-    await within(
-      eachLimited(probes, 8, async (p) => {
-        const box = await readNative(p.photo, { x: ref.x, y: ref.y }, 10).catch(() => null);
-        if (!box) return;
-        const g = photoGrid(box.image, box.flags, box.w, box.h, box.bits);
-        const v = apertureSN(g, ref.x - box.x0, ref.y - box.y0);
-        if (v !== null) sns.push(v);
+    const refs = places.length <= 2 ? places : clearest ? [clearest] : [];
+    const counts = await Promise.all(
+      refs.map(async (ref) => {
+        const sns: number[] = [];
+        await within(
+          eachLimited(samePixelProbes(ref, got?.all ?? []), 8, async (p) => {
+            const box = await readNative(p.photo, { x: ref.x, y: ref.y }, 10).catch(() => null);
+            if (!box) return;
+            const g = photoGrid(box.image, box.flags, box.w, box.h, box.bits);
+            const v = apertureSN(g, ref.x - box.x0, ref.y - box.y0);
+            if (v !== null) sns.push(v);
+          }),
+          CHECK_MS * 2,
+        );
+        return { bright: sns.filter((v) => v >= SPOT_SN).length, n: sns.length };
       }),
-      CHECK_MS * 2,
     );
     if (stale()) return;
-    result.checked.detector = sns.length ? 'done' : 'failed';
-    result.samePixel = { bright: sns.filter((v) => v >= SPOT_SN).length, n: sns.length };
+    const read = counts.filter((c) => c.n > 0);
+    result.checked.detector = read.length ? 'done' : 'failed';
+    result.samePixel = read;
+    facts.stuck = stuckOnDetector(places.length, read);
     update();
   });
   // SkyBoT at the dates of the photos that show the spot (or the looks' mean dates).
@@ -3741,6 +3765,8 @@ async function runSpotCheck(shift: Shift): Promise<void> {
         for (const o of moving.byMjd.get(m) ?? []) {
           const name = o.number ? `(${o.number}) ${o.name}` : o.name;
           if (!facts.asteroids[look].includes(name)) facts.asteroids[look].push(name);
+          // A source for the verdict only at a look where the spot is >= 5 sigma.
+          if ((sn[look] ?? 0) >= SPOT_SN) note(result.asteroidMatches, name, sepOf(o));
         }
     update();
   });
@@ -3820,140 +3846,220 @@ function markButton(): HTMLElement | null {
   return b;
 }
 
-/** The card: the verdict, then every check, then the honest limits and a copyable report. */
+/** Whether "How we checked" is open, kept across re-renders. */
+let spotDetailsOpen = false;
+
+/** A flag's plain name (Viewer: no raw bit names on the card). */
+const plainFlag = (name: string) =>
+  (copy.spotCheck.flagPlain as Record<string, string>)[name] ??
+  name.toLowerCase().replace(/_/g, ' ');
+
+/** "A at a″ and B at b″" (nearest first). */
+function sourceList(
+  list: { name: string; sep: number }[],
+  fmt: (name: string, sep: string) => string,
+): string {
+  const parts = list.map((m) => fmt(m.name, m.sep.toFixed(1)));
+  return parts.length > 1
+    ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1) ?? ''}`
+    : (parts[0] ?? '');
+}
+
+/**
+ * The card (Viewer's layout, 15 Nov): the verdict, "seen in N of M" and Copy report stay in view;
+ * everything else folds into "How we checked". While checking, the checks show as they land.
+ */
 function spotCard(): HTMLElement | null {
   if (!markMode) return null;
   const t = copy.spotCheck;
   if (!spotResult) return h('p', { class: 'hint spot-check-hint' }, t.how);
   const r = spotResult;
   const v = r.verdict;
+  const f = r.facts;
   const snText = (i: 0 | 1) => {
     const x = r.sn[i];
     return x === null ? t.snNone(r.dates[i]) : t.sn(r.dates[i], x.toFixed(1));
   };
-  const lines: (HTMLElement | null)[] = [
-    // Full precision: positionText rounds to 10 s when given a field of view.
-    h('p', { class: 'spot-check-at' }, positionText(r.at)),
-    h('p', { class: 'hint' }, snText(0), ' · ', snText(1)),
-  ];
-  if (r.state === 'checking') lines.push(h('p', { class: 'hint', role: 'status' }, t.checking));
-  // Viewer 1b: every known star within R, nearest first, with its distance.
-  const matchText = r.matches.map((m) => t.away(m.name, m.sep.toFixed(1))).join('; ');
   const checkLine = (state: CheckState, done: () => string, name: string) =>
     h(
       'li',
       {},
       state === 'done' ? done() : state === 'asking' ? t.asking(name) : t.notChecked(name),
     );
-  const f = r.facts;
   const all = (x: [string[], string[]]) => [...new Set([...x[0], ...x[1]])];
-  const withSep = (prefix: string) =>
-    r.matches.filter((m) => m.name.startsWith(prefix)).map((m) => t.away(m.name, m.sep.toFixed(1)));
-  const checks = h(
-    'ul',
-    { class: 'spot-check-list' },
-    checkLine(r.checked.asteroids, () => t.checkAsteroids(all(f.asteroids)), t.asteroidsName),
-    checkLine(r.checked.gaia, () => t.checkStars('Gaia DR3', withSep('Gaia')), 'Gaia DR3'),
+  const withSep = (list: SpotMatch[], prefix = '') =>
+    list.filter((m) => m.name.startsWith(prefix)).map((m) => t.away(m.name, m.sep.toFixed(1)));
+  const detectorText = () =>
+    t.checkDetector(
+      r.places ?? 0,
+      (r.samePixel ?? []).map((c) => t.brightIn(c.bright, c.n)).join(t.andAtTheOther),
+    );
+  const items = [
+    checkLine(
+      r.checked.asteroids,
+      () => t.checkAsteroids(withSep(r.asteroidMatches)),
+      t.asteroidsName,
+    ),
+    checkLine(
+      r.checked.gaia,
+      () => t.checkStars('Gaia DR3', withSep(r.matches, 'Gaia')),
+      'Gaia DR3',
+    ),
     checkLine(
       r.checked.catwise,
-      () => t.checkStars('CatWISE2020', withSep('CatWISE')),
+      () => t.checkStars('CatWISE2020', withSep(r.matches, 'CatWISE')),
       t.catwiseName,
     ),
-    checkLine(r.checked.flags, () => t.checkFlags(all(f.artefacts), f.info), t.flagsName),
-    checkLine(
-      r.checked.detector,
-      () => t.checkDetector(r.places ?? 0, r.samePixel?.bright ?? 0, r.samePixel?.n ?? 0),
-      t.detectorName,
-    ),
-  );
-  // While checking, each check shows as it lands (Viewer 3).
-  if (r.state === 'checking' && r.sn.some((x) => x !== null && x >= SPOT_SN)) lines.push(checks);
-  if (v) {
-    const head =
-      v.kind === 'nothing'
-        ? t.nothing
-        : v.kind === 'blend'
-          ? t.blendHead(v.other, v.otherSep.toFixed(1), v.target, v.targetSep.toFixed(1))
-          : v.kind === 'target'
-            ? t.target(v.name, (r.targetSep ?? 0).toFixed(1))
-            : v.kind === 'asteroid'
-              ? t.asteroid(v.names.join(', '))
-              : v.kind === 'star'
-                ? t.star(matchText || v.names.join(', '))
-                : v.kind === 'artefact'
-                  ? t.artefact(v.flags.join(', '))
-                  : t.unknown;
-    lines.unshift(h('p', { class: 'spot-check-verdict', role: 'status' }, head));
-    if (v.kind === 'star' && v.flagged.length)
-      lines.push(h('p', { class: 'hint' }, t.starFlagged(v.flagged.join(', '))));
-    if (v.kind !== 'nothing') {
-      if (r.seen) lines.push(h('p', { class: 'hint' }, t.seen(r.seen.n, r.seen.m)));
-      lines.push(checks);
-      // Physics' blend note: another known source within 2 px besides the one named.
-      const named =
-        v.kind === 'target'
-          ? v.name
-          : v.kind === 'star'
-            ? (r.matches[0]?.name ?? v.names[0])
-            : null;
-      const other = r.close.find((x) => x.name !== named);
-      // A blend headline already says it.
-      if (other && v.kind !== 'blend')
-        lines.push(h('p', { class: 'hint' }, t.blend(other.name, other.sep.toFixed(1))));
-      if (r.flagCounts.length && r.seen)
-        lines.push(
-          h(
-            'p',
-            { class: 'hint' },
-            t.flagCounts(
-              r.flagCounts.map(([n, k]) => t.flagCount(n, k, r.seen?.n ?? 0)).join('; '),
-            ),
-          ),
-        );
-      if (v.kind === 'unknown') {
-        lines.push(h('p', { class: 'hint' }, t.unknownWhy));
-        if (v.faint) lines.push(h('p', { class: 'hint' }, t.faint));
-        lines.push(
-          h(
-            'p',
-            { class: 'hint' },
-            t.next,
-            ' ',
-            h(
-              'a',
-              {
-                href: `http://byw.tools/wiseview#ra=${r.at.ra.toFixed(5)}&dec=${r.at.dec.toFixed(5)}&size=176`,
-                target: '_blank',
-                rel: 'noopener',
-              },
-              'WiseView',
-            ),
-            ' · ',
-            h(
-              'a',
-              {
-                href: 'https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9',
-                target: '_blank',
-                rel: 'noopener',
-              },
-              'Backyard Worlds',
-            ),
-          ),
-        );
-      }
-      lines.push(h('p', { class: 'hint' }, t.limits));
-    }
-    if (r.state === 'done') {
-      const copyBtn = h('button', { type: 'button', class: 'link-button' }, t.copy);
-      copyBtn.addEventListener('click', () => {
-        void navigator.clipboard?.writeText(spotReport(r)).then(() => {
-          copyBtn.textContent = t.copied;
-        });
-      });
-      lines.push(h('p', {}, copyBtn));
-    }
+    checkLine(r.checked.flags, () => t.checkFlags(all(f.artefacts).map(plainFlag)), t.flagsName),
+    checkLine(r.checked.detector, detectorText, t.detectorName),
+  ];
+  const checks = h('ul', { class: 'spot-check-list' }, ...items);
+  const where = [
+    // Full precision: positionText rounds to 10 s when given a field of view.
+    h('p', { class: 'spot-check-at' }, positionText(r.at)),
+    h('p', { class: 'hint' }, snText(0), ' · ', snText(1)),
+  ];
+  if (!v) {
+    // Still checking: the checks in view as they land (Viewer 3).
+    const gated = r.sn.some((x) => x !== null && x >= SPOT_SN);
+    return h(
+      'div',
+      { class: 'spot-check-card', 'aria-live': 'polite' },
+      h('p', { class: 'hint', role: 'status' }, t.checking),
+      ...where,
+      gated ? checks : null,
+    );
   }
-  return h('div', { class: 'spot-check-card', 'aria-live': 'polite' }, ...lines);
+  const shown: (HTMLElement | null)[] = [];
+  const folded: (HTMLElement | null)[] = [...where];
+  const head =
+    v.kind === 'nothing'
+      ? t.nothing
+      : v.kind === 'blend'
+        ? t.blendHead(sourceList(v.sources, t.at))
+        : v.kind === 'target'
+          ? t.target(v.name, (r.targetSep ?? 0).toFixed(1))
+          : v.kind === 'asteroid'
+            ? t.asteroid(sourceList(r.asteroidMatches, t.away) || v.names.join(', '))
+            : v.kind === 'star'
+              ? t.star(sourceList(r.matches, t.away) || v.names.join(', '))
+              : v.kind === 'artefact'
+                ? v.stuck && !v.flags.length
+                  ? t.stuck
+                  : t.artefact(v.flags.map(plainFlag).join(', '))
+                : t.unknown;
+  shown.push(h('p', { class: 'spot-check-verdict', role: 'status' }, head));
+  if (v.kind === 'blend')
+    // Physics: where the light is centred, with no claim about which source it is.
+    shown.push(
+      h(
+        'p',
+        { class: 'hint' },
+        t.lightCentre(
+          sourceList(
+            v.sources.map((x) => ({
+              name: x.kind === 'target' ? t.predictedPlace(x.name) : x.name,
+              sep: x.sep,
+            })),
+            (name, sep) => `${sep}″ from ${name}`,
+          ),
+        ),
+      ),
+    );
+  // A fact about the page's target, when it's one of the sources (Physics; cited in targets.json).
+  const targetFact = spotContext()?.targetFact;
+  if (
+    targetFact &&
+    (v.kind === 'target' || (v.kind === 'blend' && v.sources.some((x) => x.kind === 'target')))
+  )
+    shown.push(h('p', { class: 'hint' }, targetFact));
+  if (v.kind === 'star' && v.flagged.length)
+    shown.push(h('p', { class: 'hint' }, t.starFlagged(v.flagged.map(plainFlag).join(', '))));
+  if (v.kind === 'artefact' && v.stuck && v.flags.length)
+    shown.push(h('p', { class: 'hint' }, t.stuck));
+  if (v.kind !== 'nothing') {
+    if (r.seen) shown.push(h('p', { class: 'hint' }, t.seen(r.seen.n, r.seen.m)));
+    // Physics' blend note: another known source within 2 px, beyond R, not already named.
+    const named = new Set<string>(r.matches.map((m) => m.name));
+    if (v.kind === 'blend') v.sources.forEach((x) => named.add(x.name));
+    if (v.kind === 'target') named.add(v.name);
+    if (v.kind === 'star' || v.kind === 'asteroid') v.names.forEach((n) => named.add(n));
+    const other = r.close.find((x) => !named.has(x.name));
+    if (other) shown.push(h('p', { class: 'hint' }, t.blend(other.name, other.sep.toFixed(1))));
+    folded.push(checks);
+    if (r.flagCounts.length && r.seen) {
+      const n = r.seen.n;
+      folded.push(
+        h(
+          'p',
+          { class: 'hint' },
+          t.flagCounts(
+            r.flagCounts
+              .map(([name, k], i) =>
+                i === 0 ? t.flagCountFirst(plainFlag(name), k, n) : t.flagCount(plainFlag(name), k),
+              )
+              .join('; '),
+          ),
+        ),
+      );
+    }
+    if (v.kind === 'unknown') {
+      shown.push(h('p', { class: 'hint' }, t.unknownWhy));
+      if (v.faint) shown.push(h('p', { class: 'hint' }, t.faint));
+      shown.push(
+        h(
+          'p',
+          { class: 'hint' },
+          t.next,
+          ' ',
+          h(
+            'a',
+            {
+              href: `http://byw.tools/wiseview#ra=${r.at.ra.toFixed(5)}&dec=${r.at.dec.toFixed(5)}&size=176`,
+              target: '_blank',
+              rel: 'noopener',
+            },
+            'WiseView',
+          ),
+          ' · ',
+          h(
+            'a',
+            {
+              href: 'https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9',
+              target: '_blank',
+              rel: 'noopener',
+            },
+            'Backyard Worlds',
+          ),
+        ),
+      );
+      // The limit matters most for an unknown: keep it in view (Viewer).
+      shown.push(h('p', { class: 'hint' }, t.limits));
+    } else folded.push(h('p', { class: 'hint' }, t.limits));
+  }
+  const details = h(
+    'details',
+    { class: 'spot-check-how' },
+    h('summary', {}, t.howChecked(v.kind === 'nothing' ? 0 : items.length)),
+    ...folded,
+  ) as HTMLDetailsElement;
+  details.open = spotDetailsOpen;
+  details.addEventListener('toggle', () => {
+    spotDetailsOpen = details.open;
+  });
+  const copyBtn = h('button', { type: 'button', class: 'link-button' }, t.copy);
+  copyBtn.addEventListener('click', () => {
+    void navigator.clipboard?.writeText(spotReport(r)).then(() => {
+      copyBtn.textContent = t.copied;
+    });
+  });
+  return h(
+    'div',
+    { class: 'spot-check-card', 'aria-live': 'polite' },
+    ...shown,
+    details,
+    h('p', {}, copyBtn),
+  );
 }
 
 /** Plain text: the spot, the dates, the photos, what was checked and what matched. */
@@ -3969,11 +4075,11 @@ function spotReport(r: SpotCheckResult): string {
     r.seen
       ? `Seen at S/N >= 5 in ${r.seen.n} of ${r.seen.m} photos read`
       : 'Photos: not read one by one',
-    `Verdict: ${v?.kind ?? 'n/a'}${v?.kind === 'target' ? ` (${v.name}, predicted position ${r.targetSep?.toFixed(1) ?? '?'}" from the spot)` : v?.kind === 'blend' ? ` (light centred on ${v.other} at ${v.otherSep.toFixed(1)}"; ${v.target}, the page's target, predicted ${v.targetSep.toFixed(1)}" away)` : ''}`,
-    `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}"): ${r.checked.asteroids === 'done' ? all(f.asteroids) : 'not checked'}`,
+    `Verdict: ${v?.kind ?? 'n/a'}${v?.kind === 'target' ? ` (${v.name}, predicted position ${r.targetSep?.toFixed(1) ?? '?'}" from the light's centre)` : v?.kind === 'blend' ? ` (${v.sources.map((x) => `${x.name}${x.kind === 'target' ? ' (predicted place)' : ''} at ${x.sep.toFixed(1)}"`).join('; ')}; can't be separated at 6" pixels)` : v?.kind === 'artefact' && v.stuck ? ' (stays put on the detector)' : ''}`,
+    `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}" at a bright look's dates): ${r.checked.asteroids === 'done' ? r.asteroidMatches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}`,
     `Known stars (Gaia DR3, CatWISE2020, moved to each look's date): ${r.checked.gaia === 'done' || r.checked.catwise === 'done' ? r.matches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}${r.checked.catwise === 'done' ? '' : ' (CatWISE2020 not checked)'}`,
     `Known sources within 2 px (12.3"): ${r.close.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none'}`,
-    `Detector test (information): shows at ${r.places ?? 'n/a'} detector places; same detector pixel bright (S/N >= 5) in ${r.samePixel ? `${r.samePixel.bright} of ${r.samePixel.n}` : 'n/a'} other photos looking elsewhere`,
+    `Detector test (information): shows at ${r.places ?? 'n/a'} detector places; same detector pixel bright (S/N >= 5) in ${r.samePixel?.length ? r.samePixel.map((c) => `${c.bright} of ${c.n}`).join(' and ') : 'n/a'} other photos looking elsewhere; stays put: ${r.facts.stuck ? 'yes' : 'no'} (rule: <= 2 places and bright in more than half of >= 3)`,
     `Artefact flags (v4 FIT_REJECT, by name; counted if set in more than half the photos that show the spot): ${r.checked.flags === 'done' ? all(f.artefacts) : 'not checked'}`,
     `Flag counts among the ${r.seen?.n ?? 0} photos that show it: ${r.flagCounts.map(([n, k]) => `${n} ${k}`).join(', ') || 'none'}`,
     t.reportNote,

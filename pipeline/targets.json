@@ -41,7 +41,21 @@
         6
       ],
       "plx": 439.0,
-      "plxSource": "literature (Kirkpatrick et al. 2021)"
+      "plxSource": "literature (Kirkpatrick et al. 2021)",
+      "spotFact": {
+        "text": "Very faint below about 4 µm and bright near 4.5 µm, so in SPHEREx's shorter colours a blend with a nearby star is mostly the star.",
+        "values": {
+          "HST_F125W": "26.41 ± 0.27",
+          "HST_F160W": "23.86 ± 0.03",
+          "Spitzer_3.6": "17.44",
+          "Spitzer_4.5": "13.89 ± 0.02"
+        },
+        "sources": [
+          "Luhman 2014, ApJ 786, L18 (Spitzer [3.6], [4.5]); arXiv:1404.6501",
+          "Schneider et al. 2016, ApJ 823, L35 (HST F125W, F160W); arXiv:1605.05618"
+        ],
+        "checked": "2026-11-15, by the event build; Physics' memory value J ≈ 25 was Faherty et al. 2014's tentative 2.6σ ground-based value"
+      }
     },
     {
       "slug": "epsind-b",

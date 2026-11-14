@@ -159,65 +159,89 @@ export function flagNamesNear(
   return out;
 }
 
+/** A known source within R of the light's centre, at its closest over the bright looks. */
+export interface SpotSource {
+  name: string;
+  /** Arcsec from the light's centre. */
+  sep: number;
+  kind: 'target' | 'asteroid' | 'star';
+}
+
 export interface SpotFacts {
   /** S/N in each look (null: off the data). */
   sn: [number | null, number | null];
+  /**
+   * Every known source within R (the page's target at its predicted place, SkyBoT at a bright
+   * look's dates, Gaia and CatWISE moved to each look's date). Without it, the name lists below
+   * stand in (tests, and sources whose distance isn't known).
+   */
+  sources?: SpotSource[];
   /** On one of the five's pages: its name when its predicted place at a look's date is within R. */
   target?: string | null;
-  /** How far the target's predicted place is from the light's centre (arcsec, closest look). */
-  targetSep?: number | null;
-  /** The nearest other known source within R, at its closest (arcsec). */
-  nearestOther?: { name: string; sep: number } | null;
-  /** Other known sources (G < 19, or the page's target) within 2 px of the spot, nearest first. */
-  nearby?: string[];
   /** Per look: known asteroids within R at that look's date (names). */
   asteroids: [string[], string[]];
   /** Per look: known stars within R at that look's date ("Gaia DR3 …", "CatWISE …"). */
   stars: [string[], string[]];
-  /** Per look: artefact flag names seen in the 3×3, over that look's photos. */
+  /** Per look: artefact flag names counted by the majority rule, over that look's photos. */
   artefacts: [string[], string[]];
   /** Information flags seen (OUTLIER, SOURCE). */
   info: string[];
+  /** D6: the spot stays put on the detector (Physics' rule, stuckOnDetector). */
+  stuck?: boolean;
 }
 
 export type Verdict =
   | { kind: 'nothing' }
   | { kind: 'target'; name: string }
-  | { kind: 'blend'; target: string; targetSep: number; other: string; otherSep: number }
+  | { kind: 'blend'; sources: SpotSource[] }
   | { kind: 'asteroid'; names: string[] }
   | { kind: 'star'; names: string[]; flagged: string[] }
-  | { kind: 'artefact'; flags: string[] }
+  | { kind: 'artefact'; flags: string[]; stuck: boolean }
   | { kind: 'unknown'; faint: boolean };
 
-/** Physics' order: the gate, then asteroid, known star, artefact, unknown. */
+/**
+ * Physics' order (15 Nov, second rule): the gate; then every known source within R, with no
+ * priority for the page's target. One source is the headline; two or more are a blend (nearest
+ * first; 6″ pixels can't separate them). Then artefact (flags by the majority rule, or the spot
+ * staying put on the detector), then unknown.
+ */
 export function verdict(f: SpotFacts): Verdict {
   const bright = f.sn.map((v) => v !== null && v >= SPOT_SN) as [boolean, boolean];
   if (!bright[0] && !bright[1]) return { kind: 'nothing' };
-  // The target is named only when it's the nearest known source to the light's centre (Viewer,
-  // 15 Nov); otherwise the light is centred on a neighbour and the two blend in one pixel.
-  if (f.target) {
-    const o = f.nearestOther;
-    if (o && f.targetSep !== null && f.targetSep !== undefined && o.sep < f.targetSep)
-      return {
-        kind: 'blend',
-        target: f.target,
-        targetSep: f.targetSep,
-        other: o.name,
-        otherSep: o.sep,
-      };
-    return { kind: 'target', name: f.target };
-  }
   const inBright = <T>(x: [T[], T[]]) => [
     ...new Set([...(bright[0] ? x[0] : []), ...(bright[1] ? x[1] : [])]),
   ];
-  const asteroids = inBright(f.asteroids);
-  if (asteroids.length) return { kind: 'asteroid', names: asteroids };
-  const stars = [...new Set([...f.stars[0], ...f.stars[1]])];
   const flags = inBright(f.artefacts);
-  if (stars.length) return { kind: 'star', names: stars, flagged: flags };
-  if (flags.length) return { kind: 'artefact', flags };
+  const sources = (
+    f.sources ?? [
+      ...(f.target ? [{ name: f.target, sep: NaN, kind: 'target' as const }] : []),
+      ...inBright(f.asteroids).map((name) => ({ name, sep: NaN, kind: 'asteroid' as const })),
+      ...[...new Set([...f.stars[0], ...f.stars[1]])].map((name) => ({
+        name,
+        sep: NaN,
+        kind: 'star' as const,
+      })),
+    ]
+  )
+    .slice()
+    .sort((a, b) => (Number.isNaN(a.sep) ? 1 : Number.isNaN(b.sep) ? -1 : a.sep - b.sep));
+  if (sources.length >= 2) return { kind: 'blend', sources };
+  const one = sources[0];
+  if (one?.kind === 'target') return { kind: 'target', name: one.name };
+  if (one?.kind === 'asteroid') return { kind: 'asteroid', names: [one.name] };
+  if (one) return { kind: 'star', names: [one.name], flagged: flags };
+  if (flags.length || f.stuck) return { kind: 'artefact', flags, stuck: !!f.stuck };
   const best = Math.max(...f.sn.map((v) => v ?? -Infinity));
   return { kind: 'unknown', faint: best < FAINT_SN };
+}
+
+/**
+ * D6, Physics' rule (15 Nov): the spot stays put on the detector when the photos that show it put
+ * it at no more than 2 detector places, and at either place the same pixel is bright (S/N ≥ 5) in
+ * more than half of at least 3 photos looking elsewhere.
+ */
+export function stuckOnDetector(places: number, probes: { bright: number; n: number }[]): boolean {
+  return places <= 2 && probes.some((p) => p.n >= 3 && p.bright * 2 > p.n);
 }
 
 /** Physics' majority rule: flag names set in more than half of the photos that show the spot. */
@@ -252,11 +276,16 @@ export interface DetectorPlace {
 
 /** How many different places on the detectors (more than `minPx` apart) these photos put the spot. */
 export function distinctPlaces(places: DetectorPlace[], minPx = 2): number {
-  const kept: DetectorPlace[] = [];
+  return placesOf(places, minPx).length;
+}
+
+/** One photo per different place on the detectors (more than `minPx` apart), first seen first. */
+export function placesOf<T extends DetectorPlace>(places: T[], minPx = 2): T[] {
+  const kept: T[] = [];
   for (const p of places)
     if (!kept.some((k) => k.det === p.det && Math.hypot(k.x - p.x, k.y - p.y) <= minPx))
       kept.push(p);
-  return kept.length;
+  return kept;
 }
 
 /**

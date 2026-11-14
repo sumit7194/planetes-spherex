@@ -5,6 +5,7 @@ import {
   majorityFlags,
   photoGrid,
   samePixelProbes,
+  stuckOnDetector,
   ARTEFACT_FLAGS,
   flagNamesNear,
   INFO_FLAGS,
@@ -13,6 +14,7 @@ import {
   verdict,
   type Grid,
   type SpotFacts,
+  type SpotSource,
 } from './spotCheck';
 
 /** A 32×32 image: flat background with small noise, and a star at (sx, sy). */
@@ -76,10 +78,8 @@ describe('flags by name', () => {
 describe('the verdict, in order', () => {
   it('says nothing clear below S/N 5 in both looks', () =>
     expect(verdict(facts({ sn: [4.9, 3] })).kind).toBe('nothing'));
-  it('puts a known asteroid first, but only at a look where the spot is ≥ 5σ', () => {
-    expect(
-      verdict(facts({ sn: [12, 2], asteroids: [['(1) Ceres'], []], stars: [['Gaia'], []] })).kind,
-    ).toBe('asteroid');
+  it('counts a known asteroid only at a look where the spot is ≥ 5σ', () => {
+    expect(verdict(facts({ sn: [12, 2], asteroids: [['(1) Ceres'], []] })).kind).toBe('asteroid');
     expect(verdict(facts({ sn: [2, 12], asteroids: [['(1) Ceres'], []] })).kind).toBe('unknown');
   });
   it('keeps a flagged known star a known star, with the flag noted', () => {
@@ -97,10 +97,8 @@ describe('the verdict, in order', () => {
 });
 
 describe("Physics' later rules (15 Nov)", () => {
-  it("names the page's own target first", () =>
-    expect(
-      verdict(facts({ sn: [30, 30], target: 'WISE 0855', stars: [['Gaia DR3 1'], []] })),
-    ).toEqual({
+  it("names the page's own target when it's the only source", () =>
+    expect(verdict(facts({ sn: [30, 30], target: 'WISE 0855' }))).toEqual({
       kind: 'target',
       name: 'WISE 0855',
     }));
@@ -140,35 +138,44 @@ describe('D6, the detector test', () => {
   });
 });
 
-describe("the target only when it's the nearest (Viewer, 15 Nov)", () => {
-  it('calls it a blend when a known star is nearer the light', () =>
-    expect(
-      verdict(
-        facts({
-          sn: [30, 34],
-          target: 'WISE 0855',
-          targetSep: 6.0,
-          nearestOther: { name: 'Gaia DR3 1 (G 16.3)', sep: 0.5 },
-        }),
-      ),
-    ).toEqual({
+describe("Physics' second rule: two or more known sources are a blend (15 Nov)", () => {
+  const target: SpotSource = { name: 'WISE 0855', sep: 6.0, kind: 'target' };
+  const star: SpotSource = { name: 'Gaia DR3 1 (G 16.3)', sep: 0.5, kind: 'star' };
+  const sources = [target, star];
+  it('gives the target no priority and lists the sources nearest first', () =>
+    expect(verdict(facts({ sn: [30, 34], sources }))).toEqual({
       kind: 'blend',
-      target: 'WISE 0855',
-      targetSep: 6.0,
-      other: 'Gaia DR3 1 (G 16.3)',
-      otherSep: 0.5,
+      sources: [star, target],
     }));
-  it('names the target when it is the nearest', () =>
+  it('a blend even when the target is nearest', () =>
+    expect(verdict(facts({ sn: [30, 34], sources: [{ ...target, sep: 0.4 }, star] })).kind).toBe(
+      'blend',
+    ));
+  it('one source is the headline', () =>
+    expect(verdict(facts({ sn: [30, 34], sources: [star] })).kind).toBe('star'));
+});
+
+describe("D6, Physics' rule", () => {
+  it('stays put: at most 2 places, and bright in more than half of at least 3 probes', () => {
+    expect(stuckOnDetector(1, [{ bright: 3, n: 4 }])).toBe(true);
     expect(
-      verdict(
-        facts({
-          sn: [30, 34],
-          target: 'WISE 0855',
-          targetSep: 0.8,
-          nearestOther: { name: 'Gaia DR3 1', sep: 7 },
-        }),
-      ).kind,
-    ).toBe('target'));
+      stuckOnDetector(2, [
+        { bright: 0, n: 8 },
+        { bright: 5, n: 8 },
+      ]),
+    ).toBe(true);
+  });
+  it("doesn't fire on many places, few probes, or half", () => {
+    expect(stuckOnDetector(3, [{ bright: 8, n: 8 }])).toBe(false);
+    expect(stuckOnDetector(1, [{ bright: 2, n: 2 }])).toBe(false);
+    expect(stuckOnDetector(1, [{ bright: 4, n: 8 }])).toBe(false);
+  });
+  it('a spot stuck on the detector is an artefact', () =>
+    expect(verdict(facts({ sn: [9, 1], stuck: true }))).toEqual({
+      kind: 'artefact',
+      flags: [],
+      stuck: true,
+    }));
 });
 
 describe('masked pixels in a photo (15 Nov)', () => {
