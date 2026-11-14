@@ -972,7 +972,7 @@ export const copy = {
         quote: '',
         hard: 'A giant star that brightens and fades over about eight months, bright enough to saturate SPHEREx, in one of the fields SPHEREx photographs most often.',
         limit:
-          'Its glare reaches the comparison stars in its field, which vary by 34% between passes, so the method can’t be checked here. A re-check with comparison stars farther out is running.',
+          'Its glare reaches the comparison stars in its field, which vary by 34% between passes, so the method can’t be checked here. Re-checked with comparison stars outside its glare: a possible dimming of about 40%, not yet tested on a steady star as bright as R Draconis.',
         live: 'Opens 2,500 photos in 3 passes (a deep field; the look picks a few), compared at 0.82 µm. A live look doesn’t measure brightness.',
       },
     } as Record<
@@ -1041,6 +1041,7 @@ export const copy = {
       'Barnard’s Star’s headline pair is a year apart (passes 1 and 3): the half-year pairs were marked not reliable after its edge fit’s offset was seen to flip with the scan direction.',
       'WISE 0855: fitted together with its G 16.3 neighbour, after the all-colour picture showed the neighbour pulling its centre.',
       'R Draconis “not measurable yet”: set after its flagged area was seen to exceed the star-image model’s reach in every detector.',
+      'R Draconis: comparison stars moved 4–15′ out after the ones in its field proved to sit in its glare; the steady-star check used for RW Aurigae covers a fainter, less saturated star than R Draconis.',
       'Barnard’s Star’s east component: a later check found a method effect of about 0.1 pixel in east, not included in its quoted error; no number was changed, and it is said next to that number.',
     ],
     afterDesigned:
