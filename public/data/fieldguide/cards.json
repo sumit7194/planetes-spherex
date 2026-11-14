@@ -60,7 +60,7 @@
    "evidence": [
     "Flagged by the pipeline as a jump during the exposure (TRANSIENT), over 4 pixels, a typical size for a cosmic-ray hit",
     "The pipeline also flags a ring of pixels around each hit (HALO)",
-    "Nothing there in 3 of 3 other photos of the same sky within 5 days",
+    "Nothing there in 3 of 3 other photos we have of that spot, within 5 days",
     "No known source or asteroid at that place"
    ],
    "howToTell": "Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",

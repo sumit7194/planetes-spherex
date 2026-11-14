@@ -687,7 +687,7 @@ def export() -> None:
                        if c["npix"] <= 5 else
                        f"Flagged by the pipeline as a jump during the exposure (TRANSIENT), over {c['npix']} pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch"),
                       "The pipeline also flags a ring of pixels around each hit (HALO)",
-                      f"Nothing there in {au['cosmic-ray']['nothing_sn_lt3']} of {au['cosmic-ray']['measurable']} other photos of the same sky within 5 days",
+                      f"Nothing there in {au['cosmic-ray']['nothing_sn_lt3']} of {au['cosmic-ray']['measurable']} other photos we have of that spot, within 5 days",
                       "No known source or asteroid at that place"],
             howToTell="Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",
             source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
