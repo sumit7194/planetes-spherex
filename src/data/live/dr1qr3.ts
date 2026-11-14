@@ -25,6 +25,16 @@ import { FlagMask } from '../pack/types';
 export const BUCKET = 'https://nasa-irsa-spherex.s3.amazonaws.com';
 
 /**
+ * The reader's version. Bump it whenever a change can alter a cutout's numbers or flags (WCS,
+ * resampling, flag rules, median); the cloud helper puts it in every cache key, so a fix is
+ * never served from an old cached answer. (The file key already names the release and NASA's
+ * processing version.)
+ *   2026-11-14.1  first helper release
+ *   2026-11-14.2  exact sky-to-pixel inverse (forward SIP refined; was the reverse polynomial)
+ */
+export const READER_VERSION = '2026-11-14.2';
+
+/**
  * The same bucket under its five web addresses (all allow browser access and byte ranges). S3
  * speaks only HTTP/1.1, so a browser opens ~6 connections per address; spreading photos over
  * all five gives ~30. Each photo sticks to one address (a hash of its key), so its reads reuse
@@ -371,6 +381,8 @@ export class Wcs {
   private inv: [number, number, number, number];
   private ap: [number, number, number][] = [];
   private bp: [number, number, number][] = [];
+  private a: [number, number, number][] = [];
+  private b: [number, number, number][] = [];
 
   constructor(h: Header) {
     this.crval = [num(h, 'CRVAL1'), num(h, 'CRVAL2')];
@@ -396,6 +408,15 @@ export class Wcs {
         if (typeof b === 'number') this.bp.push([p, q, b]);
       }
     }
+    const fwd = num(h, 'A_ORDER');
+    for (let p = 0; p <= fwd; p++) {
+      for (let q = 0; q <= fwd - p; q++) {
+        const a = h.get(`A_${p}_${q}`);
+        const b = h.get(`B_${p}_${q}`);
+        if (typeof a === 'number') this.a.push([p, q, a]);
+        if (typeof b === 'number') this.b.push([p, q, b]);
+      }
+    }
   }
 
   /** 0-based pixel (x, y) of a sky position, or null if it lies behind the tangent point. */
@@ -410,11 +431,29 @@ export class Wcs {
       (Math.cos(d0) * Math.sin(d) - Math.sin(d0) * Math.cos(d) * Math.cos(a)) / cosc / RAD;
     const U = this.inv[0] * xi + this.inv[1] * eta;
     const V = this.inv[2] * xi + this.inv[3] * eta;
-    let du = 0;
-    let dv = 0;
-    for (const [p, q, c] of this.ap) du += c * U ** p * V ** q;
-    for (const [p, q, c] of this.bp) dv += c * U ** p * V ** q;
-    return { x: U + du + this.crpix[0] - 1, y: V + dv + this.crpix[1] - 1 };
+    // The reverse SIP polynomial (AP/BP) is a fitted approximation of the inverse (~0.003 px off
+    // in SPHEREx files: enough to shift a steep star core by ~0.2%). Start there, then solve the
+    // forward polynomial exactly, u + A(u, v) = U, as astropy does (a few fixed-point steps;
+    // A's slopes are tiny, so each step gains several digits).
+    let u = U;
+    let v = V;
+    for (const [p, q, c] of this.ap) u += c * U ** p * V ** q;
+    for (const [p, q, c] of this.bp) v += c * U ** p * V ** q;
+    if (this.a.length || this.b.length) {
+      for (let it = 0; it < 8; it++) {
+        let fa = 0;
+        let fb = 0;
+        for (const [p, q, c] of this.a) fa += c * u ** p * v ** q;
+        for (const [p, q, c] of this.b) fb += c * u ** p * v ** q;
+        const nu = U - fa;
+        const nv = V - fb;
+        const step = Math.abs(nu - u) + Math.abs(nv - v);
+        u = nu;
+        v = nv;
+        if (step < 1e-9) break;
+      }
+    }
+    return { x: u + this.crpix[0] - 1, y: v + this.crpix[1] - 1 };
   }
 }
 
@@ -699,7 +738,7 @@ export function setHelper(base: string | null): void {
 function helperUrl(route: string, photo: LivePhoto, centre: SkyPosition, extra = ''): string {
   return (
     `${helperBase}/v1/${route}?key=${encodeURIComponent(photo.key)}` +
-    `&ra=${centre.ra.toFixed(6)}&dec=${centre.dec.toFixed(6)}${extra}`
+    `&ra=${centre.ra.toFixed(6)}&dec=${centre.dec.toFixed(6)}${extra}&rv=${READER_VERSION}`
   );
 }
 

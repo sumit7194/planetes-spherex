@@ -27,8 +27,8 @@ describe('Wcs (TAN-SIP with the reverse polynomial)', () => {
     const w = new Wcs(header!.header);
     expected.points.forEach(([ra, dec], i) => {
       const p = w.toPixel(ra, dec)!;
-      expect(Math.abs(p.x - expected.pixels0[i]![0])).toBeLessThan(0.01);
-      expect(Math.abs(p.y - expected.pixels0[i]![1])).toBeLessThan(0.01);
+      expect(Math.abs(p.x - expected.pixels0[i]![0])).toBeLessThan(0.0001);
+      expect(Math.abs(p.y - expected.pixels0[i]![1])).toBeLessThan(0.0001);
     });
   });
 });

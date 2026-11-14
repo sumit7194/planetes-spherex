@@ -78,6 +78,11 @@ def resample_frame(e: dict, w_exp: WCS, gw: WCS, n: int):
             xi = np.clip(x0 + dx, 0, W - 1)
             yi = np.clip(y0 + dy, 0, H - 1)
             fl |= fb[yi, xi]
+    # Samples off the detector carry no flags (they have no data; the browser reader agrees).
+    # Before 14 Nov the clipped lookup gave them the edge pixel's flags.
+    nxd, nyd = w_exp.pixel_shape  # (NAXIS1, NAXIS2) of the photo
+    gx, gy = px + e["x0"], py + e["y0"]
+    fl[(gx < 0) | (gx > nxd - 1) | (gy < 0) | (gy > nyd - 1)] = 0
     if np.isfinite(v).any():
         v = v - np.nanmedian(v)
     return v.astype("<f4"), fl

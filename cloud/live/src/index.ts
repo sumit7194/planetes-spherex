@@ -15,12 +15,20 @@
  * Answers are cached (Cache API, one year): SPHEREx files are immutable; a reprocessing gets
  * a new file name and so a new cache key. Positions are rounded to 1e-6 deg in the key.
  */
-import { probePhoto, readPhoto, setHelper, type LivePhoto } from '../../../src/data/live/dr1qr3';
+import {
+  probePhoto,
+  READER_VERSION,
+  readPhoto,
+  setHelper,
+  type LivePhoto,
+} from '../../../src/data/live/dr1qr3';
 
 // This Worker IS the helper: its reader must read NASA directly.
 setHelper(null);
 
-const VERSION = 'v1';
+// The cache key carries the API version and the reader's version (READER_VERSION), so a reader
+// fix never serves stale cutouts; the file key carries the release and processing version.
+const VERSION = `v1-${READER_VERSION}`;
 const KEY_RE = /^(dr1|qr3)\/level2\/[\w.-]+\/[\w.-]+\/[1-6]\/level2_[\w.-]+\.fits$/;
 const CORS = {
   'access-control-allow-origin': '*',
@@ -32,7 +40,7 @@ function bad(msg: string, status = 400): Response {
 }
 
 function photoOf(key: string, mjd: number): LivePhoto {
-  const file = key.split('/').pop()!;
+  const file = key.slice(key.lastIndexOf('/') + 1);
   const obsId = file.replace(/^level2_/, '').replace(/_spx_.*$/, '');
   const det = Number(key.split('/')[4]);
   return {
