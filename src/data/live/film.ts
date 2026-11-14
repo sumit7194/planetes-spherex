@@ -34,6 +34,8 @@ export interface FilmInput {
   bandwidthUm?: number;
   /** Detector 1-6, for a fallback colour step (λ/R) when the band width is missing. */
   detector?: number;
+  /** The photo's orientation on the sky (position angle, degrees), for same-orientation references. */
+  orientationDeg?: number;
 }
 
 export interface DifferenceFrame {
@@ -43,6 +45,8 @@ export interface DifferenceFrame {
   ok: boolean;
   /** How many photos made the reference. */
   refCount: number;
+  /** Whether every reference photo had this photo's scan orientation (see FilmOptions). */
+  sameOrientation: boolean;
   /** The largest colour gap among them, as a fraction of this frame's wavelength. */
   maxDlamFrac: number;
   /** ...and in colour steps (resolution elements: this frame's band width). */
@@ -75,6 +79,16 @@ export interface FilmOptions {
   exclude?: { x: number; y: number; r: number }[];
   /** The brightness factor's limits. */
   scaleClip?: [number, number];
+  /**
+   * Prefer reference photos whose orientation is within this many degrees of the frame's
+   * (Physics, 14 Nov: the blur's orientation flips between the half-year passes, leaving a small
+   * date-signed pair on steady stars). Falls back to any orientation when too few remain.
+   * Default 90° (only used when the inputs carry orientationDeg; pass photo.paDeg). Measured on
+   * the packs (descriptive, after the method was set): with same-orientation references the steady
+   * stars' date-signed pair across the motion fell from 60-62% / +0.13 px to 52-58% / +0.01-0.05
+   * px, and Barnard's from +0.76 px to -0.05 px, while its pair along its motion grew (87% -> 97%).
+   */
+  orientationTolDeg?: number;
   /** Gaussian softening (sigma, grid px) applied to every frame before differencing; 0 = none. */
   soften?: number;
 }
@@ -212,6 +226,7 @@ export function differenceFilm(frames: FilmInput[], opts: FilmOptions = {}): Dif
       pixels: new Float32Array(n).fill(NaN),
       ok: false,
       refCount: 0,
+      sameOrientation: false,
       maxDlamFrac: NaN,
       maxDlamSteps: NaN,
       minGapDays: NaN,
@@ -220,7 +235,12 @@ export function differenceFilm(frames: FilmInput[], opts: FilmOptions = {}): Dif
     };
     if (!Number.isFinite(f.lambdaUm)) return none;
     const step = colourStep(f);
-    const refs = frames
+    const tol = opts.orientationTolDeg ?? 90;
+    const sameOri = (g: FilmInput) =>
+      f.orientationDeg === undefined ||
+      g.orientationDeg === undefined ||
+      Math.abs(((g.orientationDeg - f.orientationDeg + 540) % 360) - 180) <= tol;
+    const candidates = frames
       .map((g, j) => ({ g, j, d: Math.abs(g.lambdaUm - f.lambdaUm) / step }))
       .filter(
         ({ g, j, d }) =>
@@ -230,8 +250,10 @@ export function differenceFilm(frames: FilmInput[], opts: FilmOptions = {}): Dif
           Number.isFinite(d) &&
           d <= maxSteps,
       )
-      .sort((a, b) => a.d - b.d)
-      .slice(0, k);
+      .sort((a, b) => a.d - b.d);
+    const matched = candidates.filter((c) => sameOri(c.g)).slice(0, k);
+    const sameOrientation = f.orientationDeg !== undefined && matched.length >= minRefs;
+    const refs = sameOrientation ? matched : candidates.slice(0, k);
     if (refs.length < minRefs) return { ...none, refCount: refs.length };
 
     // The per-pixel median of the references, leaving out their saturated or bad pixels.
@@ -281,6 +303,7 @@ export function differenceFilm(frames: FilmInput[], opts: FilmOptions = {}): Dif
       pixels: out,
       ok: true,
       refCount: refs.length,
+      sameOrientation,
       maxDlamFrac: Math.max(...refs.map((r) => (r.d * step) / f.lambdaUm)),
       maxDlamSteps: Math.max(...refs.map((r) => r.d)),
       minGapDays: Math.min(...refs.map((r) => Math.abs(r.g.mjd - f.mjd))),

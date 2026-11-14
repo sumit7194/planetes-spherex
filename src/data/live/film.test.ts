@@ -61,3 +61,24 @@ describe('the difference film', () => {
     expect(differenceFilm(frames)[0]?.ok).toBe(false);
   });
 });
+
+describe('same-orientation references', () => {
+  it('prefers photos with the same orientation when there are enough, else falls back', () => {
+    const at = (mjd: number, ori: number): FilmInput => ({
+      ...frame(mjd, 1.0),
+      orientationDeg: ori,
+    });
+    const frames = [
+      at(60800, 0),
+      at(61165, 2),
+      at(61530, 358),
+      at(61895, 1),
+      at(60980, 180),
+      at(61345, 181),
+    ];
+    const film = differenceFilm(frames);
+    expect(film[0]?.sameOrientation).toBe(true); // 3 same-orientation photos a year apart
+    expect(film[4]?.sameOrientation).toBe(false); // only 1 other at 180°: falls back to all
+    expect(film[4]?.ok).toBe(true);
+  });
+});
