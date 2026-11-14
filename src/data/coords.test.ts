@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { parseSkyPosition, positionFromQuery, separationDeg } from './coords';
+import {
+  decText,
+  degText,
+  parseSkyPosition,
+  positionFromQuery,
+  positionText,
+  raText,
+  separationDeg,
+} from './coords';
 
 const WISE_0855 = { ra: 133.795129, dec: -7.245147 };
 
@@ -74,5 +82,42 @@ describe('positionFromQuery', () => {
     expect(from('target=barnard')).toBeNull();
     expect(from('ra=10')).toBeNull();
     expect(from('ra=10&dec=95')).toBeNull();
+  });
+});
+
+describe('writing positions', () => {
+  it('writes RA in hours at the precision asked', () => {
+    expect(raText(133.795129, 1)).toBe('8h 55m 11s');
+    expect(raText(133.795129, 60)).toBe('8h 55m');
+    expect(raText(135, 3600)).toBe('9h');
+    expect(raText(130, 1200)).toBe('8h 40m');
+    expect(raText(359.999, 60)).toBe('0h 00m'); // rounds up past 24h to 0h
+  });
+  it('writes Dec with a true minus and primes', () => {
+    expect(decText(-7.245147, 1)).toBe('−7° 14′ 43″');
+    expect(decText(-7.245147, 60)).toBe('−7° 15′');
+    expect(decText(10, 3600)).toBe('+10°');
+    expect(decText(0, 3600)).toBe('0°');
+    expect(decText(-0.0001, 3600)).toBe('0°');
+  });
+  it('writes decimal degrees with a true minus', () => {
+    expect(degText(-7.2451)).toBe('−7.245°');
+    expect(degText(133.7951)).toBe('133.795°');
+  });
+  it('reads back what it writes (the readouts can be pasted into the search)', () => {
+    const p = { ra: 133.795129, dec: -7.245147 };
+    for (const fov of [0, 10, 20, 60]) {
+      const r = parseSkyPosition(positionText(p, fov));
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        expect(Math.abs(r.position.ra - p.ra)).toBeLessThan(
+          fov > 35 ? 0.25 : fov > 12 ? 0.25 : 0.05,
+        );
+        expect(Math.abs(r.position.dec - p.dec)).toBeLessThan(fov > 35 ? 0.5 : 0.02);
+      }
+    }
+    const r = parseSkyPosition('RA 133.8, Dec -7.2');
+    expect(r.ok && r.position.ra).toBeCloseTo(133.8);
+    expect(parseSkyPosition('ra=10h dec=+20').ok).toBe(true);
   });
 });

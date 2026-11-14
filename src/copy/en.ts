@@ -525,6 +525,7 @@ export const copy = {
       'Background stars and their names: the Hipparcos catalogue and the IAU, not SPHEREx.',
       'The soft band: the Milky Way, from Gaia star counts, not SPHEREx.',
       'Faint lines: constellation figures, only a guide.',
+      'The grid: right ascension (hours) and declination (degrees), ICRS (J2000), the coordinates you can type. The dashed line is the ecliptic, the Sun’s yearly path.',
       "Blue, on the sky and on a row of the band: photographed that week, from SPHEREx's own photo records.",
     ],
   },

@@ -18,13 +18,17 @@ const PRIME = /[′’']/g;
 const DOUBLE_PRIME = /[″”"]|''/g;
 
 function normalise(input: string): string {
-  return input
-    .replace(MINUS, '-')
-    .replace(DOUBLE_PRIME, 's')
-    .replace(PRIME, 'm')
-    .replace(/[°º]/g, 'd')
-    .replace(/,/g, ' ')
-    .trim();
+  return (
+    input
+      // "RA 8h 55m 11s, Dec −7° 14′ 43″" (the page's own readouts) reads as the numbers alone.
+      .replace(/(^|[\s,(])(ra|dec|α|δ)\s*[:=]?(?=[\s\d+\-−])/gi, '$1 ')
+      .replace(MINUS, '-')
+      .replace(DOUBLE_PRIME, 's')
+      .replace(PRIME, 'm')
+      .replace(/[°º]/g, 'd')
+      .replace(/,/g, ' ')
+      .trim()
+  );
 }
 
 /** Splits a normalised string into the RA part and the Dec part. */
@@ -111,4 +115,51 @@ export function positionFromQuery(q: URLSearchParams): SkyPosition | null {
   if (!text) return null;
   const r = parseSkyPosition(text);
   return r.ok ? r.position : null;
+}
+
+/* ---------- writing positions for people (the echo, the grid labels, the centre readout) ---------- */
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * Right ascension in hours, rounded to `stepSec` seconds of time and written with only the
+ * parts that step needs: 3600 → "9h", 60 → "8h 55m", 1 → "8h 55m 11s".
+ */
+export function raText(deg: number, stepSec = 1): string {
+  const total = Math.round(((((deg % 360) + 360) % 360) * 240) / stepSec) * stepSec;
+  const t = total % 86400;
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = t % 60;
+  if (stepSec >= 3600) return `${h}h`;
+  if (stepSec >= 60) return `${h}h ${pad2(m)}m`;
+  return `${h}h ${pad2(m)}m ${pad2(s)}s`;
+}
+
+/**
+ * Declination, rounded to `stepArcsec` and written with a true minus sign and prime marks:
+ * 3600 → "−7°", 60 → "−7° 15′", 1 → "−7° 14′ 43″". The equator is "0°", never "+0°".
+ */
+export function decText(deg: number, stepArcsec = 1): string {
+  const total = Math.round((Math.abs(deg) * 3600) / stepArcsec) * stepArcsec;
+  const d = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const sign = total === 0 ? '' : deg < 0 ? '−' : '+';
+  if (stepArcsec >= 3600) return `${sign}${d}°`;
+  if (stepArcsec >= 60) return `${sign}${d}° ${pad2(m)}′`;
+  return `${sign}${d}° ${pad2(m)}′ ${pad2(s)}″`;
+}
+
+/** Decimal degrees with a true minus sign: "133.795°", "−7.245°". */
+export function degText(deg: number, places = 3): string {
+  const v = deg.toFixed(places);
+  return `${v.startsWith('-') ? '−' : ''}${v.replace('-', '')}°`;
+}
+
+/** "RA 8h 55m 11s, Dec −7° 14′ 43″" at a precision that suits the view's width (degrees). */
+export function positionText(p: SkyPosition, fovDeg = 0): string {
+  const [ra, dec] =
+    fovDeg > 35 ? [60, 3600] : fovDeg > 12 ? [60, 60] : fovDeg > 0 ? [10, 10] : [1, 1];
+  return `RA ${raText(p.ra, ra)}, Dec ${decText(p.dec, dec)}`;
 }

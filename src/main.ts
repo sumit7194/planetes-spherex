@@ -34,6 +34,10 @@ import {
 } from './app/shows';
 import {
   parseSkyPosition,
+  raText,
+  decText,
+  degText,
+  positionText,
   positionFromQuery,
   separationDeg,
   type SkyPosition,
@@ -697,7 +701,13 @@ async function latestPhotoMjd(at: SkyPosition): Promise<number | null> {
   }
 }
 // Looking around yourself: the sky moves to when SPHEREx photographed the spot looked at.
-sky.onSettle = (at) => void latestPhotoMjd(at).then((mjd) => sky.setLookDate(mjd));
+sky.onSettle = (at) => {
+  void latestPhotoMjd(at).then((mjd) => sky.setLookDate(mjd));
+  // The aim's coordinates are drawn under the caption; announce them once the view settles.
+  focusCaption.textContent = [sky.caption, positionText(at, sky.centre.fov)]
+    .filter(Boolean)
+    .join('. ');
+};
 
 /**
  * A short cross-fade from the sky as it was to the sky as it is, so changing view at the
@@ -891,8 +901,6 @@ function resolveTyped(value: string): Typed | null {
   };
 }
 
-const degText = (v: number) => `${v < 0 ? '−' : ''}${Math.abs(v).toFixed(3)}°`;
-
 function onTyped(): void {
   const value = search.value.trim();
   const t = value ? resolveTyped(value) : null;
@@ -905,8 +913,15 @@ function onTyped(): void {
         ? t.echo
         : t.name
           ? copy.home.echoName(t.name, enter)
-          : copy.home.echoPosition(degText(t.at.ra), degText(t.at.dec), enter);
+          : // Hours first (the challenge page and catalogues), degrees in brackets (Viewer).
+            copy.home.echoPosition(
+              `${raText(t.at.ra)} (${degText(t.at.ra)})`,
+              `${decText(t.at.dec)} (${degText(t.at.dec)})`,
+              enter,
+            );
   searchEcho.classList.toggle('ok', !!t);
+  // The spot's own RA and Dec lines on the sky, crossing at it, until the field clears.
+  sky.setSpot(t ? t.at : null);
   if (!t) {
     if (typed) {
       typed = null;

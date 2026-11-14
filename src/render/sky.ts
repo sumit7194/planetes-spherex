@@ -7,7 +7,7 @@
  * SPHEREx photo for scale.
  */
 
-import type { SkyPosition } from '../data/coords';
+import { decText, positionText, raText, type SkyPosition } from '../data/coords';
 import { eclipticRing, sunPosition } from '../data/sun';
 import type { Coverage } from '../data/coverage';
 import { pixelCorners } from '../data/healpix';
@@ -30,8 +30,14 @@ export type CatalogueStar = [number, number, number, number | null, number?];
 function namedLimit(fov: number): number {
   return Math.max(2.5, Math.min(4.5, 2.5 + (35 - fov) / 12));
 }
-/** Grid spacing in degrees, by field: 30 when wide, 10 in the middle, 5 when narrow. */
-function gridStep(fov: number): number {
+/**
+ * Grid spacing in degrees, by field. RA steps land on round hours and minutes (2h, 1h, 20m), so
+ * its labels read cleanly; Dec steps are 30°, 10°, 5° (Viewer, 14 Nov).
+ */
+function raGridStep(fov: number): number {
+  return fov > 35 ? 30 : fov > 15 ? 15 : 5;
+}
+function decGridStep(fov: number): number {
   return fov > 35 ? 30 : fov > 15 ? 10 : 5;
 }
 /** The lens field: 40 pack pixels of 6.15 arcseconds, in degrees. */
@@ -829,6 +835,8 @@ export class SkyView {
     // Zooming in brightens and widens the stars a little, as a real camera would.
     const zoom = inside ? Math.sqrt(BASE_FOV / this.#fov) : 1;
     this.#grid(u);
+    // On the flat map the grid's labels are its scale: they go first and names give way to them.
+    if (!inside) this.#gridLabels(u);
     this.#drawFigures(u);
     this.#coverageWash();
     // The Sun's path in mist: ember means measured, and nothing here was.
@@ -933,6 +941,8 @@ export class SkyView {
     if (this.#near <= 0) this.#ridingNote(u);
     else this.#scaleBar(u);
     this.#edgeChips(u);
+    // Inside, they're the lowest priority: after every other label has its place.
+    if (inside) this.#gridLabels(u);
     if (detail) this.#aim(u);
     if (this.#entry === 'flat') this.#featherFlat();
   }
@@ -1138,8 +1148,10 @@ export class SkyView {
   #grid(u: number): void {
     const ctx = this.#ctx;
     // The grid tightens as the view narrows, so there is always a sense of scale.
-    const step = this.#entry === 'inside' ? gridStep(this.#fov) : 30;
-    for (let ra = 0; ra < 360; ra += step) {
+    const inside = this.#entry === 'inside';
+    const raStep = inside ? raGridStep(this.#fov) : 30;
+    const step = inside ? decGridStep(this.#fov) : 30;
+    for (let ra = 0; ra < 360; ra += raStep) {
       this.#line(
         Array.from({ length: 61 }, (_, i) => ({ ra, dec: -90 + i * 3 })),
         COLOURS.grid,
@@ -1154,6 +1166,167 @@ export class SkyView {
       );
     }
     ctx.setLineDash([]);
+  }
+
+  /* ---------- the grid's labels: the coordinates the search box asks for ---------- */
+
+  /** A typed spot (before Enter): its own RA and Dec lines, labelled, crossing at the spot. */
+  #spot: SkyPosition | null = null;
+  setSpot(p: SkyPosition | null): void {
+    this.#spot = p;
+    this.draw();
+  }
+
+  /** The open sky this frame: inside the header, the words column and the band. */
+  #openSky(u: number): { left: number; right: number; top: number; bottom: number } {
+    const { width: W, height: H } = this.canvas;
+    const m = 30 * u;
+    let right = W - m;
+    let top = m;
+    let bottom = H - m;
+    for (const q of this.#quiet) {
+      if (q.y + q.h < H * 0.25) top = Math.max(top, q.y + q.h + m * 0.5);
+      else if (q.y > H * 0.6 && q.w > W * 0.5) bottom = Math.min(bottom, q.y - m * 0.5);
+      else if (q.x > W * 0.45) right = Math.min(right, q.x - m * 0.5);
+    }
+    return { left: m, right, top, bottom };
+  }
+
+  /**
+   * Where a line on the sky crosses x = `at` (side 'x') or y = `at` (side 'y') inside the open
+   * sky: the other coordinate of each crossing.
+   */
+  #crossings(points: SkyPosition[], side: 'x' | 'y', at: number, lo: number, hi: number): number[] {
+    const out: number[] = [];
+    let prev: { x: number; y: number } | null = null;
+    for (const pt of points) {
+      const p = this.project(pt);
+      if (p && prev) {
+        const a = side === 'x' ? prev.x - at : prev.y - at;
+        const b = side === 'x' ? p.x - at : p.y - at;
+        // A long jump is the projection wrapping (flat map seam), not a crossing.
+        if (a * b <= 0 && a !== b && Math.hypot(p.x - prev.x, p.y - prev.y) < 400) {
+          const f = a / (a - b);
+          const v = side === 'x' ? prev.y + f * (p.y - prev.y) : prev.x + f * (p.x - prev.x);
+          if (v > lo && v < hi) out.push(v);
+        }
+      }
+      prev = p;
+    }
+    return out;
+  }
+
+  /** One small label in the grid's ink, unless it would cover something more important. */
+  #gridLabel(
+    text: string,
+    x: number,
+    y: number,
+    u: number,
+    colour: string,
+    align: 'left' | 'center',
+    priority = false,
+  ): boolean {
+    const ctx = this.#ctx;
+    const w = ctx.measureText(text).width;
+    const box = { x: align === 'center' ? x - w / 2 : x, y: y - 11 * u, w, h: 14 * u };
+    // A priority label (the typed spot's) always draws: it reserved its own box last frame.
+    if (!priority && this.#taken.some((q) => overlaps(q, box))) return false;
+    if (priority) this.#reserve(box);
+    else this.#taken.push(box);
+    ctx.fillStyle = colour;
+    ctx.textAlign = align;
+    ctx.fillText(text, x, y);
+    ctx.textAlign = 'left';
+    return true;
+  }
+
+  /**
+   * Labels for the grid (Sumit, 14 Nov: "what's the point of the grid lines if there are no
+   * markers?"). Inside the sky: Dec on the open sky's left edge, RA (hours) just above the band,
+   * a few each, never over the page or another label. On the flat map: RA along the equator and
+   * Dec along the central meridian, small and inside the map.
+   */
+  #gridLabels(u: number): void {
+    if (!this.marks) return;
+    const ctx = this.#ctx;
+    const inside = this.#entry === 'inside';
+    const ink = rgba(this.#t.mist, 0.55);
+    ctx.font = `${11 * u}px ${this.#fontSans}`;
+    const o = this.#openSky(u);
+    const spot = this.#spot;
+    // The typed spot's own lines first: they carry its numbers to the edges.
+    if (spot && inside) {
+      const look = this.#t.look;
+      const meridian = Array.from({ length: 181 }, (_, i) => ({ ra: spot.ra, dec: -90 + i }));
+      const parallel = Array.from({ length: 361 }, (_, i) => ({ ra: i, dec: spot.dec }));
+      this.#line(meridian, rgba(look, 0.55), u);
+      this.#line(parallel, rgba(look, 0.55), u);
+      for (const y of this.#crossings(
+        parallel,
+        'x',
+        o.left,
+        o.top + 12 * u,
+        o.bottom - 4 * u,
+      ).slice(0, 1))
+        this.#gridLabel(decText(spot.dec, 60), o.left + 4 * u, y - 3 * u, u, look, 'left', true);
+      for (const x of this.#crossings(
+        meridian,
+        'y',
+        o.bottom,
+        o.left + 24 * u,
+        o.right - 24 * u,
+      ).slice(0, 1))
+        this.#gridLabel(raText(spot.ra, 60), x, o.bottom - 4 * u, u, look, 'center', true);
+    }
+    if (inside) {
+      const raStep = raGridStep(this.#fov);
+      const decStep = decGridStep(this.#fov);
+      const placedY: number[] = [];
+      for (let dec = -90 + decStep; dec <= 90 - decStep; dec += decStep) {
+        const line = Array.from({ length: 361 }, (_, i) => ({ ra: i, dec }));
+        for (const y of this.#crossings(line, 'x', o.left, o.top + 12 * u, o.bottom - 4 * u)) {
+          if (placedY.some((p) => Math.abs(p - y) < 48 * u)) continue;
+          if (this.#gridLabel(decText(dec, 3600), o.left + 4 * u, y - 3 * u, u, ink, 'left'))
+            placedY.push(y);
+        }
+      }
+      // Meridians crowd near the poles: no RA labels there.
+      if (Math.abs(this.#centre.dec) > 70) return;
+      const placedX: number[] = [];
+      for (let ra = 0; ra < 360; ra += raStep) {
+        const line = Array.from({ length: 181 }, (_, i) => ({ ra, dec: -90 + i }));
+        for (const x of this.#crossings(line, 'y', o.bottom, o.left + 24 * u, o.right - 24 * u)) {
+          if (placedX.some((p) => Math.abs(p - x) < 70 * u)) continue;
+          if (this.#gridLabel(raText(ra, raStep * 240), x, o.bottom - 4 * u, u, ink, 'center'))
+            placedX.push(x);
+        }
+      }
+      return;
+    }
+    // The flat map: hours along the equator, every 2h, and Dec along the central meridian.
+    for (let ra = 0; ra < 360; ra += 30) {
+      const p = this.project({ ra, dec: 0 });
+      if (p) this.#gridLabel(raText(ra, 3600), p.x, p.y - 3 * u, u, ink, 'center');
+    }
+    const mid = this.#flat.pan + 180;
+    for (const dec of [-60, -30, 30, 60]) {
+      const p = this.project({ ra: mid, dec });
+      if (p) this.#gridLabel(decText(dec, 3600), p.x + 3 * u, p.y - 3 * u, u, ink, 'left');
+    }
+  }
+
+  /** Under the caption: where the aim is, as the search box would take it. */
+  #centreReadout(u: number, y: number): void {
+    const ctx = this.#ctx;
+    const a = this.#axis();
+    const text = positionText(this.#centre, this.#fov);
+    ctx.font = `${11.5 * u}px ${this.#fontSans}`;
+    ctx.fillStyle = rgba(this.#t.mist, 0.7);
+    ctx.textAlign = 'center';
+    ctx.fillText(text, a.x, y);
+    const tw = ctx.measureText(text).width;
+    this.#reserve({ x: a.x - tw / 2, y: y - 12 * u, w: tw, h: 16 * u });
+    ctx.textAlign = 'left';
   }
 
   /* ---------- riding with SPHEREx: the camera on its orbit, Earth below ---------- */
@@ -2353,7 +2526,6 @@ export class SkyView {
     // Leaning on the detent at the edge of the sky: say what one more push does.
     const leaning = this.#detent.sum > 0 && performance.now() - this.#detent.at < 900;
     const text = leaning ? this.labels.stepOut : this.caption;
-    if (!text) return;
     const ctx = this.#ctx;
     const a = this.#axis();
     const h = this.canvas.height;
@@ -2363,11 +2535,16 @@ export class SkyView {
     const y = detail
       ? Math.max(a.y + 40 * u, Math.min(this.#outlineBottom + 22 * u, h - 24 * u))
       : a.y + 64 * u;
-    ctx.fillText(text, a.x, y);
-    const tw = ctx.measureText(text).width;
-    this.#reserve({ x: a.x - tw / 2, y: y - 13 * u, w: tw, h: 18 * u });
+    if (text) {
+      ctx.fillText(text, a.x, y);
+      const tw = ctx.measureText(text).width;
+      this.#reserve({ x: a.x - tw / 2, y: y - 13 * u, w: tw, h: 18 * u });
+    }
     ctx.textAlign = 'left';
+    if (!leaning && this.centreReadout) this.#centreReadout(u, y + 17 * u);
   }
+  /** The aim's coordinates under the caption (the page's search format). */
+  centreReadout = true;
 
   /**
    * The aim: a small open ring with four ticks on the optical axis, in the lens ring's gold.
