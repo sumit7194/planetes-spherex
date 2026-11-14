@@ -17,7 +17,13 @@ is skipped tonight (IRSA down). Also picks the star-hit example: the largest-exc
 excluded because of a Gaia match. Then the confirmation tests per kind. Writes
 cache/fieldguide_select.json.
 
-Usage: uv run python fieldguide.py index | search | select
+Step 4 (`confirm`): Physics' confirmation tests on each chosen example, using the other cached
+photos: (same sky) other photos of the same sky position, same detector, within 5 days: is
+anything there (S/N >= 5) or nothing (S/N < 3)?; (detector place) other photos of the same detector
+where the same detector pixel looks at different sky (> 2 px away): is that pixel bright there too?
+Writes cache/fieldguide_confirm.json.
+
+Usage: uv run python fieldguide.py index | search | select | confirm
 """
 from __future__ import annotations
 
@@ -315,5 +321,72 @@ def select() -> None:
     print("star-hit", len(star_hits), out["star_hit"] and (out["star_hit"]["obs"], out["star_hit"]["gaia"]))
 
 
+def measure(e: dict, x: float, y: float, aper: int) -> dict | None:
+    """Excess and S/N at box pixel (x, y): the (2*aper+1)^2 box minus the median of the unflagged
+    ring 3-8 px outside it; None if off the box or too few background pixels."""
+    img = e["img"].astype(float)
+    h, w = img.shape
+    xi, yi = int(round(x)), int(round(y))
+    if not (aper <= xi < w - aper and aper <= yi < h - aper):
+        return None
+    yy, xx = np.mgrid[0:h, 0:w]
+    d = np.maximum(np.abs(xx - xi), np.abs(yy - yi))
+    bad = mask_of(e, FIT_REJECT) | ~np.isfinite(img)
+    ring = (d >= aper + 3) & (d <= aper + 8) & ~bad
+    if ring.sum() < 20:
+        return None
+    bk = float(np.median(img[ring]))
+    sd = 1.4826 * float(np.median(np.abs(img[ring] - bk)))
+    core = img[(d <= aper)]
+    if not np.all(np.isfinite(core)) or not sd > 0:
+        return None
+    exc = float(np.sum(core - bk))
+    flags = sorted({n for n in (e.get("bits") or {}) if mask_of(e, (n,))[d <= aper].any()})
+    return dict(excess=round(exc, 3), sn=round(exc / (sd * math.sqrt(core.size)), 2), flags=flags)
+
+
+def confirm() -> None:
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    sel = json.loads((CACHE / "fieldguide_select.json").read_text())
+    picks = {k: v["chosen"] for k, v in sel["kinds"].items() if v["chosen"]}
+    if sel.get("star_hit"):
+        picks["star-hit"] = sel["star_hit"]
+    out = {}
+    for kind, c in picks.items():
+        X, Y = c["x0"] + c["x"], c["y0"] + c["y"]  # detector pixel (0-based)
+        same_sky, det_place = [], []
+        for row in idx["rows"]:
+            if row["det"] != c["det"] or row["obs"] == c["obs"]:
+                continue
+            if sep_deg(row["ra"], row["dec"], c["ra"], c["dec"]) > 0.3:
+                continue
+            # Our own cache, written only by this pipeline on this machine (as build_pack's).
+            e = pickle.loads((CACHE / row["path"]).read_bytes())
+            w = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+            # Same sky: where this photo sees the candidate's sky position.
+            if abs(row["mjd"] - c["mjd"]) <= 5:
+                px, py = w.all_world2pix(c["ra"], c["dec"], 0)
+                m = measure(e, float(px) - e["x0"], float(py) - e["y0"], 1)
+                if m:
+                    same_sky.append(dict(obs=row["obs"], dt_days=round(row["mjd"] - c["mjd"], 3), **m))
+            # Detector place: the same detector pixel, looking at different sky.
+            bx, by = X - e["x0"], Y - e["y0"]
+            if 0 <= bx < e["img"].shape[1] and 0 <= by < e["img"].shape[0]:
+                ra, dec = w.all_pix2world(X, Y, 0)
+                if sep_deg(float(ra), float(dec), c["ra"], c["dec"]) * 3600 / PIX_ARCSEC > NEAR_PX:
+                    m = measure(e, bx, by, 0)
+                    if m:
+                        det_place.append(dict(obs=row["obs"], dt_days=round(row["mjd"] - c["mjd"], 3), **m))
+        out[kind] = dict(
+            pick=dict(obs=c["obs"], det=c["det"], detector_pixel=[round(X, 1), round(Y, 1)], ra=c["ra"],
+                      dec=c["dec"], npix=c["npix"], excess=round(c["excess"], 1), names=c["names"]),
+            same_sky=dict(n=len(same_sky), nothing_sn_lt3=sum(m["sn"] < 3 for m in same_sky),
+                          something_sn_ge5=sum(m["sn"] >= 5 for m in same_sky), rows=same_sky[:12]),
+            detector_place=dict(n=len(det_place), bright_sn_ge5=sum(m["sn"] >= 5 for m in det_place),
+                                rows=det_place[:12]))
+        print(kind, json.dumps({k: v for k, v in out[kind].items() if k != "pick"}, default=str)[:400], flush=True)
+    (CACHE / "fieldguide_confirm.json").write_text(json.dumps(out, indent=1))
+
+
 if __name__ == "__main__":
-    {"index": index, "search": search, "select": select}[sys.argv[1]]()
+    {"index": index, "search": search, "select": select, "confirm": confirm}[sys.argv[1]]()
