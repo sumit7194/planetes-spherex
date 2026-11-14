@@ -817,7 +817,7 @@ def export() -> None:
                     detector="D2 and D6", **{"lambda": "1.1–1.6 and 4.4–5 µm"}, at=None),
         panels=blend_panels))
 
-    # Held back (15 Nov, ~04:15 IST): the "flag on a real star" pick is a lone pixel (548 vs
+    # Held back (15 Nov, 03:55 IST): the "flag on a real star" pick is a lone pixel (548 vs
     # neighbours 0.2) flagged NONFUNC + SUR_ERROR + TRANSIENT, and the "same star" photo's pixel is
     # NONFUNC too: not starlight. With Physics; nothing about it is shown until a new pick passes.
     for c_ in [c_ for c_ in cards if c_["id"] in WITHHELD]:
