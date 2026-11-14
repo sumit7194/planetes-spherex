@@ -216,7 +216,19 @@ export class SkyView {
   #raf = 0;
   #last = 0;
   #drag: { x: number; y: number; ra: number; dec: number } | null = null;
-  #flight: { from: Look; to: Look; t0: number; ms: number } | null = null;
+  /**
+   * A flight: along the great circle (arc, degrees); a long hop (arc > 10°) also pulls the view
+   * back mid-way by `bump` degrees of field, so you see where you're going (Sumit, 14 Nov:
+   * "navigate in sky view and then zoom in").
+   */
+  #flight: { from: Look; to: Look; t0: number; ms: number; arc: number; bump: number } | null =
+    null;
+
+  /** How long a flight of `arcDeg` takes: short hops quick, long ones up to 1.8 s. */
+  static flightMs(arcDeg: number): number {
+    // Short enough for a demo (Viewer): 0.9 s plus 4 ms a degree, at most 1.8 s.
+    return Math.round(Math.min(1800, 900 + 4 * arcDeg));
+  }
   /** The zone of interest (inside view): the optical axis and the ring's radius, canvas px. */
   #focus: { x: number; y: number; r: number } | null = null;
   #sun = sunPosition();
@@ -420,27 +432,37 @@ export class SkyView {
     let ra = p.ra;
     if (ra - this.#centre.ra > 180) ra -= 360;
     if (ra - this.#centre.ra < -180) ra += 360;
+    // A flight replaced by a newer one still ends (its caller mustn't wait forever).
+    this.#flightDone?.();
     return new Promise((resolve) => {
-      const flight = {
-        from: { ...this.centre },
-        to: { ra, dec: p.dec, fov },
-        t0: performance.now(),
-        ms,
+      let ended = false;
+      const end = () => {
+        if (ended) return;
+        ended = true;
+        if (this.#flightDone === end) this.#flightDone = null;
+        resolve();
       };
+      this.#flightDone = end;
+      const from = { ...this.centre };
+      const arc = separationDeg([from.ra, from.dec], [p.ra, p.dec]);
+      const bump = arc > 10 ? Math.max(0, Math.min(70, 0.9 * arc) - Math.max(from.fov, fov)) : 0;
+      const flight = { from, to: { ra, dec: p.dec, fov }, t0: performance.now(), ms, arc, bump };
       this.#flight = flight;
       const done = () => {
-        if (this.#flight) requestAnimationFrame(done);
-        else resolve();
+        if (ended) return;
+        if (this.#flight === flight) requestAnimationFrame(done);
+        else end();
       };
       requestAnimationFrame(done);
       // Where frames are paused (a hidden tab or pane), land anyway, so opening never hangs.
       window.setTimeout(() => {
-        if (this.#flight !== flight) return;
-        this.#centre = { ra: (p.ra + 360) % 360, dec: p.dec };
-        this.#fov = fov;
-        this.#flight = null;
-        this.draw();
-        resolve();
+        if (this.#flight === flight) {
+          this.#centre = { ra: (p.ra + 360) % 360, dec: p.dec };
+          this.#fov = fov;
+          this.#flight = null;
+          this.draw();
+        }
+        end();
       }, ms + 400);
     });
   }
@@ -663,12 +685,15 @@ export class SkyView {
       if (f) this.#sat = null;
       if (f) {
         const k = Math.min(1, (t - f.t0) / f.ms);
-        const e = 1 - Math.pow(1 - k, 3);
-        this.#centre = {
-          ra: (f.from.ra + (f.to.ra - f.from.ra) * e + 360) % 360,
-          dec: f.from.dec + (f.to.dec - f.from.dec) * e,
-        };
-        this.#fov = f.from.fov + (f.to.fov - f.from.fov) * e;
+        // A long hop eases in and out (it pulls back, then dives); a short one eases out.
+        const e =
+          f.bump > 0
+            ? k < 0.5
+              ? 4 * k * k * k
+              : 1 - Math.pow(-2 * k + 2, 3) / 2
+            : 1 - Math.pow(1 - k, 3);
+        this.#centre = slerpSky(f.from, f.to, f.arc, e);
+        this.#fov = f.from.fov + (f.to.fov - f.from.fov) * e + f.bump * Math.sin(Math.PI * e);
         if (k >= 1) this.#flight = null;
       } else if (
         this.#spinning &&
@@ -1173,10 +1198,21 @@ export class SkyView {
 
   /** A typed spot (before Enter): its own RA and Dec lines, labelled, crossing at the spot. */
   #spot: SkyPosition | null = null;
-  setSpot(p: SkyPosition | null): void {
+  setSpot(p: SkyPosition | null, name: string | null = null): void {
     this.#spot = p;
+    this.#spotName = name;
     this.draw();
   }
+  /** The spot's name, shown beside its marker on the flat map. */
+  #spotName: string | null = null;
+
+  /** Stops a flight where it is (the visitor took over); its caller's promise ends. */
+  cancelFlight(): void {
+    this.#flight = null;
+    this.#flightDone?.();
+  }
+  /** Ends the current flight's promise (when it lands, is replaced or is cancelled). */
+  #flightDone: (() => void) | null = null;
 
   /** The open sky this frame: inside the header, the words column and the band. */
   #openSky(u: number): { left: number; right: number; top: number; bottom: number } {
@@ -1270,6 +1306,13 @@ export class SkyView {
       const parallel = Array.from({ length: 361 }, (_, i) => ({ ra: i, dec: spot.dec }));
       this.#line(meridian, rgba(look, 0.55), u);
       this.#line(parallel, rgba(look, 0.55), u);
+    }
+    // In flight the labels would slide every frame and their text shimmer: lines only until
+    // the view lands (Viewer, 14 Nov).
+    if (spot && inside && !this.#flight) {
+      const look = this.#t.look;
+      const meridian = Array.from({ length: 181 }, (_, i) => ({ ra: spot.ra, dec: -90 + i }));
+      const parallel = Array.from({ length: 361 }, (_, i) => ({ ra: i, dec: spot.dec }));
       for (const y of this.#crossings(
         parallel,
         'x',
@@ -1311,6 +1354,29 @@ export class SkyView {
         }
       }
       return;
+    }
+    // A spot on the flat map (Surprise me's destination): a small ring and its name.
+    if (spot) {
+      const p = this.project(spot);
+      if (p) {
+        const ctx2 = this.#ctx;
+        ctx2.strokeStyle = this.#t.look;
+        ctx2.lineWidth = 1.5 * u;
+        ctx2.beginPath();
+        ctx2.arc(p.x, p.y, 7 * u, 0, Math.PI * 2);
+        ctx2.stroke();
+        if (this.#spotName)
+          this.#gridLabel(
+            this.#spotName,
+            p.x + 10 * u,
+            p.y + 4 * u,
+            u,
+            this.#t.look,
+            'left',
+            true,
+            true,
+          );
+      }
     }
     // The flat map is small and full of figure names (Viewer, 14 Nov): only seven labels, in a
     // brighter ink with a night halo. Hours 0h, 6h, 12h, 18h on the equator (kept just inside
@@ -2832,6 +2898,27 @@ function cssFont(name: string, fallback: string): string {
 function smooth(t: number): number {
   const x = Math.max(0, Math.min(1, t));
   return x * x * (3 - 2 * x);
+}
+
+/** A point `e` of the way along the great circle from `a` to `b` (`arcDeg` apart). */
+function slerpSky(a: SkyPosition, b: SkyPosition, arcDeg: number, e: number): SkyPosition {
+  if (arcDeg < 1e-6) return { ra: ((a.ra % 360) + 360) % 360, dec: a.dec };
+  const v = (p: SkyPosition): [number, number, number] => {
+    const ra = p.ra * RAD;
+    const dec = p.dec * RAD;
+    return [Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra), Math.sin(dec)];
+  };
+  const [p, q] = [v(a), v(b)];
+  const w = arcDeg * RAD;
+  const s0 = Math.sin((1 - e) * w) / Math.sin(w);
+  const s1 = Math.sin(e * w) / Math.sin(w);
+  const x = s0 * p[0] + s1 * q[0];
+  const y = s0 * p[1] + s1 * q[1];
+  const z = s0 * p[2] + s1 * q[2];
+  return {
+    ra: (((Math.atan2(y, x) / RAD) % 360) + 360) % 360,
+    dec: Math.asin(Math.max(-1, Math.min(1, z / Math.hypot(x, y, z)))) / RAD,
+  };
 }
 
 /** 1 well inside the globe, easing to 0 at its limb (the last ~35% of the way out). */

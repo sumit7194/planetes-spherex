@@ -1930,14 +1930,88 @@ function surpriseShiftLine(s: SurpriseSpot): string {
   );
 }
 
-/** A live look at a famous fast star or variable, a different one from the last. */
-async function surpriseMe(): Promise<void> {
+/** The surprise the sky is flying to, if any (the button says so and waits). */
+let surpriseFlight: string | null = null;
+/** A flight the visitor interrupted: its dive, on offer for a few seconds (Viewer). */
+let surpriseOffer: { spot: SurpriseSpot; timer: number } | null = null;
+let surpriseCancelled = false;
+/** Said to screen readers: where the sky is flying. */
+const surpriseStatus = h('p', { class: 'visually-hidden', role: 'status' });
+document.body.append(surpriseStatus);
+// Any input during the flight takes over: no dive (Viewer: a quick nudge-back must count too).
+for (const [target, ev] of [
+  [skyCanvas, 'pointerdown'],
+  [skyCanvas, 'wheel'],
+  [window, 'keydown'],
+  [search, 'focus'],
+] as const)
+  target.addEventListener(ev, () => {
+    if (!surpriseFlight) return;
+    surpriseCancelled = true;
+    sky.cancelFlight();
+  });
+
+/**
+ * A live look at a famous fast star or variable, a different one from the last. On the sky it
+ * first flies there (great circle, pulled back on a long hop; at most 1.8 s), its RA/Dec lines
+ * showing where it's going and its photo list loading meanwhile; then the dive (Sumit, 14 Nov).
+ * On the flat map its place is marked for a moment instead; under reduced motion it cuts.
+ */
+async function surpriseMe(spotIn?: SurpriseSpot): Promise<void> {
+  if (surpriseFlight) return;
   warmUp();
-  const spots = await loadSurprises();
-  const others = spots.filter((x) => x.name !== surprise?.name);
+  if (surpriseOffer) {
+    window.clearTimeout(surpriseOffer.timer);
+    surpriseOffer = null;
+  }
+  const spots = spotIn ? [spotIn] : await loadSurprises();
+  const others = spotIn ? spots : spots.filter((x) => x.name !== surprise?.name);
   const pick = others[Math.floor(Math.random() * others.length)];
   if (!pick) return;
-  await openLook({ ra: pick.ra, dec: pick.dec }, pick);
+  const at = { ra: pick.ra, dec: pick.dec };
+  const onSky = state.place.kind === 'sky' && state.room === 'play' && !sky.steppedOut;
+  const motion = !prefersReducedMotion();
+  if (onSky && state.entry === 'inside' && motion && !spotIn) {
+    surpriseFlight = pick.name;
+    surpriseCancelled = false;
+    surpriseStatus.textContent = copy.surprise.flying(pick.name);
+    try {
+      render();
+      // Its lines and band row, but not the search's own short flight: this one is longer.
+      lastFlown = `${at.ra.toFixed(4)},${at.dec.toFixed(4)}`;
+      followOpt({
+        id: `surprise:${pick.name}`,
+        label: pick.name,
+        at,
+        title: pick.name,
+        go: () => undefined,
+      });
+      void findPhotos(at).catch(() => undefined);
+      await sky.flyTo(at, 20, SkyView.flightMs(separationDeg(sky.centre, at)));
+      if (!surpriseCancelled) await new Promise((r) => setTimeout(r, 150));
+    } finally {
+      surpriseFlight = null;
+    }
+    if (surpriseCancelled || state.place.kind !== 'sky') {
+      // The visitor took over: stay where they are, the spot still marked, its dive on offer.
+      surpriseOffer = {
+        spot: pick,
+        timer: window.setTimeout(() => {
+          surpriseOffer = null;
+          if (state.place.kind === 'sky') render();
+        }, 5000),
+      };
+      render();
+      return;
+    }
+    followOpt(null);
+  } else if (onSky && state.entry === 'flat') {
+    // The whole-sky map: show where it is for a moment (no flight needed), then dive.
+    sky.setSpot(at, pick.name);
+    if (motion) await new Promise((r) => setTimeout(r, 400));
+    sky.setSpot(null);
+  }
+  await openLook(at, pick);
 }
 
 async function openLook(at: SkyPosition, named: SurpriseSpot | null = null): Promise<void> {
@@ -2932,8 +3006,23 @@ function homeColumn(): HTMLElement[] {
 
 /** Takes the visitor to a famous fast star or variable, for a live look. */
 function surpriseButton(): HTMLElement {
-  const b = h('button', { type: 'button', class: 'surprise' }, copy.surprise.button);
-  b.addEventListener('click', () => void surpriseMe());
+  const b = h(
+    'button',
+    {
+      type: 'button',
+      class: 'surprise',
+      disabled: !!surpriseFlight,
+      'aria-busy': surpriseFlight ? 'true' : undefined,
+    },
+    surpriseFlight
+      ? copy.surprise.flying(surpriseFlight)
+      : surpriseOffer
+        ? copy.surprise.openIt(surpriseOffer.spot.name)
+        : copy.surprise.button,
+  );
+  // After an interrupted flight the button opens that star, for a few seconds.
+  const offer = surpriseOffer;
+  b.addEventListener('click', () => void (offer ? surpriseMe(offer.spot) : surpriseMe()));
   return h('div', { class: 'actions' }, b);
 }
 

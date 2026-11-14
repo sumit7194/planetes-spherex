@@ -425,6 +425,10 @@ export const copy = {
   /** "Surprise me": famous fast stars and variables (public/data/surprise.json, Gaia DR3). */
   surprise: {
     button: 'Surprise me: a famous fast star',
+    /** While the sky flies to it (Sumit, 14 Nov: fly, then dive). */
+    flying: (name: string) => `Flying to ${name}…`,
+    /** After a flight the visitor interrupted: the dive, on offer for a few seconds. */
+    openIt: (name: string) => `Open ${name}`,
     /** Before the looks are chosen: Gaia's motion only. */
     mover: (pm: string) =>
       `Gaia measures it crossing the sky at ${pm} arcseconds a year. This is a look at SPHEREx's photos, not our measurement.`,
