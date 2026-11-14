@@ -736,8 +736,8 @@ const touchOnly = matchMedia('(hover: none)').matches;
 /* ---------- one zoom from the flat map into Look around ---------- */
 
 /** Zooming far into the flat map hands over to Look around, at the same spot. */
-sky.onHandOver = () => {
-  const at = sky.lookCentre();
+sky.onHandOver = (_to, under) => {
+  const at = under ?? sky.lookCentre();
   lookedInside = true;
   switchEntry('inside');
   sky.centreOn(at);

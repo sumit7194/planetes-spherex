@@ -307,7 +307,8 @@ export class SkyView {
    * limit asks for the inside view; zooming out of the inside view past its widest asks for a
    * whole-sky view. The page decides which and calls setEntry.
    */
-  onHandOver: (to: 'inside') => void = () => {};
+  /** Zoomed in past the flat map's closest: open Look around at `at` (the spot under the pointer). */
+  onHandOver: (to: 'inside', at?: SkyPosition) => void = () => {};
   /**
    * The view turned or zoomed: the nearest named star to the axis if one is close, whether the
    * zoom is at its narrowest, and whether a light sits on the aim.
@@ -2928,7 +2929,16 @@ export class SkyView {
       // Zooming in past the map's closest hands over to Look around, but only after a beat at
       // the limit (Viewer: wheel momentum mustn't overshoot into another view).
       if (next > FLAT_ZOOM_MAX && this.#flat.zoom >= FLAT_ZOOM_MAX - 0.01) {
-        if (this.#detentPassed(-dy)) this.onHandOver('inside');
+        if (this.#detentPassed(-dy)) {
+          // The spot under the pointer, the one being homed in on (Viewer); else the centre.
+          const r = this.canvas.getBoundingClientRect();
+          const k = this.canvas.width / Math.max(1, r.width);
+          const real = e.clientX !== 0 || e.clientY !== 0;
+          const at = real
+            ? this.#unproject((e.clientX - r.left) * k, (e.clientY - r.top) * k)
+            : null;
+          this.onHandOver('inside', at ?? undefined);
+        }
         this.draw();
         return;
       }
