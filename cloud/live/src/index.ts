@@ -243,7 +243,7 @@ async function resolve(url: URL, ctx: ExecutionContext): Promise<Response> {
   if (!raw || raw.length > 80 || !/^[\p{L}\p{N} +\-.'’*()_/]+$/u.test(raw))
     return bad("name: 1-80 letters, digits, spaces and + - . ' * ( ) _ /");
   const cacheKey = new Request(
-    `https://cache.planetes/${VERSION}/v1/resolve?name=${encodeURIComponent(raw.toLowerCase())}`,
+    `https://cache.planetes/${VERSION}/v1/resolve2?name=${encodeURIComponent(raw.toLowerCase())}`,
   );
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(cacheKey);
