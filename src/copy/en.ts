@@ -1057,6 +1057,7 @@ export const copy = {
     asteroidsName: 'Known asteroids (SkyBoT)',
     catwiseName: 'CatWISE2020 (its archive at IRSA)',
     flagsName: 'Flags in each photo (needs the cloud helper)',
+    fieldGuide: 'What fools you: real examples of artefacts and blends →',
     copy: 'Copy report',
     copied: 'Report copied',
     reportNote:
@@ -1172,6 +1173,10 @@ export const copy = {
     confirmed: 'Confirmed by independent evidence, below.',
     howToTell: 'How to tell:',
     openSpot: 'Open this spot',
+    linkShort: 'What fools you →',
+    fromTests: 'Artefacts we know about: what fools you →',
+    hatchKey: 'Hatched: masked by other flags. Red outline: the flag this card is about.',
+    marksKey: '+ the light’s centre · ○ the Gaia star · ◇ WISE 0855’s predicted place',
     loadFailed: 'The examples couldn’t be loaded just now.',
     note: 'Examples come from photos we already had for our five targets and the live look, not a random sample of the sky. Each is the clearest example our fixed rule found (prereg/fieldguide/PLAN.md).',
     stretch:

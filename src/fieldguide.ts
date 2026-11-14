@@ -33,6 +33,8 @@ interface Panel {
   masked: string;
   /** Where a ring goes (panel pixels), when the thing is a point. */
   ring?: [number, number];
+  /** Two colours' marks (panel pixels): + light centre, ○ catalogue star, ◇ predicted place. */
+  marks?: { kind: 'light' | 'neighbour' | 'target'; x: number; y: number }[];
 }
 export interface Card {
   id: string;
@@ -128,6 +130,38 @@ async function drawPanels(card: Card): Promise<HTMLElement[]> {
           }
         }
       ctx.stroke();
+      // Two colours' marks, by shape and the app's colours (a gapped +, ○, ◇).
+      const mist = css.getPropertyValue('--sky-mist').trim() || '#d2cbc2';
+      const lilac = css.getPropertyValue('--sky-predicted').trim() || '#a9a4c9';
+      for (const m of p.marks ?? []) {
+        const X = (m.x + 0.5) * Z;
+        const Y = (n - 1 - m.y + 0.5) * Z;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        if (m.kind === 'neighbour') {
+          ctx.strokeStyle = mist;
+          ctx.arc(X, Y, 6, 0, 2 * Math.PI);
+        } else if (m.kind === 'target') {
+          ctx.strokeStyle = lilac;
+          ctx.moveTo(X, Y - 7);
+          ctx.lineTo(X + 7, Y);
+          ctx.lineTo(X, Y + 7);
+          ctx.lineTo(X - 7, Y);
+          ctx.closePath();
+        } else {
+          ctx.strokeStyle = star;
+          for (const [dx, dy] of [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ] as const) {
+            ctx.moveTo(X + dx * 2, Y + dy * 2);
+            ctx.lineTo(X + dx * 6, Y + dy * 6);
+          }
+        }
+        ctx.stroke();
+      }
       if (p.ring) {
         ctx.strokeStyle = star;
         ctx.lineWidth = 1.5;
@@ -152,6 +186,8 @@ function cardShell(card: Card): HTMLElement {
     h('h3', {}, card.title),
     h('p', { class: 'fg-looks' }, t.looksLike, ' ', card.looksLike),
     panels,
+    card.panels.some((p) => p.marks?.length) ? h('p', { class: 'fg-key' }, t.marksKey) : null,
+    h('p', { class: 'fg-key' }, t.hatchKey),
     h(
       'p',
       { class: `fg-label ${card.label}` },

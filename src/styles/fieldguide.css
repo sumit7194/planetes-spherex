@@ -103,3 +103,8 @@
 .fg-note {
   margin-top: 24px;
 }
+.fg-key {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: var(--quiet);
+}

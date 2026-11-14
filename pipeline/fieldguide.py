@@ -32,7 +32,14 @@ Step 6 (`export`): 32x32 panels (f32 image, u8 mask of the card's own flag, u8 o
 public/data/fieldguide/cards.json with each card's draft wording and evidence (Physics signs the
 labels and evidence before anything is pushed).
 
-Usage: uv run python fieldguide.py index | search | select | confirm | named | export
+Step 7 (`repick`, Physics' decisions after the confirmation results): the cosmic-ray card from
+TRANSIENT regions touching no SOURCE, NONFUNC or HOT pixel and with no Gaia star within 2 px; the
+star-hit card from TRANSIENT regions with a Gaia match, keeping the first (largest excess) whose
+star shows at S/N >= 5 in at least 2 other photos of the same detector and whose light in the
+picked photo is within a factor of 2 of the star's median there (all measured in the same 3x3
+aperture at the star's place). Writes cache/fieldguide_repick.json.
+
+Usage: uv run python fieldguide.py index | search | select | confirm | named | export | repick
 """
 from __future__ import annotations
 
@@ -156,7 +163,8 @@ def regions(e: dict, names, touch=None) -> list[dict]:
         yy, xx = np.nonzero(reg)
         out.append(dict(excess=excess, sn=excess / (sd * math.sqrt(pix.size)), npix=int(reg.sum()),
                         x=float(xx.mean()), y=float(yy.mean()), bk=bk, sd=sd,
-                        touch=bool(touch is not None and (touch & reg).any()),
+                        touch=bool(touch is not None and not isinstance(touch, dict) and (touch & reg).any()),
+                        touches={k: bool((m_ & reg).any()) for k, m_ in touch.items()} if isinstance(touch, dict) else {},
                         names=sorted({nm for nm in names if mask_of(e, (nm,))[reg].any()})))
     return out
 
@@ -529,6 +537,50 @@ def other_photo(c: dict, rows: list[dict], want_sn) -> tuple[dict, float, float]
     return None if best is None else (dict(best[1], m=best[4]), best[2], best[3])
 
 
+def recentre(img: np.ndarray, x: float, y: float) -> tuple[float, float]:
+    """The app's recentre (spotCheck.ts): brightest pixel within 1 px, then the 3x3 flux-weighted
+    centroid of values above the 3x3's minimum."""
+    xi, yi = int(round(x)), int(round(y))
+    best, bx, by = -np.inf, xi, yi
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            v = img[yi + dy, xi + dx]
+            if np.isfinite(v) and v > best:
+                best, bx, by = v, xi + dx, yi + dy
+    box = img[by - 1:by + 2, bx - 1:bx + 2]
+    w = np.where(np.isfinite(box), box - np.nanmin(box), 0)
+    if w.sum() <= 0:
+        return float(bx), float(by)
+    yy, xx = np.mgrid[-1:2, -1:2]
+    return float(bx + (w * xx).sum() / w.sum()), float(by + (w * yy).sum() / w.sum())
+
+
+def blend_marks(img, all_late, man, mjd, c0) -> list[dict]:
+    """+ light centre, o the Gaia neighbour, diamond WISE 0855 predicted: as Two colours draws them,
+    in the 32x32 panel's pixels (the panel is centred on the grid centre)."""
+    import catalogs
+    g = man["grid"]
+    cosd = math.cos(math.radians(g["centre"]["dec"]))
+    def to_px(ra, dec):
+        dra = (ra - g["centre"]["ra"] + 540) % 360 - 180
+        return c0 - dra * cosd * 3600 / g["pixelScaleArcsec"], c0 + (dec - g["centre"]["dec"]) * 3600 / g["pixelScaleArcsec"]
+    sx, sy = recentre(all_late, c0, c0)
+    lx, ly = recentre(img, sx, sy)
+    yr = year_of(mjd)
+    nb = dict(ra=133.75818250493919, dec=-7.241155906974705, pmra=-6.187834849360848,
+              pmdec=1.9308548733514355, epoch=2016.0)
+    nx, ny = to_px(*catalogs.propagate(nb, yr))
+    t = json.loads((HERE / "targets.json").read_text())
+    tl = t["targets"] if isinstance(t, dict) and "targets" in t else t
+    w0855 = [x for x in tl if x.get("slug") == "w0855"][0]
+    tx, ty = to_px(*catalogs.propagate(dict(ra=w0855["ra"], dec=w0855["dec"], pmra=w0855["pmra"],
+                                            pmdec=w0855["pmdec"], epoch=w0855["epoch"]), yr))
+    off = c0 - CUT // 2 + 0.5  # grid pixel -> panel pixel (the panel starts at round(c0) - 16)
+    off = round(c0) - CUT // 2
+    return [dict(kind="light", x=lx - off, y=ly - off), dict(kind="neighbour", x=nx - off, y=ny - off),
+            dict(kind="target", x=tx - off, y=ty - off)]
+
+
 def export() -> None:
     conf = json.loads((CACHE / "fieldguide_confirm.json").read_text())
     named_ = json.loads((CACHE / "fieldguide_named.json").read_text())
@@ -552,10 +604,11 @@ def export() -> None:
     cards.append(dict(
         id="bad-pixel", section="not-in-sky", title="A pixel that isn’t working",
         looksLike="a new point of light", label="flagged",
-        evidence=[f"Flagged NONFUNC (not working) and TRANSIENT by the pipeline",
-                  f"About {c['excess']:,.0f} MJy/sr in one pixel, while the pixels around it read about {c['bk']:.1f}",
+        evidence=["Flagged by the pipeline as not working (NONFUNC) and transient (TRANSIENT)",
+                  f"About {c['excess']:,.0f} MJy/sr in one pixel, about {c['excess'] / c['bk']:,.0f} times its neighbours (about {c['bk']:.1f})"
+                  if c["bk"] > 0 else f"About {c['excess']:,.0f} MJy/sr in one pixel, while the pixels around it read about {c['bk']:.1f}",
                   f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
-        howToTell="A real source shows in the other photos of the same spot; a bad pixel shows in one.",
+        howToTell="A real source stays with the sky, so it shows in other photos of the same spot. A bad pixel stays with the detector, so other photos of the same spot don’t show it.",
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
                     detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
         panels=panels))
@@ -574,8 +627,9 @@ def export() -> None:
     cards.append(dict(
         id="persistence", section="not-in-sky", title="An afterglow on the detector",
         looksLike="a faint new source", label="flagged",
-        evidence=["Flagged PERSIST by the pipeline: light left on the detector by something bright it saw before",
-                  f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
+        evidence=["Flagged as an afterglow (PERSIST): the pipeline’s flag for light left on the detector by something bright it saw before",
+                  f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days",
+                  "The earlier photo that left it isn’t among the photos we have, so the bright source itself can’t be shown"],
         howToTell="If it isn’t in the other photos of the same spot and carries a persistence flag, it’s the detector remembering, not the sky.",
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),
                     detector=d, **{"lambda": lam}, at=f"{c['ra']:.5f},{c['dec']:.5f}"),
@@ -587,15 +641,16 @@ def export() -> None:
     cards.append(dict(
         id="saturated", section="in-sky", title="A star too bright for the detector",
         looksLike="a strange blob or a spike", label="confirmed",
-        evidence=["Barnard’s Star, Gaia DR3 G 8.2: far brighter than SPHEREx can measure",
-                  f"Flagged {' and '.join(b['names'])} at its centre ({b['area']} pixels) and HALO around it ({b['halo_px']} pixels)",
+        evidence=["Barnard’s Star, Gaia DR3 G 8.2: far brighter at its centre than SPHEREx can measure",
+                  f"Flagged at its centre as saturated ({', '.join(b['names'])}; {b['area']} pixels) and around it as a bright star’s halo (HALO; {b['halo_px']} pixels)",
                   "Its light is real; only the centre’s numbers can’t be trusted"],
         howToTell="A blob on a bright catalogued star with saturation flags is the star itself, not something new.",
         source=dict(photos=[b["obs"]], date=date_of(b["mjd"]), detector=d, **{"lambda": lam},
                     at="269.44630,4.76820"),
-        panels=[photo_panel("sat-a", b["path"], b["x"], b["y"], SATURATION, "saturated centre",
+        panels=[photo_panel("sat-a", b["path"], b["x"], b["y"], SATURATION,
+                            f"outlined: saturation ({', '.join(b['names'])})",
                             "Barnard's Star: the saturated centre outlined"),
-                photo_panel("sat-b", b["path"], b["x"], b["y"], ("HALO",), "its halo",
+                photo_panel("sat-b", b["path"], b["x"], b["y"], ("HALO",), "outlined: halo (HALO)",
                             "Barnard's Star: the halo flags outlined")]))
 
     # 4. The control: an ordinary star.
@@ -635,6 +690,8 @@ def export() -> None:
     tl = shift["targets"] if isinstance(shift, dict) and "targets" in shift else shift
     cs = [x for x in tl if x.get("slug") == "w0855"][0]["spotFact"]["centreShift"]["may2026"]
     blend_panels, nstack = [], []
+    st_all = [x for x in man["stacks"] if x["kind"] == "all-colour" and x["season"] == later][0]
+    all_late = np.fromfile(pk / st_all["image"], "<f4").reshape(n, n)
     for det, lab in ((2, "D2 · 1.1–1.6 µm"), (6, "D6 · 4.4–5 µm")):
         st = [x for x in man["stacks"] if x["kind"] == "one-detector" and x["season"] == later and x["detectors"] == [det]][0]
         nstack.append(len(st["frameIds"]))
@@ -645,13 +702,13 @@ def export() -> None:
         pmask = crop(((fl & 3) > 0).astype(np.uint8), c0, c0, 1)
         blend_panels.append(dict(write_panel(f"blend-d{det}", pimg, np.zeros((CUT, CUT), np.uint8), pmask),
                                  caption=lab, alt=f"WISE 0855's spot in {lab}, May 2026 stack",
-                                 ring=[CUT // 2 - 0.5, CUT // 2 - 0.5]))
+                                 marks=blend_marks(img, all_late, man, mjd, c0)))
     cards.append(dict(
         id="blend", section="in-sky", title="Two sources in one pixel",
         looksLike="one object, maybe a new one", label="confirmed",
-        evidence=["WISE 0855 and a Gaia star (G 16.3) lie 6.4″ apart: about one SPHEREx pixel (6.15″)",
-                  f"At 1.1–1.6 µm the light is centred {cs['D1_D4_fromGaia'].split('-')[-1]}″ or less from the star",
-                  f"At 4.4–5 µm it moves to {cs['D6']['fromGaia']}″ from the star and {cs['D6']['fromW0855']}″ from WISE 0855’s predicted place"],
+        evidence=["On 1 May 2026, WISE 0855’s predicted place and a Gaia star (G 16.3) are 6.4″ apart, about one SPHEREx pixel (6.15″); in November 2025 they were 9.5″ apart, because WISE 0855 moves",
+                  "From the short colour to the long one, the light moves off the star, towards WISE 0855’s place",
+                  f"Light centre: within {cs['D1_D4_fromGaia'].split('-')[-1]}″ of the star at 1.1–1.6 µm; {cs['D6']['fromGaia']}″ from it and {cs['D6']['fromW0855']}″ from WISE 0855 at 4.4–5 µm (centres good to about 1″)"],
         howToTell="If a catalogued star sits within a pixel or two, the spot is a blend: look at its colours, as “Two colours” does on WISE 0855’s page.",
         source=dict(photos=[f"stacks of {nstack[0]} (D2) and {nstack[1]} (D6) photos"], date=date_of(mjd),
                     detector="D2 and D6", **{"lambda": "1.1–1.6 and 4.4–5 µm"}, at=None),
@@ -663,6 +720,82 @@ def export() -> None:
     print(len(cards), "cards;", sorted(p_.name for p_ in OUT.iterdir())[:20])
 
 
+def repick() -> None:
+    import catalogs
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    flds = fields(idx["rows"])
+    gaia_for_fields(flds)
+    field_of = {r["path"]: f for f in flds for r in f["rows"]}
+    cosmic, hits = [], []
+    for i, row in enumerate(idx["rows"]):
+        # Our own cache, written only by this pipeline on this machine (as build_pack's).
+        e = pickle.loads((CACHE / row["path"]).read_bytes())
+        src = mask_of(e, ("SOURCE",))
+        badpx = mask_of(e, ("NONFUNC", "HOT"))
+        for r in regions(e, ("TRANSIENT",), touch={"source": src, "badpx": badpx}):
+            if r["sn"] < SN_MIN or r["touches"]["source"]:
+                continue
+            ra, dec = sky_of(e, r["x"], r["y"])
+            g = gaia_near(field_of[row["path"]]["gaia"], ra, dec, row["mjd"])
+            rec = dict(r, path=row["path"], obs=row["obs"], det=row["det"], mjd=row["mjd"], lam=row["lam"],
+                       x0=int(e["x0"]), y0=int(e["y0"]), ra=round(ra, 6), dec=round(dec, 6))
+            if g:
+                # Star-hit candidates: the original rule (no SOURCE pixel) plus a Gaia match.
+                hits.append(dict(rec, gaia=dict(id=g["id"], G=g["mag"], ra=g["ra"], dec=g["dec"],
+                                               pmra=g["pmra"], pmdec=g["pmdec"], epoch=g["epoch"],
+                                               sep_px=g["sep_px"])))
+            elif not r["touches"]["badpx"]:
+                # Cosmic ray: no SOURCE, no NONFUNC/HOT pixel, no Gaia star (Physics' re-pick).
+                cosmic.append(rec)
+        if i % 3000 == 0:
+            print(i, len(cosmic), len(hits), flush=True)
+    cosmic.sort(key=lambda r: -r["excess"])
+    hits.sort(key=lambda r: -r["excess"])
+    # Cosmic ray: the largest excess with no SkyBoT asteroid within 2 px (an unchecked one is skipped).
+    chosen_c, checked = None, []
+    for cand in cosmic[:15]:
+        sb = skybot_near(cand["ra"], cand["dec"], cand["mjd"])
+        checked.append(dict(obs=cand["obs"], skybot=None if sb is None else len(sb)))
+        if sb == []:
+            chosen_c = cand
+            break
+    # Star-hit: the star must show in >= 2 other photos, and the light here must match it within x2.
+    idx_rows = idx["rows"]
+    chosen_h, tried = None, []
+    for cand in hits[:40]:
+        g = cand["gaia"]
+        here = pickle.loads((CACHE / cand["path"]).read_bytes())
+        w = WCS(fits.Header.fromstring(here["wcs_hdr"]))
+        gr, gd = catalogs.propagate(g, year_of(cand["mjd"]))
+        px, py = w.all_world2pix(gr, gd, 0)
+        m_here = measure(here, float(px) - here["x0"], float(py) - here["y0"], 1)
+        seen = []
+        for row in idx_rows:
+            if row["det"] != cand["det"] or row["obs"] == cand["obs"] or sep_deg(row["ra"], row["dec"], gr, gd) > 0.3:
+                continue
+            e = pickle.loads((CACHE / row["path"]).read_bytes())
+            w2 = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+            r2, d2 = catalogs.propagate(g, year_of(row["mjd"]))
+            qx, qy = w2.all_world2pix(r2, d2, 0)
+            m = measure(e, float(qx) - e["x0"], float(qy) - e["y0"], 1)
+            if m and m["sn"] >= 5:
+                seen.append(m["excess"])
+        med = float(np.median(seen)) if seen else None
+        ok = bool(m_here and len(seen) >= 2 and med and med > 0 and 0.5 <= m_here["excess"] / med <= 2)
+        tried.append(dict(obs=cand["obs"], gaia=g["id"], G=g["G"], seen_in=len(seen), median_excess=med,
+                          here_excess=m_here and m_here["excess"], ok=ok))
+        if ok:
+            chosen_h = dict(cand, star_median_excess=med, star_seen_in=len(seen), here_excess=m_here["excess"])
+            break
+    out = dict(cosmic=dict(n=len(cosmic), chosen=chosen_c, skybot_checked=checked),
+               star_hit=dict(n=len(hits), chosen=chosen_h, tried=tried))
+    (CACHE / "fieldguide_repick.json").write_text(json.dumps(out, indent=1, default=float))
+    print("cosmic", len(cosmic), chosen_c and (chosen_c["obs"], chosen_c["det"], chosen_c["npix"],
+                                               round(chosen_c["excess"], 2), round(chosen_c["sn"], 1)))
+    print("star-hit", len(hits), "tried", len(tried), chosen_h and (chosen_h["obs"], chosen_h["gaia"]["G"],
+                                                                   chosen_h["star_seen_in"]))
+
+
 if __name__ == "__main__":
     {"index": index, "search": search, "select": select, "confirm": confirm,
-     "named": named, "export": export}[sys.argv[1]]()
+     "named": named, "export": export, "repick": repick}[sys.argv[1]]()

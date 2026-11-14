@@ -4091,6 +4091,16 @@ function spotCard(): HTMLElement | null {
     if (factHere && targetFact)
       folded.push(h('p', { class: 'hint' }, targetFact.text, ' ', t.factSource(targetFact.source)));
     folded.push(checks);
+    // The field guide, at the card that matches this verdict (Viewer).
+    const fg =
+      v.kind === 'blend'
+        ? '#blend'
+        : v.kind === 'artefact'
+          ? '#bad-pixel'
+          : v.kind === 'star'
+            ? '#ordinary-star'
+            : '';
+    folded.push(h('p', { class: 'hint' }, h('a', { href: `fieldguide.html${fg}` }, t.fieldGuide)));
     if (r.flagCounts.length && r.seen) {
       const n = r.seen.n;
       folded.push(
@@ -4894,6 +4904,9 @@ function legend(withKey = false): HTMLElement {
     // On the homepage the marks' key lives here, not in the band (Viewer, 14 Nov).
     withKey ? markKey('sky') : null,
     withKey ? h('p', { class: 'hint' }, h('a', { href: 'tests.html' }, copy.tests.link)) : null,
+    withKey
+      ? h('p', { class: 'hint' }, h('a', { href: 'fieldguide.html' }, copy.fieldguide.linkShort))
+      : null,
     // Light or dark lives here, not in the header (Sumit, 15 Nov): every device reaches it.
     schemeChoice(copy.scheme),
   );
@@ -6237,6 +6250,10 @@ function tourCard(): HTMLElement {
       dots,
     ),
     h('p', { class: 'tour-line' }, steps[tourStep] ?? ''),
+    // The last step points to the field guide (Viewer).
+    tourStep === steps.length - 1
+      ? h('p', { class: 'hint' }, h('a', { href: 'fieldguide.html' }, copy.fieldguide.linkShort))
+      : null,
     tourStep === 0 ? h('p', { class: 'hint' }, copy.home.ringNote) : null,
     tourStep === 1 ? rideAlong() : null,
     h('div', { class: 'actions' }, back, next, skip),
