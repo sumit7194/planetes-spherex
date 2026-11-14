@@ -581,8 +581,41 @@ export class SkyView {
    * Drawn in the inside view only, to the zoom's natural depth, and labelled as Gaia's.
    */
   #deep: [number, number, number, number | null][] = [];
+  /** Each star's direction (x, y, z), once, so a frame can skip stars outside the view cheaply. */
+  #starVec = new Float64Array(0);
+  #deepVec = new Float64Array(0);
+
+  /**
+   * The inside view's visible cone: the centre's direction and the cosine of the angle out to
+   * the screen's farthest corner (with a margin). Stars outside it are skipped before the
+   * projection: at a 2° field all but a few dozen of the 41,394 (14 Nov: 12 ms a frame to ~?).
+   * Null when everything may show (the flat map, or a field near the projection's own limit).
+   */
+  #viewCone(): { x: number; y: number; z: number; cos: number } | null {
+    if (this.#entry !== 'inside') return null;
+    const { width: W, height: H } = this.canvas;
+    const a = this.#axis();
+    const far = Math.max(
+      Math.hypot(a.x, a.y),
+      Math.hypot(W - a.x, a.y),
+      Math.hypot(a.x, H - a.y),
+      Math.hypot(W - a.x, H - a.y),
+    );
+    const f = a.r / Math.tan((this.#fov / 2) * RAD);
+    const ang = angleFromRadius((far / f) * 1.05, this.#stereoK) + 0.5 * RAD;
+    if (ang > 80 * RAD) return null;
+    const ra = this.#centre.ra * RAD;
+    const dec = this.#centre.dec * RAD;
+    return {
+      x: Math.cos(dec) * Math.cos(ra),
+      y: Math.cos(dec) * Math.sin(ra),
+      z: Math.sin(dec),
+      cos: Math.cos(ang),
+    };
+  }
   setDeepStars(stars: [number, number, number, number | null][]): void {
     this.#deep = stars;
+    this.#deepVec = unitVectors(stars);
     this.draw();
   }
   /** The view the page needs to choose patches: the inside view's aim, field and scale. */
@@ -600,6 +633,7 @@ export class SkyView {
 
   setStars(stars: CatalogueStar[]): void {
     this.#stars = stars;
+    this.#starVec = unitVectors(stars);
     this.draw();
   }
 
@@ -1038,8 +1072,17 @@ export class SkyView {
     const named: { name: string; p: { x: number; y: number } }[] = [];
     // The light tier draws about half as many stars (half a magnitude shallower).
     const limit = magnitudeLimit(this.#cssPxPerDeg()) - (this.#quality >= 1 ? 0 : 0.5);
-    for (const [ra, dec, v, bv, hip] of this.#stars) {
+    const cone = this.#viewCone();
+    const sv = this.#starVec;
+    for (let i = 0; i < this.#stars.length; i++) {
+      const [ra, dec, v, bv, hip] = this.#stars[i] as CatalogueStar;
       if (v > limit) continue;
+      if (
+        cone &&
+        (sv[3 * i] ?? 0) * cone.x + (sv[3 * i + 1] ?? 0) * cone.y + (sv[3 * i + 2] ?? 0) * cone.z <
+          cone.cos
+      )
+        continue;
       const p = this.project({ ra, dec });
       if (!p) continue;
       ctx.fillStyle = starColour(bv);
@@ -1078,8 +1121,18 @@ export class SkyView {
     if (inside && this.#deep.length) {
       const deepLimit =
         3.5 + Math.log2(Math.max(0.5, this.#cssPxPerDeg())) - (this.#quality >= 1 ? 0 : 0.5);
-      for (const [ra, dec, g, bv] of this.#deep) {
+      const dv = this.#deepVec;
+      for (let i = 0; i < this.#deep.length; i++) {
+        const [ra, dec, g, bv] = this.#deep[i] as [number, number, number, number | null];
         if (g > deepLimit) continue;
+        if (
+          cone &&
+          (dv[3 * i] ?? 0) * cone.x +
+            (dv[3 * i + 1] ?? 0) * cone.y +
+            (dv[3 * i + 2] ?? 0) * cone.z <
+            cone.cos
+        )
+          continue;
         const p = this.project({ ra, dec });
         if (!p) continue;
         ctx.fillStyle = starColour(bv);
@@ -3338,6 +3391,21 @@ function smooth(t: number): number {
  * `k` stereographic (2 tan(c/2)) and 1 − k pinhole (tan c): Newton's method from a blend of
  * the two exact answers.
  */
+/** Unit vectors (x, y, z) of [ra°, dec°, ...] rows, packed. */
+function unitVectors(
+  rows: readonly (readonly number[] | readonly (number | null | undefined)[])[],
+): Float64Array<ArrayBuffer> {
+  const out = new Float64Array(rows.length * 3);
+  rows.forEach((r, i) => {
+    const ra = (r[0] as number) * RAD;
+    const dec = (r[1] as number) * RAD;
+    out[3 * i] = Math.cos(dec) * Math.cos(ra);
+    out[3 * i + 1] = Math.cos(dec) * Math.sin(ra);
+    out[3 * i + 2] = Math.sin(dec);
+  });
+  return out;
+}
+
 export function angleFromRadius(rho: number, k: number): number {
   if (k <= 0) return Math.atan(rho);
   if (k >= 1) return 2 * Math.atan(rho / 2);
