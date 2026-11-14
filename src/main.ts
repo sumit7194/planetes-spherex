@@ -607,6 +607,9 @@ let starTipSeq = 0;
 // Mouse only (touch keeps tap = look), on the sky, not during a Surprise flight.
 const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
 sky.starTipsAllowed = () => finePointer.matches && state.place.kind === 'sky' && !surpriseFlight;
+/** Hipparcos places are for J1991.25: today's place, by the star's proper motion. */
+const HIPPARCOS_EPOCH = 1991.25;
+sky.onStarTap = (at, pm) => sky.onSkyTap(placeAt(at, pm[0], pm[1], HIPPARCOS_EPOCH, NOW_YEAR));
 sky.onStarRest = (s) => {
   const seq = ++starTipSeq;
   if (!s) {
@@ -649,7 +652,7 @@ sky.onStarRest = (s) => {
   const giveUp = window.setTimeout(() => {
     if (seq === starTipSeq && passes.textContent === t.checking) passes.remove();
   }, 1000);
-  findPhotos(s.at)
+  findPhotos(placeAt(s.at, s.pm[0], s.pm[1], HIPPARCOS_EPOCH, NOW_YEAR))
     .then((photos) => {
       if (seq !== starTipSeq) return;
       passes.textContent = photos.length ? t.passes(passesText(photos.map((p) => p.mjd))) : t.none;
@@ -663,7 +666,7 @@ sky.onStarRest = (s) => {
 
 sky.setLanterns(lanterns);
 locator.setLanterns(lanterns.map((l) => ({ ...l, label: '' })));
-void fetch(`${import.meta.env.BASE_URL}catalog/bright-stars-v8.json`)
+void fetch(`${import.meta.env.BASE_URL}catalog/bright-stars-v9.json`)
   .then((r) => r.json() as Promise<{ stars: CatalogueStar[] }>)
   .then((c) => {
     sky.setStars(c.stars);

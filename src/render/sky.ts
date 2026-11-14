@@ -24,8 +24,12 @@ import { stepOut, type StepOut } from './scene/camera';
 import { nearestRow, pointingAt, separationDeg, speedAfter, type Timeline } from './scene/ride';
 import { nearestU, orbitPoint } from './scene/orbit';
 
-/** One catalogue star: [ra°, dec°, V magnitude, B−V colour or null, Hipparcos number?]. */
-export type CatalogueStar = [number, number, number, number | null, number?];
+/**
+ * One catalogue star: [ra°, dec°, V magnitude, B−V colour or null, Hipparcos number?, pmRA*?,
+ * pmDec? (mas/yr)]. Places are Hipparcos's, at J1991.25; v9 adds the proper motions so a star
+ * can be moved to today (Viewer, 14 Nov: Arcturus is ~80″ from its 1991 place).
+ */
+export type CatalogueStar = [number, number, number, number | null, number?, number?, number?];
 
 /** Names appear for brighter stars when wide, and for fainter ones as the view narrows. */
 function namedLimit(fov: number): number {
@@ -217,7 +221,7 @@ export class SkyView {
   #raf = 0;
   #last = 0;
   #drag: { x: number; y: number; ra: number; dec: number } | null = null;
-  #downOnStar: SkyPosition | null = null;
+  #downOnStar: { at: SkyPosition; pm: [number, number] } | null = null;
   /** The flat map easing back inside its top or bottom after an elastic drag. */
   #flatSpring: { from: number; to: number; t0: number } | null = null;
   /**
@@ -309,12 +313,24 @@ export class SkyView {
    * the pointer moves off, drags, zooms or leaves. Never two at once; lanterns come first.
    */
   onStarRest: (
-    s: { hip: number; name: string | null; v: number; at: SkyPosition; x: number; y: number } | null,
+    s: {
+      hip: number;
+      name: string | null;
+      v: number;
+      /** The catalogue place (J1991.25) and its proper motion, mas/yr. */
+      at: SkyPosition;
+      pm: [number, number];
+      x: number;
+      y: number;
+    } | null,
   ) => void = () => {};
   /** The page says when a star tip may show (the sky place, no Surprise flight, a fine pointer). */
   starTipsAllowed: () => boolean = () => false;
+  /** A click on the star whose tip shows: its catalogue place (J1991.25) and proper motion. */
+  onStarTap: (at: SkyPosition, pm: [number, number]) => void = (at) => this.onSkyTap(at);
   #rest: { x: number; y: number; timer: number } = { x: NaN, y: NaN, timer: 0 };
-  #restStar: { hip: number; at: SkyPosition; x: number; y: number } | null = null;
+  #restStar: { hip: number; at: SkyPosition; pm: [number, number]; x: number; y: number } | null =
+    null;
   #clearRest(): void {
     window.clearTimeout(this.#rest.timer);
     this.#rest.x = NaN;
@@ -338,7 +354,8 @@ export class SkyView {
     );
   }
   #findRestStar(cx: number, cy: number): void {
-    if (this.#drag || this.#flight || this.#riding || !this.marks || !this.starTipsAllowed()) return;
+    if (this.#drag || this.#flight || this.#riding || !this.marks || !this.starTipsAllowed())
+      return;
     const rect = this.canvas.getBoundingClientRect();
     const u = this.canvas.width / Math.max(1, rect.width);
     const pt = { x: (cx - rect.left) * u, y: (cy - rect.top) * u };
@@ -354,12 +371,13 @@ export class SkyView {
       if (d <= 10 * u && (!best || d < best.d)) best = { d, star, p };
     }
     if (!best) return;
-    const [ra, dec, v, , hip] = best.star;
+    const [ra, dec, v, , hip, pmRa, pmDec] = best.star;
     const at = { ra, dec };
+    const pm: [number, number] = [pmRa ?? 0, pmDec ?? 0];
     const x = rect.left + best.p.x / u;
     const y = rect.top + best.p.y / u;
-    this.#restStar = { hip: hip!, at, x, y };
-    this.onStarRest({ hip: hip!, name: this.#names.get(hip!) ?? null, v, at, x, y });
+    this.#restStar = { hip: hip!, at, pm, x, y };
+    this.onStarRest({ hip: hip!, name: this.#names.get(hip!) ?? null, v, at, pm, x, y });
   }
   /** Shift + scroll over the sky: step the time sweep by weeks. */
   onSweep: (step: number) => void = () => {};
@@ -3000,7 +3018,7 @@ export class SkyView {
     const tipped = this.#restStar;
     window.clearTimeout(this.#rest.timer);
     this.#downOnStar =
-      !!tipped && Math.hypot(e.clientX - tipped.x, e.clientY - tipped.y) <= 12 ? tipped.at : null;
+      !!tipped && Math.hypot(e.clientX - tipped.x, e.clientY - tipped.y) <= 12 ? tipped : null;
     this.#flight = null;
     this.#pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (this.#pointers.size === 2) {
@@ -3108,11 +3126,10 @@ export class SkyView {
       if (edge) void this.flyTo(edge.lantern.at, Math.min(this.#fov, 40), 900);
       else if (l?.ready) this.onSelect(l.id);
       else if (onStar) {
-        // The star's own catalogue place, not the pointer's (Viewer, 14 Nov).
+        // The star itself, moved to today by the page, not the pointer's spot (Viewer, 14 Nov).
         this.#clearRest();
-        this.onSkyTap(onStar);
-      }
-      else if (this.marks && e.target === this.canvas) {
+        this.onStarTap(onStar.at, onStar.pm);
+      } else if (this.marks && e.target === this.canvas) {
         const rect = this.canvas.getBoundingClientRect();
         const u = this.canvas.width / Math.max(1, rect.width);
         const p = { x: (e.clientX - rect.left) * u, y: (e.clientY - rect.top) * u };
