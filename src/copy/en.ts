@@ -108,8 +108,11 @@ export const copy = {
       `You've zoomed in as far as this map goes. Scroll once more to open ${name}.`,
     tapToOpen: (name: string) =>
       `You've zoomed in as far as this map goes. Tap ${name} to open it.`,
+    /** Zoomed in as far as the map goes, away from the five: any spot opens a live look. */
     nothingHere:
-      "We haven't measured anything here yet. For now, close-ups open only on the five named lights.",
+      "You've zoomed in as far as this map goes. Click here for SPHEREx's own photos of this spot.",
+    nothingHereTouch:
+      "You've zoomed in as far as this map goes. Tap here for SPHEREx's own photos of this spot.",
     /** The time sweep over the weekly coverage maps (Physics). */
     sweep: {
       open: 'Where did SPHEREx look?',

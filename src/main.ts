@@ -652,7 +652,9 @@ sky.onTurn = ({ near, narrowest, onLight }) => {
     narrowest && w
       ? (touchOnly ? copy.sky.tapToOpen : copy.sky.scrollToOpen)(copy.wanderers[w.id].name)
       : narrowest
-        ? copy.sky.nothingHere
+        ? touchOnly
+          ? copy.sky.nothingHereTouch
+          : copy.sky.nothingHere
         : near
           ? near.sepDeg <= NEAR_DEG
             ? copy.sky.lookingNear(near.name)
