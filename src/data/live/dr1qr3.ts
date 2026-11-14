@@ -653,6 +653,171 @@ export function waveAt(
   return out;
 }
 
+/**
+ * FLAGS rows y0..y1 (inclusive) of one photo: a RICE-compressed BINTABLE, one tile per image row;
+ * descriptors first, then one range for the heap span those rows use.
+ */
+async function flagRows(
+  url: string,
+  fh: { header: Header; length: number },
+  flagsOff: number,
+  nx: number,
+  y0: number,
+  y1: number,
+  obsId: string,
+  signal?: AbortSignal,
+): Promise<{ flags: Int32Array; F: Header; bytes: number }> {
+  const rows = y1 - y0 + 1;
+  const F = fh.header;
+  const rowLen = num(F, 'NAXIS1');
+  const fData = flagsOff + fh.length;
+  const theap = num(F, 'THEAP', rowLen * num(F, 'NAXIS2'));
+  const tf = num(F, 'TFIELDS');
+  let off = 0;
+  let col = -1;
+  let isQ = false;
+  for (let k = 1; k <= tf; k++) {
+    const form = String(F.get(`TFORM${k}`));
+    if (F.get(`TTYPE${k}`) === 'COMPRESSED_DATA') {
+      col = off;
+      isQ = form.includes('Q');
+      break;
+    }
+    off += form.includes('P')
+      ? 8
+      : form.includes('Q')
+        ? 16
+        : (Number(/^\d*/.exec(form)![0]) || 1) *
+          ({ J: 4, K: 8, E: 4, D: 8, B: 1, I: 2, L: 1, A: 1 } as Record<string, number>)[
+            form.replace(/^\d*/, '')[0]!
+          ]!;
+  }
+  if (col < 0) throw new Error(`${obsId}: FLAGS has no COMPRESSED_DATA`);
+  const desc = await range(url, fData + y0 * rowLen, fData + (y1 + 1) * rowLen - 1, signal);
+  const dv = new DataView(desc.buffer, desc.byteOffset, desc.byteLength);
+  const cnt: number[] = [];
+  const hof: number[] = [];
+  for (let r = 0; r < rows; r++) {
+    const o = r * rowLen + col;
+    if (isQ) {
+      cnt.push(Number(dv.getBigInt64(o, false)));
+      hof.push(Number(dv.getBigInt64(o + 8, false)));
+    } else {
+      cnt.push(dv.getInt32(o, false));
+      hof.push(dv.getInt32(o + 4, false));
+    }
+  }
+  const h0b = Math.min(...hof);
+  const h1b = Math.max(...hof.map((o, r) => o + cnt[r]!));
+  const heap = await rangeParallel(url, fData + theap + h0b, fData + theap + h1b - 1, signal);
+  const flags = new Int32Array(rows * nx);
+  for (let r = 0; r < rows; r++)
+    flags.set(riceDecode32(heap.subarray(hof[r]! - h0b, hof[r]! - h0b + cnt[r]!), nx), r * nx);
+  return { flags, F, bytes: desc.length + heap.length };
+}
+
+/**
+ * One photo's pixels around a position at the detector's own resolution: no resampling, the full
+ * 32-bit flag words (and the header's MSKN bit names), the image header as text (for an exact WCS
+ * elsewhere) and the wavelength at the position. The pipeline's read_box (pipeline/spherex.py),
+ * run next to the data by the cloud helper (/v1/native). Null when the position is off the photo.
+ */
+export interface NativeBox {
+  obsId: string;
+  /** The box's first column and row on the detector (0-based), and its size. */
+  x0: number;
+  y0: number;
+  w: number;
+  h: number;
+  /** The position's pixel on the detector (0-based). */
+  xt: number;
+  yt: number;
+  /** IMAGE values (MJy/sr, as stored) and FLAGS words, row-major, row 0 = y0. */
+  image: Float32Array;
+  flags: Int32Array;
+  /** Flag name -> bit number, from the FLAGS header's MSKNnnnn cards. */
+  bits: Record<string, number>;
+  /** The IMAGE header, as FITS text (80-character cards). */
+  header: string;
+  lambdaUm: number;
+  bandwidthUm: number;
+  mjd: number;
+  bytes: number;
+}
+
+export async function readNative(
+  photo: LivePhoto,
+  centre: SkyPosition,
+  half = 20,
+  signal?: AbortSignal,
+): Promise<NativeBox | null> {
+  const url = bucketUrl(photo.key);
+  const first = await range(url, 0, 12 * BLOCK - 1, signal);
+  let bytes = first.length;
+  const h0 = parseHeader(first) ?? (await headerAt(url, 0, 2, signal));
+  let hiBytes = first.subarray(h0.length);
+  let hi = parseHeader(hiBytes);
+  if (!hi) {
+    hiBytes = await range(url, h0.length, h0.length + 64 * BLOCK - 1, signal);
+    bytes += hiBytes.length;
+    hi = parseHeader(hiBytes);
+    if (!hi) throw new Error(`${photo.obsId}: IMAGE header too long`);
+  }
+  const header = new TextDecoder('ascii').decode(hiBytes.subarray(0, hi.length));
+  const nx = num(hi.header, 'NAXIS1');
+  const ny = num(hi.header, 'NAXIS2');
+  const c = new Wcs(hi.header).toPixel(centre.ra, centre.dec);
+  if (!c) return null;
+  const xc = Math.round(c.x);
+  const yc = Math.round(c.y);
+  if (xc < 0 || yc < 0 || xc >= nx || yc >= ny) return null;
+  const y0 = Math.max(0, yc - half);
+  const y1 = Math.min(ny, yc + half);
+  const x0 = Math.max(0, xc - half);
+  const x1 = Math.min(nx, xc + half);
+  const imgOff = h0.length + hi.length;
+  const flagsOff = imgOff + dataBytes(hi.header);
+  const [img, fh, tail] = await Promise.all([
+    rangeParallel(url, imgOff + y0 * nx * 4, imgOff + y1 * nx * 4 - 1, signal),
+    headerAt(url, flagsOff, 4, signal),
+    tailBlocks(url, 6, signal),
+  ]);
+  const fl = await flagRows(url, fh, flagsOff, nx, y0, y1 - 1, photo.obsId, signal);
+  bytes += img.length + tail.length + fl.bytes;
+  const w = x1 - x0;
+  const h = y1 - y0;
+  const iv = new DataView(img.buffer, img.byteOffset, img.byteLength);
+  const image = new Float32Array(w * h);
+  const flags = new Int32Array(w * h);
+  for (let r = 0; r < h; r++)
+    for (let i = 0; i < w; i++) {
+      image[r * w + i] = iv.getFloat32(4 * (r * nx + x0 + i), false);
+      flags[r * w + i] = fl.flags[r * nx + x0 + i]!;
+    }
+  const bitsByName: Record<string, number> = {};
+  for (const [k, v] of fl.F)
+    if (k.startsWith('MSKN') && typeof v === 'string') bitsByName[v] = Number(k.slice(4));
+  const wave = parseWaveTail(tail);
+  const [lambdaUm, bandwidthUm] = wave ? waveAt(wave, c.x, c.y) : [NaN, NaN];
+  return {
+    obsId: photo.obsId,
+    x0,
+    y0,
+    w,
+    h,
+    xt: c.x,
+    yt: c.y,
+    image,
+    flags,
+    bits: bitsByName,
+    header,
+    lambdaUm,
+    bandwidthUm,
+    mjd: num(hi.header, 'MJD-AVG', photo.mjd),
+    bytes,
+  };
+}
+
 export interface LiveFrame {
   photo: LivePhoto;
   tile: Tile;
@@ -887,53 +1052,10 @@ export async function readPhoto(
   const iv = new DataView(img.buffer, img.byteOffset, img.byteLength);
   const image = new Float32Array(rows * nx);
   for (let k = 0; k < image.length; k++) image[k] = iv.getFloat32(4 * k, false);
-  // FLAGS: RICE-compressed BINTABLE, one tile per image row; descriptors, then the heap span.
-  const F = fh.header;
-  const rowLen = num(F, 'NAXIS1');
-  const fData = flagsOff + fh.length;
-  const theap = num(F, 'THEAP', rowLen * num(F, 'NAXIS2'));
-  const tf = num(F, 'TFIELDS');
-  let off = 0;
-  let col = -1;
-  let isQ = false;
-  for (let k = 1; k <= tf; k++) {
-    const form = String(F.get(`TFORM${k}`));
-    if (F.get(`TTYPE${k}`) === 'COMPRESSED_DATA') {
-      col = off;
-      isQ = form.includes('Q');
-      break;
-    }
-    off += form.includes('P')
-      ? 8
-      : form.includes('Q')
-        ? 16
-        : (Number(/^\d*/.exec(form)![0]) || 1) *
-          ({ J: 4, K: 8, E: 4, D: 8, B: 1, I: 2, L: 1, A: 1 } as Record<string, number>)[
-            form.replace(/^\d*/, '')[0]!
-          ]!;
-  }
-  if (col < 0) throw new Error(`${photo.obsId}: FLAGS has no COMPRESSED_DATA`);
-  const desc = await range(url, fData + y0 * rowLen, fData + (y1 + 1) * rowLen - 1, signal);
-  const dv = new DataView(desc.buffer, desc.byteOffset, desc.byteLength);
-  const cnt: number[] = [];
-  const hof: number[] = [];
-  for (let r = 0; r < rows; r++) {
-    const o = r * rowLen + col;
-    if (isQ) {
-      cnt.push(Number(dv.getBigInt64(o, false)));
-      hof.push(Number(dv.getBigInt64(o + 8, false)));
-    } else {
-      cnt.push(dv.getInt32(o, false));
-      hof.push(dv.getInt32(o + 4, false));
-    }
-  }
-  const h0b = Math.min(...hof);
-  const h1b = Math.max(...hof.map((o, r) => o + cnt[r]!));
-  const heap = await rangeParallel(url, fData + theap + h0b, fData + theap + h1b - 1, signal);
-  bytes += desc.length + heap.length;
-  const flags = new Int32Array(rows * nx);
-  for (let r = 0; r < rows; r++)
-    flags.set(riceDecode32(heap.subarray(hof[r]! - h0b, hof[r]! - h0b + cnt[r]!), nx), r * nx);
+  const fl = await flagRows(url, fh, flagsOff, nx, y0, y1, photo.obsId, signal);
+  bytes += fl.bytes;
+  const flags = fl.flags;
+  const F = fl.F;
   const satW = bits(F, SATURATED);
   const rejW = bits(F, REJECTED);
   const srcW = bits(F, ['SOURCE']);

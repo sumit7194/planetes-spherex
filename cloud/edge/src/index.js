@@ -18,7 +18,7 @@ export default {
       return Response.json({ error: 'GET /v1/... only' }, { status: 404, headers: CORS });
     }
     const colo = request.cf?.colo ?? '';
-    const cacheable = ['/v1/frame', '/v1/probe', '/v1/gaia'].includes(url.pathname);
+    const cacheable = ['/v1/frame', '/v1/probe', '/v1/gaia', '/v1/native'].includes(url.pathname);
     const cache = caches.default;
     const key = new Request(url.toString());
     if (cacheable) {

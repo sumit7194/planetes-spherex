@@ -8,6 +8,9 @@
  *   GET /v1/frame?key=<S3 key>&ra=&dec=[&size=64][&scale=6.15][&mjd=]
  *       -> binary frame (see encodeFrame), or 204 when the spot is off this photo.
  *   GET /v1/probe?key=&ra=&dec=      -> JSON {x, y, lambdaUm, bandwidthUm} or 204.
+ *   GET /v1/native?key=&ra=&dec=[&half=20]
+ *       -> binary native box (see encodeNative): the detector's own pixels, full flag words,
+ *          the IMAGE header and the wavelength; for pipeline jobs (pipeline/helper_client.py).
  *   GET /v1/gaia?ra=&dec=&r=         -> JSON {stars: [{id, ra, dec, pmra, pmdec, g}], epoch: 2016}:
  *                                       Gaia DR3 within r arcsec (<= 120), G < 21, from ESA's
  *                                       archive (browsers can't query it: no CORS). Cached 30 days.
@@ -21,6 +24,7 @@
 import {
   probePhoto,
   READER_VERSION,
+  readNative,
   readPhoto,
   setHelper,
   type LivePhoto,
@@ -91,6 +95,46 @@ function encodeFrame(f: NonNullable<Awaited<ReturnType<typeof readPhoto>>>): Uin
   out.set(j, 8);
   new Float32Array(out.buffer, 8 + j.length, n).set(f.tile.pixels);
   out.set(f.tile.flags, 8 + j.length + 4 * n);
+  return out;
+}
+
+/**
+ * Native box, little-endian:
+ *   0  'PLN1'
+ *   4  u32 JSON length J
+ *   8  JSON {obsId, x0, y0, w, h, xt, yt, lambdaUm, bandwidthUm, mjd, bits, header,
+ *      upstreamBytes}, padded with spaces to a multiple of 4
+ * 8+J float32 image[w*h] (row 0 = y0, as stored, MJy/sr), then int32 flags[w*h].
+ */
+function encodeNative(b: NonNullable<Awaited<ReturnType<typeof readNative>>>): Uint8Array {
+  let json = JSON.stringify({
+    obsId: b.obsId,
+    x0: b.x0,
+    y0: b.y0,
+    w: b.w,
+    h: b.h,
+    xt: b.xt,
+    yt: b.yt,
+    lambdaUm: b.lambdaUm,
+    bandwidthUm: b.bandwidthUm,
+    mjd: b.mjd,
+    bits: b.bits,
+    header: b.header,
+    upstreamBytes: b.bytes,
+  });
+  let j = new TextEncoder().encode(json);
+  if (j.length % 4) {
+    json += ' '.repeat(4 - (j.length % 4));
+    j = new TextEncoder().encode(json);
+  }
+  const n = b.w * b.h;
+  const out = new Uint8Array(8 + j.length + 8 * n);
+  const dv = new DataView(out.buffer);
+  out.set([0x50, 0x4c, 0x4e, 0x31], 0);
+  dv.setUint32(4, j.length, true);
+  out.set(j, 8);
+  new Float32Array(out.buffer, 8 + j.length, n).set(b.image);
+  new Int32Array(out.buffer, 8 + j.length + 4 * n, n).set(b.flags);
   return out;
 }
 
@@ -199,7 +243,8 @@ export default {
       );
     }
     if (route === '/v1/gaia') return gaia(url, ctx);
-    if (route !== '/v1/frame' && route !== '/v1/probe') return bad('unknown route', 404);
+    if (route !== '/v1/frame' && route !== '/v1/probe' && route !== '/v1/native')
+      return bad('unknown route', 404);
 
     const key = url.searchParams.get('key') ?? '';
     if (!url.searchParams.has('ra') || !url.searchParams.has('dec'))
@@ -216,6 +261,9 @@ export default {
     // 6.15"); the planned 30' wide view is ~290 px. 320 px leaves room and stays a few hundred
     // rows of one photo.
     if (!(size >= 8 && size <= 320)) return bad('size must be 8..320');
+    // A native box is (2 half)^2 detector pixels: 64 half = 128 px (13'), plenty for a field.
+    const half = Math.round(Number(url.searchParams.get('half') ?? 20));
+    if (!(half >= 4 && half <= 64)) return bad('half must be 4..64');
     if (!(scale >= 1 && scale <= 12)) return bad('scale must be 1..12 arcsec');
 
     // A normalised cache key: same answer for the same rounded request.
@@ -223,6 +271,7 @@ export default {
     ck.searchParams.set('key', key);
     ck.searchParams.set('ra', ra.toFixed(6));
     ck.searchParams.set('dec', dec.toFixed(6));
+    if (route === '/v1/native') ck.searchParams.set('half', String(half));
     if (route === '/v1/frame') {
       ck.searchParams.set('size', String(size));
       ck.searchParams.set('scale', scale.toFixed(3));
@@ -243,7 +292,17 @@ export default {
     const photo = photoOf(key, mjd);
     let res: Response;
     try {
-      if (route === '/v1/probe') {
+      if (route === '/v1/native') {
+        const b = await readNative(photo, centre, half);
+        res = b
+          ? new Response(encodeNative(b), {
+              headers: {
+                'content-type': 'application/x-planetes-native',
+                'x-planetes-upstream-bytes': String(b.bytes),
+              },
+            })
+          : new Response(null, { status: 204 });
+      } else if (route === '/v1/probe') {
         const p = await probePhoto(photo, centre);
         res = p
           ? Response.json({ x: p.x, y: p.y, lambdaUm: p.lambdaUm, bandwidthUm: p.bandwidthUm })
