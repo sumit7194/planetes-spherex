@@ -355,7 +355,7 @@ export const copy = {
       alt: (date: string, range: string, n: string, t: string, name: string) =>
         `${date}, ${range}: the light's centre is ${n}″ from the neighbour and ${t}″ from ${name}'s predicted place.`,
       howHeading: 'How this was measured',
-      how: "Each look, 9 × 9 SPHEREx pixels, each colour stretched on its own. The light's centre is found as in \"What's at this spot?\": the brightest pixel near the spot, then the light-weighted middle of the 3 × 3 around it, good to about 1″ at this brightness (Physics), so no shares of light are given. Both places are moved to each look's date.",
+      how: "Each look, 9 × 9 SPHEREx pixels, each colour stretched on its own. The light's centre is found as in \"What's at this spot?\": the brightest pixel near the spot, then the light-weighted middle of the 3 × 3 around it, so no shares of light are given. Centres are good to about 1″ in both colours: the brighter short colour has less noise, but the same pixel-grid limit. Both places are moved to each look's date.",
       distances: (
         looks: { date: string; fromNeighbour: string; fromTarget: string }[],
         name: string,
