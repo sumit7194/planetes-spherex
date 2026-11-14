@@ -3546,3 +3546,18 @@ span[data-fit='1'] {
   font-weight: 600;
   text-decoration: none;
 }
+/* Facts' footer links: starlight and underlined, as the out-links (lilac means "predicted"). */
+.facts-foot a {
+  color: var(--starlight);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+/* Windows High Contrast (Viewer): the status dots keep their fill, so measured (filled) and
+   not measured (hollow) still differ, as in the legend. */
+@media (forced-colors: active) {
+  .chip::before,
+  .dot {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+}
