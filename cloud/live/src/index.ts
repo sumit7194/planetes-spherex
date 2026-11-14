@@ -8,7 +8,12 @@
  *   GET /v1/frame?key=<S3 key>&ra=&dec=[&size=64][&scale=6.15][&mjd=]
  *       -> binary frame (see encodeFrame), or 204 when the spot is off this photo.
  *   GET /v1/probe?key=&ra=&dec=      -> JSON {x, y, lambdaUm, bandwidthUm} or 204.
- *   GET /v1/native?key=&ra=&dec=[&half=20]
+ *   GET /v1/native?key=&ra=&dec=[&half=20][&extra=1]
+ *       (extra=1: also VARIANCE and ZODI for the box, the primary and FLAGS headers, and the EPSF
+ *        header's sha256: a 'PLN2' answer; for fake-mover injection)
+ *   GET /v1/psf?key=   -> the file's EPSF extension exactly as stored (header + data, ~4 MB) after a
+ *        'PLP1' JSON head {headerSha256, version}: one per detector and pipeline version (Physics,
+ *        14 Nov: identical across exposures and across DR1/QR3), checked per photo by its hash.
  *       -> binary native box (see encodeNative): the detector's own pixels, full flag words,
  *          the IMAGE header and the wavelength; for pipeline jobs (pipeline/helper_client.py).
  *   GET /v1/gaia?ra=&dec=&r=         -> JSON {stars: [{id, ra, dec, pmra, pmdec, g}], epoch: 2016}:
@@ -30,6 +35,7 @@ import {
   READER_VERSION,
   readNative,
   readPhoto,
+  readPsf,
   setHelper,
   type LivePhoto,
 } from '../../../src/data/live/dr1qr3';
@@ -111,6 +117,7 @@ function encodeFrame(f: NonNullable<Awaited<ReturnType<typeof readPhoto>>>): Uin
  * 8+J float32 image[w*h] (row 0 = y0, as stored, MJy/sr), then int32 flags[w*h].
  */
 function encodeNative(b: NonNullable<Awaited<ReturnType<typeof readNative>>>): Uint8Array {
+  const x = b.extra;
   let json = JSON.stringify({
     obsId: b.obsId,
     x0: b.x0,
@@ -125,6 +132,13 @@ function encodeNative(b: NonNullable<Awaited<ReturnType<typeof readNative>>>): U
     bits: b.bits,
     header: b.header,
     upstreamBytes: b.bytes,
+    ...(x
+      ? {
+          primaryHeader: x.primaryHeader,
+          flagsHeader: x.flagsHeader,
+          psfHeaderSha256: x.psfHeaderSha256,
+        }
+      : {}),
   });
   let j = new TextEncoder().encode(json);
   if (j.length % 4) {
@@ -132,13 +146,18 @@ function encodeNative(b: NonNullable<Awaited<ReturnType<typeof readNative>>>): U
     j = new TextEncoder().encode(json);
   }
   const n = b.w * b.h;
-  const out = new Uint8Array(8 + j.length + 8 * n);
+  // PLN2 adds float32 variance[w*h] and zodi[w*h] after the flags.
+  const out = new Uint8Array(8 + j.length + (x ? 16 : 8) * n);
   const dv = new DataView(out.buffer);
-  out.set([0x50, 0x4c, 0x4e, 0x31], 0);
+  out.set([0x50, 0x4c, 0x4e, x ? 0x32 : 0x31], 0);
   dv.setUint32(4, j.length, true);
   out.set(j, 8);
   new Float32Array(out.buffer, 8 + j.length, n).set(b.image);
   new Int32Array(out.buffer, 8 + j.length + 4 * n, n).set(b.flags);
+  if (x) {
+    new Float32Array(out.buffer, 8 + j.length + 8 * n, n).set(x.variance);
+    new Float32Array(out.buffer, 8 + j.length + 12 * n, n).set(x.zodi);
+  }
   return out;
 }
 
@@ -312,6 +331,54 @@ async function resolve(url: URL, ctx: ExecutionContext): Promise<Response> {
   return new Response(body, { headers: h });
 }
 
+/** One file's EPSF extension, as stored; cached a year (files never change). */
+async function psf(url: URL, ctx: ExecutionContext): Promise<Response> {
+  const key = url.searchParams.get('key') ?? '';
+  if (!KEY_RE.test(key) || key.split('/').some((s) => s === '.' || s === '..'))
+    return bad('key must be a SPHEREx L2 file key (dr1/... or qr3/...)');
+  const cacheKey = new Request(
+    `https://cache.planetes/${VERSION}/v1/psf?key=${encodeURIComponent(key)}`,
+  );
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    const h = new Headers(hit.headers);
+    h.set('x-planetes-cache', 'hit');
+    return new Response(hit.body, { status: hit.status, headers: h });
+  }
+  const t0 = Date.now();
+  let p: Awaited<ReturnType<typeof readPsf>>;
+  try {
+    p = await readPsf(photoOf(key, 0));
+  } catch (e) {
+    return bad(`upstream read failed: ${(e as Error).message}`, 502);
+  }
+  let json = JSON.stringify({
+    headerSha256: p.headerSha256,
+    version: p.version,
+    bytes: p.bytes.length,
+  });
+  let j = new TextEncoder().encode(json);
+  if (j.length % 4) {
+    json += ' '.repeat(4 - (j.length % 4));
+    j = new TextEncoder().encode(json);
+  }
+  const out = new Uint8Array(8 + j.length + p.bytes.length);
+  out.set([0x50, 0x4c, 0x50, 0x31], 0);
+  new DataView(out.buffer).setUint32(4, j.length, true);
+  out.set(j, 8);
+  out.set(p.bytes, 8 + j.length);
+  const h = new Headers({
+    ...CORS,
+    'content-type': 'application/x-planetes-psf',
+    'cache-control': 'public, max-age=31536000, immutable',
+    'x-planetes-ms': String(Date.now() - t0),
+  });
+  ctx.waitUntil(cache.put(cacheKey, new Response(out, { headers: h })));
+  h.set('x-planetes-cache', 'miss');
+  return new Response(out, { headers: h });
+}
+
 export default {
   async fetch(request: Request, _env: unknown, ctx: ExecutionContext): Promise<Response> {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -330,6 +397,7 @@ export default {
     }
     if (route === '/v1/gaia') return gaia(url, ctx);
     if (route === '/v1/resolve') return resolve(url, ctx);
+    if (route === '/v1/psf') return psf(url, ctx);
     if (route !== '/v1/frame' && route !== '/v1/probe' && route !== '/v1/native')
       return bad('unknown route', 404);
 
@@ -358,7 +426,11 @@ export default {
     ck.searchParams.set('key', key);
     ck.searchParams.set('ra', ra.toFixed(6));
     ck.searchParams.set('dec', dec.toFixed(6));
-    if (route === '/v1/native') ck.searchParams.set('half', String(half));
+    const extra = url.searchParams.get('extra') === '1';
+    if (route === '/v1/native') {
+      ck.searchParams.set('half', String(half));
+      if (extra) ck.searchParams.set('extra', '1');
+    }
     if (route === '/v1/frame') {
       ck.searchParams.set('size', String(size));
       ck.searchParams.set('scale', scale.toFixed(3));
@@ -380,7 +452,7 @@ export default {
     let res: Response;
     try {
       if (route === '/v1/native') {
-        const b = await readNative(photo, centre, half);
+        const b = await readNative(photo, centre, half, undefined, extra);
         res = b
           ? new Response(encodeNative(b), {
               headers: {

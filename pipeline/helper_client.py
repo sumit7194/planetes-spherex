@@ -31,20 +31,30 @@ def s3_key(url: str) -> str:
 
 
 def decode(buf: bytes) -> dict:
-    """A 'PLN1' answer: JSON head, then float32 image and int32 flags (row 0 = y0)."""
-    if buf[:4] != b"PLN1":
+    """A 'PLN1' answer: JSON head, then float32 image and int32 flags (row 0 = y0); 'PLN2' adds
+    float32 variance and zodi."""
+    if buf[:4] not in (b"PLN1", b"PLN2"):
         raise ValueError("not a native box")
     j = struct.unpack("<I", buf[4:8])[0]
     m = json.loads(buf[8:8 + j])
     n = m["w"] * m["h"]
-    img = np.frombuffer(buf, "<f4", n, 8 + j).reshape(m["h"], m["w"]).astype(np.float32)
-    fl = np.frombuffer(buf, "<i4", n, 8 + j + 4 * n).reshape(m["h"], m["w"]).astype(np.int64)
-    return dict(meta=m, img=img, fl=fl)
+    shape = (m["h"], m["w"])
+    img = np.frombuffer(buf, "<f4", n, 8 + j).reshape(shape).astype(np.float32)
+    fl = np.frombuffer(buf, "<i4", n, 8 + j + 4 * n).reshape(shape).astype(np.int64)
+    out = dict(meta=m, img=img, fl=fl)
+    if buf[:4] == b"PLN2":
+        out["variance"] = np.frombuffer(buf, "<f4", n, 8 + j + 8 * n).reshape(shape).astype(np.float32)
+        out["zodi"] = np.frombuffer(buf, "<f4", n, 8 + j + 12 * n).reshape(shape).astype(np.float32)
+    return out
 
 
-async def native(s: aiohttp.ClientSession, row: dict, ra: float, dec: float, half: int) -> dict | None:
-    """One box, as spherex.read_box returns it (plus lam, bw, wcs_hdr); None when off the photo."""
+async def native(s: aiohttp.ClientSession, row: dict, ra: float, dec: float, half: int,
+                 extra: bool = False) -> dict | None:
+    """One box, as spherex.read_box returns it (plus lam, bw, wcs_hdr); None when off the photo.
+    With extra: also variance, zodi, primary_hdr, flags_hdr and psf_sha256 (for injection)."""
     q = dict(key=s3_key(row["url"]), ra=f"{ra:.6f}", dec=f"{dec:.6f}", half=str(half), mjd=str(row.get("t", 0)))
+    if extra:
+        q["extra"] = "1"
     for attempt in range(4):
         try:
             async with s.get(f"{HELPER}/v1/native", params=q, headers=UA) as r:
@@ -61,9 +71,26 @@ async def native(s: aiohttp.ClientSession, row: dict, ra: float, dec: float, hal
     else:
         raise RuntimeError("helper unreachable")
     m = d["meta"]
-    return dict(row, img=d["img"], fl=d["fl"], bits=m["bits"], x0=m["x0"], y0=m["y0"], xt=m["xt"], yt=m["yt"],
-                mjd=float(m["mjd"]), bunit="", lam=float(m["lambdaUm"]), bw=float(m["bandwidthUm"]),
-                wcs_hdr=m["header"])
+    e = dict(row, img=d["img"], fl=d["fl"], bits=m["bits"], x0=m["x0"], y0=m["y0"], xt=m["xt"], yt=m["yt"],
+             mjd=float(m["mjd"]), bunit="", lam=float(m["lambdaUm"]), bw=float(m["bandwidthUm"]),
+             wcs_hdr=m["header"])
+    if "variance" in d:
+        e.update(variance=d["variance"], zodi=d["zodi"], primary_hdr=m["primaryHeader"],
+                 flags_hdr=m["flagsHeader"], psf_sha256=m["psfHeaderSha256"])
+    return e
+
+
+async def psf(s: aiohttp.ClientSession, key: str) -> dict:
+    """One file's EPSF extension, exactly as stored: {hdu_bytes, header_sha256, version}. One per
+    detector and pipeline version (Physics, 14 Nov); compare each photo's psf_sha256 to it."""
+    async with s.get(f"{HELPER}/v1/psf", params=dict(key=s3_key(key)), headers=UA) as r:
+        r.raise_for_status()
+        buf = await r.read()
+    if buf[:4] != b"PLP1":
+        raise ValueError("not a PSF answer")
+    j = struct.unpack("<I", buf[4:8])[0]
+    m = json.loads(buf[8:8 + j])
+    return dict(hdu_bytes=buf[8 + j:], header_sha256=m["headerSha256"], version=m["version"])
 
 
 async def fetch_all_helper(rows, ra, dec, half, conc, cache: Path):
@@ -125,9 +152,69 @@ async def check(n: int = 3):
                   f"xt {a['xt'] - b['xt']:+.2e} yt {a['yt'] - b['yt']:+.2e} lam {lam:.5f} vs {b['lam']:.5f}")
 
 
+async def check_extra():
+    """VARIANCE, ZODI and the EPSF extension through the helper against direct S3 reads, on a DR1
+    exposure, a QR3 exposure and one near a detector edge (Physics' rule before any injection)."""
+    import hashlib
+    import spherex as sx
+    from astropy.io import fits
+    t = bp.load_targets()["w0855"]
+    rows = sx.search(t["ra"], t["dec"])
+    dr1 = next(r for r in rows if "/dr1/" in r["url"] or "dr1/" in s3_key(r["url"])[:4])
+    qr3 = next((r for r in rows if s3_key(r["url"]).startswith("qr3/")), None)
+    picks = [("DR1", dr1, t["ra"], t["dec"])]
+    if qr3:
+        picks.append(("QR3", qr3, t["ra"], t["dec"]))
+    async with aiohttp.ClientSession() as s:
+        rd = sx.RangeReader(s)
+        # A detector edge: a position 30 px inside the first photo's corner (box clipped by the edge).
+        h0, l0 = await rd.header(dr1["url"], 0, guess=2)
+        hi, li = await rd.header(dr1["url"], l0, guess=30)
+        from astropy.wcs import WCS
+        ra_e, dec_e = (float(v) for v in WCS(hi).pixel_to_world_values(8, 8))
+        picks.append(("edge", dr1, ra_e, dec_e))
+        for name, r, ra, dec in picks:
+            b = await native(s, r, ra, dec, 20, extra=True)
+            a = await sx.read_box(rd, r, ra, dec, 20)
+            url = r["url"]
+            # Walk the HDUs directly: IMAGE, FLAGS, VARIANCE, ZODI, EPSF.
+            off = 0
+            hdus = {}
+            for _ in range(6):
+                h, ln = await rd.header(url, off, guess=4)
+                hdus[h.get("EXTNAME", "PRIMARY")] = (off, h, ln)
+                off += ln + sx.data_bytes(h)
+            nx = hdus["IMAGE"][1]["NAXIS1"]
+            y0, y1 = a["y0"], a["y0"] + a["img"].shape[0]
+            x0, x1 = a["x0"], a["x0"] + a["img"].shape[1]
+            def rows_of(ext):
+                o, h, ln = hdus[ext]
+                return o + ln
+            got = {}
+            for ext in ("VARIANCE", "ZODI"):
+                o = rows_of(ext)
+                raw = await rd.get(url, o + y0 * nx * 4, o + y1 * nx * 4 - 1)
+                got[ext] = np.frombuffer(raw, ">f4").reshape(y1 - y0, nx)[:, x0:x1].astype(np.float32)
+            po, ph, pl = hdus["EPSF"]
+            psf_direct = await rd.get(url, po, po + pl + sx.data_bytes(ph) - 1)
+            p = await psf(s, r["url"])
+            direct_sha = hashlib.sha256(psf_direct[:pl]).hexdigest()
+            print(name, r["obs_id"], r["det"], "box", a["img"].shape,
+                  "| image", np.array_equal(a["img"], b["img"], equal_nan=True),
+                  "flags", np.array_equal(a["fl"].astype(np.int64), b["fl"]),
+                  "variance", np.array_equal(got["VARIANCE"], b["variance"], equal_nan=True),
+                  "zodi", np.array_equal(got["ZODI"], b["zodi"], equal_nan=True),
+                  "| psf bytes", p["hdu_bytes"] == psf_direct,
+                  "psf sha (photo/route/direct)", b["psf_sha256"][:10], p["header_sha256"][:10], direct_sha[:10],
+                  "version", p["version"], fits.Header.fromstring(b["primary_hdr"]).get("VERSION"))
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--check-extra", action="store_true")
     a = ap.parse_args()
     if a.check:
         asyncio.run(check())
+    if a.check_extra:
+        asyncio.run(check_extra())

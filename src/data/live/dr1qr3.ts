@@ -593,6 +593,21 @@ async function headerAt(url: string, off: number, blocks: number, signal?: Abort
   throw new Error('FITS header too long');
 }
 
+/** A header and its raw text (for passing on exactly, and for hashing). */
+async function rawHeaderAt(url: string, off: number, blocks: number, signal?: AbortSignal) {
+  for (let n = blocks; n <= 64; n *= 2) {
+    const bytes = await range(url, off, off + n * BLOCK - 1, signal);
+    const h = parseHeader(bytes);
+    if (h) return { ...h, text: new TextDecoder('ascii').decode(bytes.subarray(0, h.length)) };
+  }
+  throw new Error('FITS header too long');
+}
+
+async function sha256Hex(text: string): Promise<string> {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 /** A 32-bit word with the named flags' bits set, from the FLAGS header's MSKNnnnn = 'NAME' cards. */
 function bits(h: Header, names: string[]): number {
   let w = 0;
@@ -743,6 +758,61 @@ export interface NativeBox {
   bandwidthUm: number;
   mjd: number;
   bytes: number;
+  /**
+   * With `extra` (fake-mover injection; Physics, 14 Nov): VARIANCE and ZODI for the same box, the
+   * primary and FLAGS headers as text, and the EPSF extension's header hash. The ePSF itself is
+   * per detector (/v1/psf); the hash checks each photo uses that same one.
+   */
+  extra?: {
+    variance: Float32Array;
+    zodi: Float32Array;
+    primaryHeader: string;
+    flagsHeader: string;
+    psfHeaderSha256: string;
+  };
+}
+
+/** Where a file's later extensions start: VARIANCE, ZODI and EPSF follow FLAGS in L2 files. */
+async function laterHdus(url: string, flagsOff: number, signal?: AbortSignal) {
+  const fh = await rawHeaderAt(url, flagsOff, 4, signal);
+  const varOff = flagsOff + fh.length + dataBytes(fh.header);
+  const vh = await rawHeaderAt(url, varOff, 4, signal);
+  const zodiOff = varOff + vh.length + dataBytes(vh.header);
+  const zh = await rawHeaderAt(url, zodiOff, 4, signal);
+  const psfOff = zodiOff + zh.length + dataBytes(zh.header);
+  const ph = await rawHeaderAt(url, psfOff, 2, signal);
+  for (const [h, name] of [
+    [vh, 'VARIANCE'],
+    [zh, 'ZODI'],
+    [ph, 'EPSF'],
+  ] as const)
+    if (h.header.get('EXTNAME') !== name)
+      throw new Error(`expected ${name}, found ${String(h.header.get('EXTNAME'))}`);
+  return { fh, varOff, vh, zodiOff, zh, psfOff, ph };
+}
+
+/** The EPSF extension of one file, exactly as stored (header + data), and its header's hash. */
+export async function readPsf(
+  photo: LivePhoto,
+  signal?: AbortSignal,
+): Promise<{ bytes: Uint8Array; headerSha256: string; version: string }> {
+  const url = bucketUrl(photo.key);
+  const first = await range(url, 0, 12 * BLOCK - 1, signal);
+  const h0 = parseHeader(first) ?? (await headerAt(url, 0, 2, signal));
+  const hi = parseHeader(first.subarray(h0.length)) ?? (await headerAt(url, h0.length, 10, signal));
+  const flagsOff = h0.length + hi.length + dataBytes(hi.header);
+  const { psfOff, ph } = await laterHdus(url, flagsOff, signal);
+  const bytes = await rangeParallel(
+    url,
+    psfOff,
+    psfOff + ph.length + dataBytes(ph.header) - 1,
+    signal,
+  );
+  return {
+    bytes,
+    headerSha256: await sha256Hex(ph.text),
+    version: String(h0.header.get('VERSION') ?? ''),
+  };
 }
 
 export async function readNative(
@@ -750,6 +820,7 @@ export async function readNative(
   centre: SkyPosition,
   half = 20,
   signal?: AbortSignal,
+  extra = false,
 ): Promise<NativeBox | null> {
   const url = bucketUrl(photo.key);
   const first = await range(url, 0, 12 * BLOCK - 1, signal);
@@ -786,6 +857,32 @@ export async function readNative(
   bytes += img.length + tail.length + fl.bytes;
   const w = x1 - x0;
   const h = y1 - y0;
+  // VARIANCE and ZODI: plain float32 images like IMAGE, the same rows and columns.
+  const crop = (raw: Uint8Array) => {
+    const dv = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+    const out = new Float32Array(w * h);
+    for (let r = 0; r < h; r++)
+      for (let i = 0; i < w; i++) out[r * w + i] = dv.getFloat32(4 * (r * nx + x0 + i), false);
+    return out;
+  };
+  let more: NativeBox['extra'];
+  if (extra) {
+    const later = await laterHdus(url, flagsOff, signal);
+    const rowsOf = (off: number, len: number) =>
+      rangeParallel(url, off + len + y0 * nx * 4, off + len + y1 * nx * 4 - 1, signal);
+    const [vr, zr] = await Promise.all([
+      rowsOf(later.varOff, later.vh.length),
+      rowsOf(later.zodiOff, later.zh.length),
+    ]);
+    bytes += vr.length + zr.length;
+    more = {
+      variance: crop(vr),
+      zodi: crop(zr),
+      primaryHeader: new TextDecoder('ascii').decode(first.subarray(0, h0.length)),
+      flagsHeader: later.fh.text,
+      psfHeaderSha256: await sha256Hex(later.ph.text),
+    };
+  }
   const iv = new DataView(img.buffer, img.byteOffset, img.byteLength);
   const image = new Float32Array(w * h);
   const flags = new Int32Array(w * h);
@@ -815,6 +912,7 @@ export async function readNative(
     bandwidthUm,
     mjd: num(hi.header, 'MJD-AVG', photo.mjd),
     bytes,
+    ...(more ? { extra: more } : {}),
   };
 }
 
