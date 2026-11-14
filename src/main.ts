@@ -161,6 +161,8 @@ let showing: 0 | 1 | null = null;
 /** The difference of the pair on screen, while the visitor has it on (noise in MJy/sr). */
 /** Colour by date (E3): the shown pair as one blue/orange picture in the lens. */
 let colouring = false;
+/** The same, for a live look's fair pair. */
+let liveColouring = false;
 let differencing: {
   sigma: number;
   masked: number;
@@ -2392,6 +2394,7 @@ async function openLook(
   } = {},
 ): Promise<void> {
   surprise = named;
+  liveColouring = false;
   stopReveal?.();
   stopLook();
   endSpot(false);
@@ -2912,6 +2915,12 @@ function livePhotoName(i: number): string {
 
 function showLivePhoto(i: number): void {
   if (liveRange?.playing) leaveLiveRange();
+  // A single photo ends colour by date: the lens goes back to the photos first.
+  if (liveColouring) {
+    liveColouring = false;
+    if (live?.stretch) lens.setTiles(live.tiles, live.stretch);
+    queueMicrotask(render);
+  }
   liveShown = i;
   lens.show(i);
   lensLabel.replaceChildren(h('span', {}, livePhotoName(i)));
@@ -2923,6 +2932,7 @@ function showLivePhoto(i: number): void {
 /** Hard cuts through the photos in time order, twice, ending on the last. */
 function flipLook(): void {
   if (liveRange?.playing) leaveLiveRange();
+  liveColouring = false;
   stopReveal?.();
   const n = live?.tiles.length ?? 0;
   if (n < 2) return;
@@ -3310,6 +3320,78 @@ function differenceKey(): HTMLElement | null {
           copy.show.diffMasked,
         )
       : null,
+  );
+}
+
+/** A live look's fair pair: the earlier and later photo's tiles, from those read. */
+function livePairTiles(look: LiveLook): [Tile, Tile, number, number] | null {
+  const plan = look.plan;
+  if (plan?.kind !== 'pair') return null;
+  const at = (key: string) => look.landed.findIndex((x) => x.key === key);
+  const ia = at(plan.pair.a.hit.key);
+  const ib = at(plan.pair.b.hit.key);
+  const a = look.tiles[ia];
+  const b = look.tiles[ib];
+  if (!a || !b) return null;
+  return [a, b, plan.pair.a.mjd, plan.pair.b.mjd];
+}
+
+function showLiveTimeColour(look: LiveLook): void {
+  const pair = livePairTiles(look);
+  if (!pair) return;
+  const [a, b, ta, tb] = pair;
+  if (liveRange?.playing) leaveLiveRange();
+  stopReveal?.();
+  liveColouring = true;
+  lens.setRendered([
+    { tile: b, image: renderTimeColour(a, b, sharedStretch([a.pixels, b.pixels])) },
+  ]);
+  lensLabel.replaceChildren(
+    h(
+      'span',
+      { class: 'look-pill diff-pill' },
+      copy.show.byDateLabel(monthYear(ta), monthYear(tb)),
+    ),
+  );
+  render();
+}
+
+function endLiveTimeColour(redraw = true): void {
+  if (!liveColouring) return;
+  const look = live;
+  // showLivePhoto puts the photos back on the lens and clears the flag.
+  if (look?.stretch) showLivePhoto(look.tiles.length - 1);
+  else liveColouring = false;
+  if (redraw) render();
+}
+
+/** The live look's key: the pair's dates, and the same caveats (no measured move here). */
+function liveTimeColourKey(look: LiveLook): HTMLElement | null {
+  const pair = liveColouring ? livePairTiles(look) : null;
+  if (!pair) return null;
+  const k = copy.show.byDateKey;
+  const swatch = (rgb: readonly number[]) =>
+    h('i', {
+      class: 'date-swatch',
+      style: `background: rgb(${rgb.join(' ')})`,
+      'aria-hidden': 'true',
+    });
+  return h(
+    'div',
+    { class: 'diff-key date-key' },
+    h(
+      'p',
+      { class: 'date-scale' },
+      swatch(TIME_EARLY),
+      h('span', {}, monthYear(pair[2])),
+      swatch(TIME_LATE),
+      h('span', {}, monthYear(pair[3])),
+      swatch([255, 255, 255]),
+      h('span', {}, k.white),
+    ),
+    h('p', { class: 'hint' }, k.brightness),
+    h('p', { class: 'hint' }, k.fringes),
+    h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
   );
 }
 
@@ -4509,7 +4591,19 @@ function lookWords(): HTMLElement[] {
         strip.append(h('figure', {}, thumb, h('figcaption', {}, h('b', {}, String(i + 1)))));
       });
       const replay = h('button', { type: 'button' }, copy.show.replay);
-      replay.addEventListener('click', flipLook);
+      replay.addEventListener('click', () => {
+        if (liveColouring) endLiveTimeColour(false);
+        flipLook();
+      });
+      // Colour by date for any spot (E3): the fair pair as one blue/orange picture.
+      const byDate = h(
+        'button',
+        { type: 'button', 'aria-pressed': String(liveColouring), class: 'diff-toggle' },
+        copy.show.byDate,
+      );
+      byDate.addEventListener('click', () =>
+        liveColouring ? endLiveTimeColour() : showLiveTimeColour(look),
+      );
       // Option A: the summary so far stays fixed; what to do with the spot goes in tabs.
       out.push(
         h(
@@ -4524,7 +4618,8 @@ function lookWords(): HTMLElement[] {
         tabSpec('compare', [
           h('h3', {}, copy.look.shownHeading(look.tiles.length, plan.total)),
           strip,
-          h('div', { class: 'actions' }, replay, copyLinkButton()),
+          h('div', { class: 'actions' }, replay, byDate, copyLinkButton()),
+          liveTimeColourKey(look),
           aladinLink(look.at),
           liveMoversLine(look),
         ]),
