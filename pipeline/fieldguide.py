@@ -10,7 +10,14 @@ Step 2 (`search`): per kind, every connected flagged region in every allowed box
 robust scatter times sqrt(pixels)). The instance with the largest excess at S/N >= 5 is the
 example; written to cache/fieldguide_search.json with the top 5 per kind for the record.
 
-Usage: uv run python fieldguide.py index | search
+Step 3 (`select`, Physics' rule change after the first result): a region counts only if its
+excess isn't explained by a known source: no SOURCE-flagged pixel, no Gaia DR3 (G < 19) within 2 px
+at the photo's date, no SkyBoT asteroid within 2 px (checked on the survivors, best first). CatWISE
+is skipped tonight (IRSA down). Also picks the star-hit example: the largest-excess TRANSIENT region
+excluded because of a Gaia match. Then the confirmation tests per kind. Writes
+cache/fieldguide_select.json.
+
+Usage: uv run python fieldguide.py index | search | select
 """
 from __future__ import annotations
 
@@ -106,8 +113,9 @@ def mask_of(e: dict, names) -> np.ndarray:
     return m
 
 
-def regions(e: dict, names) -> list[dict]:
-    """Every connected flagged region of these names, with its excess light and S/N."""
+def regions(e: dict, names, touch=None) -> list[dict]:
+    """Every connected flagged region of these names, with its excess light and S/N (and whether it
+    touches the `touch` mask, e.g. SOURCE)."""
     m = mask_of(e, names)
     if not m.any():
         return []
@@ -133,6 +141,7 @@ def regions(e: dict, names) -> list[dict]:
         yy, xx = np.nonzero(reg)
         out.append(dict(excess=excess, sn=excess / (sd * math.sqrt(pix.size)), npix=int(reg.sum()),
                         x=float(xx.mean()), y=float(yy.mean()), bk=bk, sd=sd,
+                        touch=bool(touch is not None and (touch & reg).any()),
                         names=sorted({nm for nm in names if mask_of(e, (nm,))[reg].any()})))
     return out
 
@@ -163,5 +172,148 @@ def search() -> None:
         print(kind, v["n_at_sn5"], c and (c["obs"], c["det"], round(c["excess"], 1), round(c["sn"], 1), c["names"]))
 
 
+SELECT_KINDS = {
+    "cosmic-ray": ("TRANSIENT",),
+    "hot-or-dead-pixel": ("HOT", "NONFUNC"),
+    "persistence": ("PERSIST",),
+    "streak": ("STREAK", "SATELLITE_HALO"),
+}
+PIX_ARCSEC = 6.15
+NEAR_PX = 2.0
+
+
+def year_of(mjd: float) -> float:
+    return 2000.0 + (mjd - 51544.5) / 365.25
+
+
+def fields(rows: list[dict]) -> list[dict]:
+    """Group the boxes into fields: a box joins the first field whose centre is within 0.5 deg."""
+    out: list[dict] = []
+    for r in rows:
+        for f in out:
+            if sep_deg(r["ra"], r["dec"], f["ra"], f["dec"]) < 0.5:
+                f["rows"].append(r)
+                break
+        else:
+            out.append(dict(ra=r["ra"], dec=r["dec"], rows=[r]))
+    for f in out:
+        f["radius"] = max(sep_deg(f["ra"], f["dec"], r["ra"], r["dec"]) for r in f["rows"]) + 0.15
+    return out
+
+
+def gaia_for_fields(flds: list[dict]) -> dict:
+    """Gaia DR3 (G < 19) per field, cached in cache/fieldguide_gaia.json (ESA's archive)."""
+    import catalogs
+    path = CACHE / "fieldguide_gaia.json"
+    got = json.loads(path.read_text()) if path.exists() else {}
+    for f in flds:
+        key = f"{f['ra']:.4f},{f['dec']:.4f},{f['radius']:.3f}"
+        if key not in got:
+            # A failed query stops the step: never an empty catalogue in place of a real one.
+            got[key] = catalogs.gaia_dr3(f["ra"], f["dec"], f["radius"], gmax=19.0)
+            path.write_text(json.dumps(got))
+            print("gaia", key, len(got[key]), flush=True)
+        f["gaia"] = got[key]
+    return got
+
+
+def sky_of(e: dict, x: float, y: float) -> tuple[float, float]:
+    w = WCS(fits.Header.fromstring(e["wcs_hdr"]))
+    ra, dec = w.all_pix2world(e["x0"] + x, e["y0"] + y, 0)
+    return float(ra), float(dec)
+
+
+def gaia_near(gaia: list[dict], ra: float, dec: float, mjd: float) -> dict | None:
+    import catalogs
+    yr = year_of(mjd)
+    best = None
+    for g in gaia:
+        if abs(g["dec"] - dec) > 0.05:
+            continue
+        gra, gdec = catalogs.propagate(g, yr)
+        d = sep_deg(ra, dec, gra, gdec) * 3600 / PIX_ARCSEC
+        if d <= NEAR_PX and (best is None or d < best[0]):
+            best = (d, g)
+    return None if best is None else dict(best[1], sep_px=round(best[0], 2))
+
+
+def skybot_near(ra: float, dec: float, mjd: float) -> list[dict] | None:
+    """SkyBoT asteroids within 2 px at this time (geocentric, as the app asks); None if it failed."""
+    import urllib.parse
+    import urllib.request
+    q = urllib.parse.urlencode({"-ep": f"{mjd + 2400000.5:.5f}", "-ra": f"{ra:.6f}", "-dec": f"{dec:.6f}",
+                                "-rd": f"{NEAR_PX * PIX_ARCSEC / 3600:.5f}", "-mime": "json",
+                                "-output": "basic", "-loc": "500", "-filter": "120", "-objFilter": "111",
+                                "-from": "Planetes"})
+    try:
+        with urllib.request.urlopen(f"https://ssp.imcce.fr/webservices/skybot/api/conesearch.php?{q}",
+                                    timeout=30) as r:
+            body = r.read().decode()
+            return json.loads(body) if body.strip() else []
+    except urllib.error.HTTPError as ex:
+        return [] if ex.code == 204 else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def select() -> None:
+    idx = json.loads((CACHE / "fieldguide_index.json").read_text())
+    flds = fields(idx["rows"])
+    print("fields", len(flds), flush=True)
+    gaia_for_fields(flds)
+    field_of = {r["path"]: f for f in flds for r in f["rows"]}
+    survivors = {k: [] for k in SELECT_KINDS}
+    star_hits = []
+    counts = {k: dict(at_sn5=0, source_flag=0, gaia=0) for k in SELECT_KINDS}
+    for i, row in enumerate(idx["rows"]):
+        # Our own cache, written only by this pipeline on this machine (as build_pack's).
+        e = pickle.loads((CACHE / row["path"]).read_bytes())
+        src = mask_of(e, ("SOURCE",))
+        for kind, names in SELECT_KINDS.items():
+            for r in regions(e, names, touch=src):
+                if r["sn"] < SN_MIN:
+                    continue
+                counts[kind]["at_sn5"] += 1
+                rec = dict(r, path=row["path"], obs=row["obs"], det=row["det"], mjd=row["mjd"],
+                           lam=row["lam"], x0=int(e["x0"]), y0=int(e["y0"]))
+                if r["touch"]:
+                    counts[kind]["source_flag"] += 1
+                    continue
+                ra, dec = sky_of(e, r["x"], r["y"])
+                rec.update(ra=round(ra, 6), dec=round(dec, 6))
+                g = gaia_near(field_of[row["path"]]["gaia"], ra, dec, row["mjd"])
+                if g:
+                    counts[kind]["gaia"] += 1
+                    if kind == "cosmic-ray":
+                        star_hits.append(dict(rec, gaia=dict(id=g["id"], G=g["mag"], sep_px=g["sep_px"])))
+                    continue
+                survivors[kind].append(rec)
+        if i % 2000 == 0:
+            print(i, {k: len(v) for k, v in survivors.items()}, len(star_hits), flush=True)
+    out = dict(rule_change="Physics, after the first result: no SOURCE pixel, no Gaia G<19 within 2 px, "
+                           "no SkyBoT asteroid within 2 px; CatWISE skipped (IRSA down)",
+               counts=counts, kinds={})
+    for kind, lst in survivors.items():
+        lst.sort(key=lambda r: -r["excess"])
+        chosen, checked = None, []
+        for cand in lst[:10]:
+            sb = skybot_near(cand["ra"], cand["dec"], cand["mjd"])
+            checked.append(dict(obs=cand["obs"], skybot=None if sb is None else len(sb)))
+            if sb is None:
+                continue  # SkyBoT didn't answer: not chosen on an unchecked basis
+            if sb:
+                continue
+            chosen = cand
+            break
+        out["kinds"][kind] = dict(survivors=len(lst), chosen=chosen, skybot_checked=checked)
+        print(kind, len(lst), chosen and (chosen["obs"], chosen["det"], chosen["npix"],
+                                          round(chosen["excess"], 1), round(chosen["sn"], 1)), flush=True)
+    star_hits.sort(key=lambda r: -r["excess"])
+    out["star_hit"] = star_hits[0] if star_hits else None
+    out["star_hits_n"] = len(star_hits)
+    (CACHE / "fieldguide_select.json").write_text(json.dumps(out, indent=1))
+    print("star-hit", len(star_hits), out["star_hit"] and (out["star_hit"]["obs"], out["star_hit"]["gaia"]))
+
+
 if __name__ == "__main__":
-    {"index": index, "search": search}[sys.argv[1]]()
+    {"index": index, "search": search, "select": select}[sys.argv[1]]()
