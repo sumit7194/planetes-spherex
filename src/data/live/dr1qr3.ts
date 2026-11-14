@@ -23,6 +23,49 @@ import type { Tile } from '../pack/load';
 import { FlagMask } from '../pack/types';
 
 export const BUCKET = 'https://nasa-irsa-spherex.s3.amazonaws.com';
+
+/**
+ * The same bucket under its five web addresses (all allow browser access and byte ranges). S3
+ * speaks only HTTP/1.1, so a browser opens ~6 connections per address; spreading photos over
+ * all five gives ~30. Each photo sticks to one address (a hash of its key), so its reads reuse
+ * that address's warm connections. Outside a browser only the main address is used.
+ */
+export const BUCKET_HOSTS = [
+  BUCKET,
+  'https://nasa-irsa-spherex.s3.us-east-1.amazonaws.com',
+  'https://s3.amazonaws.com/nasa-irsa-spherex',
+  'https://s3.us-east-1.amazonaws.com/nasa-irsa-spherex',
+  'https://nasa-irsa-spherex.s3.dualstack.us-east-1.amazonaws.com',
+] as const;
+
+/** The address a photo's direct reads go to. */
+export function bucketUrl(key: string): string {
+  if (typeof document === 'undefined') return `${BUCKET}/${key}`;
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619);
+  return `${BUCKET_HOSTS[(h >>> 0) % BUCKET_HOSTS.length]}/${key}`;
+}
+
+/** A small public file used to open connections early (its first byte only). */
+const WARM_KEY =
+  'dr1/level2/2025W19_1B/l2b-v27-2026-197/3/level2_2025W19_1B_0116_1D3_spx_l2b-v27-2026-197.fits';
+let warmed = false;
+
+/**
+ * Opens connections before the first look (call it when the visitor starts typing): the
+ * secure handshake costs ~1 s per address from India. With the helper on, that's one address;
+ * otherwise all five bucket addresses. Runs once per page; never throws.
+ */
+export function warmUp(): void {
+  if (warmed || typeof document === 'undefined') return;
+  warmed = true;
+  const touch = (url: string, init?: RequestInit) =>
+    fetch(url, { ...init, signal: AbortSignal.timeout(8000) }).catch(() => undefined);
+  if (helperBase) void touch(`${helperBase}/v1/health`);
+  else
+    for (const host of BUCKET_HOSTS)
+      void touch(`${host}/${WARM_KEY}`, { headers: { Range: 'bytes=0-0' } });
+}
 const BLOCK = 2880;
 const RAD = Math.PI / 180;
 
@@ -750,7 +793,7 @@ export async function probePhoto(
     return { ...p, bytes: 0 };
   }, signal);
   if (viaHelper) return viaHelper.value;
-  const url = `${BUCKET}/${photo.key}`;
+  const url = bucketUrl(photo.key);
   const [{ hi, bytes }, tail] = await Promise.all([
     imageHeaders(url, signal),
     tailBlocks(url, 6, signal),
@@ -778,7 +821,7 @@ export async function readPhoto(
     return r ? decodeHelperFrame(await r.arrayBuffer(), photo, size) : null;
   }, signal);
   if (viaHelper) return viaHelper.value;
-  const url = `${BUCKET}/${photo.key}`;
+  const url = bucketUrl(photo.key);
   let bytes = 0;
   const { h0, hi, bytes: hb } = await imageHeaders(url, signal);
   bytes += hb;
