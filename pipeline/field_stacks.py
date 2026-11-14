@@ -98,7 +98,7 @@ def stack_field(field: dict, mode: str) -> dict:
         if e is None:
             continue
         w_exp = WCS(fits.Header.fromstring(e["wcs_hdr"]))
-        # The edge rule (prereg/slowmover/PLAN.md §8, 15 Nov): the field centre's own pixel
+        # The edge rule (prereg/slowmover/PLAN.md §8, 14 Nov): the field centre's own pixel
         # within EDGE_PX of the detector's edge leaves the photo out, whatever the photo list.
         nx, ny = w_exp.pixel_shape
         if min(e["xt"], e["yt"], nx - 1 - e["xt"], ny - 1 - e["yt"]) < EDGE_PX:
