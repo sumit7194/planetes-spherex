@@ -12,7 +12,7 @@
  },
  {
   "key": "shift-east-px-s0s1",
-  "value": 0.1537,
+  "value": 0.1552,
   "unit": "px",
   "status": "MEASURED",
   "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 1)",
@@ -25,7 +25,7 @@
    "season 1: 121 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.354,
+  "error": 0.3541,
   "prediction": {
    "value": 0.0972,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -33,7 +33,7 @@
  },
  {
   "key": "shift-east-arcsec-s0s1",
-  "value": 0.9452,
+  "value": 0.9545,
   "unit": "arcsec",
   "status": "MEASURED",
   "method": "shift-east-px-s0s1 x 6.15 arcsec per pixel (season 0 -> 1)",
@@ -41,7 +41,7 @@
    "shift-east-px-s0s1"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 2.1768,
+  "error": 2.1775,
   "prediction": {
    "value": 0.598,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -49,7 +49,7 @@
  },
  {
   "key": "shift-north-px-s0s1",
-  "value": 0.749,
+  "value": 0.7514,
   "unit": "px",
   "status": "MEASURED",
   "method": "2D Gaussian fit to the unsaturated PSF of each pass's stack, minus the still stars' common shift; median over detectors; error: the larger of the detector scatter and a 30-draw bootstrap over photos (season 0 -> 1)",
@@ -62,7 +62,7 @@
    "season 1: 121 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.2526,
+  "error": 0.2528,
   "prediction": {
    "value": 0.9124,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -70,7 +70,7 @@
  },
  {
   "key": "shift-north-arcsec-s0s1",
-  "value": 4.6066,
+  "value": 4.6214,
   "unit": "arcsec",
   "status": "MEASURED",
   "method": "shift-north-px-s0s1 x 6.15 arcsec per pixel (season 0 -> 1)",
@@ -78,7 +78,7 @@
    "shift-north-px-s0s1"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 1.5537,
+  "error": 1.5545,
   "prediction": {
    "value": 5.611,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -119,7 +119,7 @@
  },
  {
   "key": "still-star-shift-px-s0s1",
-  "value": 0.0539,
+  "value": 0.0558,
   "unit": "px",
   "status": "MEASURED",
   "method": "median distance of still stars from their common shift (season 0 -> 1)",
@@ -130,7 +130,7 @@
  },
  {
   "key": "still-star-shift-p90-px-s0s1",
-  "value": 0.1355,
+  "value": 0.1386,
   "unit": "px",
   "status": "MEASURED",
   "method": "90th percentile distance of still stars from their common shift (season 0 -> 1)",
@@ -283,7 +283,7 @@
    "season 2: 119 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.1179,
+  "error": 0.1151,
   "prediction": {
    "value": -0.2214,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -299,7 +299,7 @@
    "shift-east-px-s1s2"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.7249,
+  "error": 0.7077,
   "prediction": {
    "value": -1.362,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -320,7 +320,7 @@
    "season 2: 119 exposures"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.1152,
+  "error": 0.1401,
   "prediction": {
    "value": 0.7487,
    "source": "Gaia DR3 proper motion plus parallax"
@@ -336,7 +336,7 @@
    "shift-north-px-s1s2"
   ],
   "provenance": "SpaceAppChallenge pipeline/measure.py, DR1+QR3 fetched 14 Nov 2026",
-  "error": 0.7086,
+  "error": 0.8619,
   "prediction": {
    "value": 4.605,
    "source": "Gaia DR3 proper motion plus parallax"

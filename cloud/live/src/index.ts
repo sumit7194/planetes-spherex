@@ -646,7 +646,9 @@ export default {
     }
     ctx.waitUntil(
       env.FRAMES.put(key, buf, {
-        httpMetadata: { contentType: res.headers.get('content-type') ?? 'application/octet-stream' },
+        httpMetadata: {
+          contentType: res.headers.get('content-type') ?? 'application/octet-stream',
+        },
         customMetadata: meta,
       }).catch(() => undefined),
     );
