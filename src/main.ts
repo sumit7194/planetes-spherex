@@ -3429,7 +3429,7 @@ function spotContext(): {
   /** On one of the five's pages: the page's own target (Physics' first check). */
   target?: { name: string; wanderer: (typeof WANDERERS)[number] };
   /** A fact about the target that helps read a blend (Physics; cited in targets.json). */
-  targetFact?: string;
+  targetFact?: { text: string; source: string };
 } | null {
   if (current && 'target' in state.place) {
     const [early, late] = current.pair;
@@ -3456,7 +3456,11 @@ function spotContext(): {
       mjd: [mean(seasons[0]), mean(seasons[1])],
       ...(wd ? { target: { name: copy.wanderers[id].name, wanderer: wd } } : {}),
       ...(id in copy.spotCheck.targetFacts
-        ? { targetFact: (copy.spotCheck.targetFacts as Record<string, string>)[id] }
+        ? {
+            targetFact: (
+              copy.spotCheck.targetFacts as Record<string, { text: string; source: string }>
+            )[id],
+          }
         : {}),
       // The looks' photos at the clicked spot, matched to the sky index by photo id; at most 40
       // per look, spread through time.
@@ -3848,6 +3852,16 @@ function markButton(): HTMLElement | null {
 
 /** Whether "How we checked" is open, kept across re-renders. */
 let spotDetailsOpen = false;
+/** The card scrolls into view when a check starts and when its verdict lands (Compare scrolls). */
+let spotScrollFor: string | null = null;
+
+function revealSpotCard(card: HTMLElement, key: string): HTMLElement {
+  if (spotScrollFor !== key) {
+    spotScrollFor = key;
+    requestAnimationFrame(() => card.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+  }
+  return card;
+}
 
 /** A flag's plain name (Viewer: no raw bit names on the card). */
 const plainFlag = (name: string) =>
@@ -3922,12 +3936,15 @@ function spotCard(): HTMLElement | null {
   if (!v) {
     // Still checking: the checks in view as they land (Viewer 3).
     const gated = r.sn.some((x) => x !== null && x >= SPOT_SN);
-    return h(
-      'div',
-      { class: 'spot-check-card', 'aria-live': 'polite' },
-      h('p', { class: 'hint', role: 'status' }, t.checking),
-      ...where,
-      gated ? checks : null,
+    return revealSpotCard(
+      h(
+        'div',
+        { class: 'spot-check-card', 'aria-live': 'polite' },
+        h('p', { class: 'hint', role: 'status' }, t.checking),
+        ...where,
+        gated ? checks : null,
+      ),
+      `${spotSeq}:checking`,
     );
   }
   const shown: (HTMLElement | null)[] = [];
@@ -3936,7 +3953,16 @@ function spotCard(): HTMLElement | null {
     v.kind === 'nothing'
       ? t.nothing
       : v.kind === 'blend'
-        ? t.blendHead(sourceList(v.sources, t.at))
+        ? // Physics' blend, as one line (Viewer): where the light is centred, with no claim.
+          t.blendHead(
+            sourceList(
+              v.sources.map((x) => ({
+                name: x.kind === 'target' ? t.predictedPlace(x.name) : x.name,
+                sep: x.sep,
+              })),
+              (name, sep) => `${sep}″ from ${name}`,
+            ),
+          )
         : v.kind === 'target'
           ? t.target(v.name, (r.targetSep ?? 0).toFixed(1))
           : v.kind === 'asteroid'
@@ -3949,30 +3975,13 @@ function spotCard(): HTMLElement | null {
                   : t.artefact(v.flags.map(plainFlag).join(', '))
                 : t.unknown;
   shown.push(h('p', { class: 'spot-check-verdict', role: 'status' }, head));
-  if (v.kind === 'blend')
-    // Physics: where the light is centred, with no claim about which source it is.
-    shown.push(
-      h(
-        'p',
-        { class: 'hint' },
-        t.lightCentre(
-          sourceList(
-            v.sources.map((x) => ({
-              name: x.kind === 'target' ? t.predictedPlace(x.name) : x.name,
-              sep: x.sep,
-            })),
-            (name, sep) => `${sep}″ from ${name}`,
-          ),
-        ),
-      ),
-    );
   // A fact about the page's target, when it's one of the sources (Physics; cited in targets.json).
   const targetFact = spotContext()?.targetFact;
   if (
     targetFact &&
     (v.kind === 'target' || (v.kind === 'blend' && v.sources.some((x) => x.kind === 'target')))
   )
-    shown.push(h('p', { class: 'hint' }, targetFact));
+    shown.push(h('p', { class: 'hint' }, targetFact.text));
   if (v.kind === 'star' && v.flagged.length)
     shown.push(h('p', { class: 'hint' }, t.starFlagged(v.flagged.map(plainFlag).join(', '))));
   if (v.kind === 'artefact' && v.stuck && v.flags.length)
@@ -3987,6 +3996,8 @@ function spotCard(): HTMLElement | null {
     const other = r.close.find((x) => !named.has(x.name));
     if (other) shown.push(h('p', { class: 'hint' }, t.blend(other.name, other.sep.toFixed(1))));
     folded.push(checks);
+    if (targetFact && spotContext()?.target)
+      folded.push(h('p', { class: 'hint' }, t.factSource(targetFact.source)));
     if (r.flagCounts.length && r.seen) {
       const n = r.seen.n;
       folded.push(
@@ -4053,12 +4064,15 @@ function spotCard(): HTMLElement | null {
       copyBtn.textContent = t.copied;
     });
   });
-  return h(
-    'div',
-    { class: 'spot-check-card', 'aria-live': 'polite' },
-    ...shown,
-    details,
-    h('p', {}, copyBtn),
+  return revealSpotCard(
+    h(
+      'div',
+      { class: 'spot-check-card', 'aria-live': 'polite' },
+      ...shown,
+      details,
+      h('p', {}, copyBtn),
+    ),
+    `${spotSeq}:done`,
   );
 }
 

@@ -921,9 +921,8 @@ export const copy = {
     flagCounts: (list: string) => `Flags in the photos that show it (information): ${list}.`,
     flagCount: (name: string, k: number) => `${name} in ${k}`,
     asking: (what: string) => `${what}: checking…`,
-    blendHead: (list: string) => `Blend: ${list}. At SPHEREx's 6″ pixels these can't be separated.`,
-    at: (name: string, sep: string) => `${name} at ${sep}″`,
-    lightCentre: (list: string) => `The light is centred ${list}.`,
+    blendHead: (list: string) =>
+      `Blend: the light is centred ${list}. At SPHEREx's 6″ pixels they can't be separated.`,
     predictedPlace: (name: string) => `${name}'s predicted place`,
     stuck:
       'Probably a detector defect: it sits in the same detector pixel whatever SPHEREx points at.',
@@ -962,9 +961,13 @@ export const copy = {
     },
     /** Facts about one of the five that help read a blend (Physics, 15 Nov; sources in targets.json). */
     targetFacts: {
-      w0855:
-        'WISE 0855 is very faint below about 4 µm and bright near 4.5 µm (Spitzer: 17.4 mag at 3.6 µm, 13.9 at 4.5 µm), so in the shorter colours this light is mostly the neighbour. Compare adds all the colours together.',
+      w0855: {
+        text: 'WISE 0855 is very faint below about 4 µm and much brighter near 4.5 µm (Spitzer, Vega magnitudes: 17.4 at 3.6 µm, 13.9 at 4.5 µm), so in shorter colours this light is mostly the neighbour; Compare adds all colours.',
+        source:
+          'Luhman 2014, ApJL 786, L18 (Spitzer 3.6 and 4.5 µm); Schneider et al. 2016, ApJL 823, L35 (HST, J ≈ 26.4)',
+      },
     },
+    factSource: (src: string) => `The target's magnitudes: ${src}.`,
     detectorName: 'Detector check',
     checkDetector: (places: number, brightText: string) =>
       `Detector check (information): it appears at ${places} different place${places === 1 ? '' : 's'} on SPHEREx's detectors. The detector pixel under it is bright ${brightText} photos of other parts of the sky. A detector defect would sit in the same pixel whatever SPHEREx points at.`,
