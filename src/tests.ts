@@ -111,6 +111,7 @@ function fiveRow(id: TargetId, pack: LoadedPack | null): HTMLElement {
       h('summary', {}, t.checkLabel),
       h('p', {}, h('b', {}, `${t.hardLabel}: `), f.hard),
       h('p', {}, h('b', {}, `${t.liveLabel}: `), f.live),
+      f.earlier ? h('p', {}, h('b', {}, `${t.earlierLabel}: `), f.earlier) : null,
       h(
         'p',
         { class: 'links' },
@@ -275,6 +276,7 @@ async function main(): Promise<void> {
     h('h2', {}, t.afterTitle),
     h('p', {}, t.afterLede),
     h('ul', { class: 'after' }, ...t.after.map((a) => h('li', {}, a))),
+    h('p', {}, t.afterDesigned),
     h('p', { class: 'note' }, t.afterPending),
     h('footer', {}, h('span', {}, t.footer)),
   );

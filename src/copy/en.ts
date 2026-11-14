@@ -852,6 +852,7 @@ export const copy = {
     hardLabel: 'What makes it hard',
     liveLabel: 'The live tool at the challenge’s position',
     checkLabel: 'The check behind it',
+    earlierLabel: 'An earlier test',
     open: 'Open its page',
     tryLive: 'Try the live tool there',
     seen: {
@@ -894,8 +895,10 @@ export const copy = {
         quote: 'variable stars RW Aurigae and R Draconis',
         hard: 'A young star whose brightness flickers, and bright enough to saturate SPHEREx.',
         limit:
-          'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light.',
+          'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light. An earlier pre-registered test on the previous release saw the same dimming but couldn’t confirm it (details in “The check behind it”).',
         live: 'Opens 335 photos in 3 passes, compared at 1.62 µm. A live look shows the photos; it doesn’t measure brightness.',
+        earlier:
+          'An earlier pre-registered test, on the previous data release (QR2), saw the same dimming (about 42% and 50% in two colour ranges) but could not confirm it: one range’s change was under 5 times its error, and one comparison star changed more than RW Aurigae. The new measurement uses a different check (a steady bright star measured the same way) and passes it.',
       },
       'r-dra': {
         quote: 'variable stars RW Aurigae and R Draconis',
@@ -904,7 +907,10 @@ export const copy = {
           'Not measured: its glare reaches the comparison stars in its field. A re-check with comparison stars farther out is running.',
         live: 'Opens 2,500 photos in 3 passes (a deep field; the look picks a few), compared at 0.82 µm. A live look doesn’t measure brightness.',
       },
-    } as Record<string, { quote: string; hard: string; limit: string; live: string }>,
+    } as Record<
+      string,
+      { quote: string; hard: string; limit: string; live: string; earlier?: string }
+    >,
     liveNote:
       'Checked by hand on 14 November 2026 at the challenge’s position (WISE 0855) or the catalogue position (the others).',
     seasonPairs: {
@@ -958,13 +964,20 @@ export const copy = {
       'General methods only, but some choices were made after seeing data from these five fields. Each is listed here and next to the number it affects.',
     after: [
       'Brightness from a saturated star’s edges: the steady-star tolerance (1.00 ± 0.06) was chosen after seeing Barnard’s Star’s results (said in RW Aurigae’s “how”).',
-      'The slow-mover search: a sloped background was added after a false alarm in Barnard’s Star’s field, and the glare rule was changed after it hid ε Indi B itself.',
-      'The “what changed” film: its brightness-scale fit leaves the target out and was narrowed after over-fitting was seen.',
+      'The slow-mover search: developed and debugged on these five fields (a sloped background added after a false alarm in Barnard’s Star’s field; the glare rule changed after it hid ε Indi B itself). Its independent test is the registered yardstick on other sky, not yet run.',
+      'The “what changed” film: its brightness-scale fit leaves the target out and was narrowed after an over-fit (×1.35) was seen on RW Aurigae’s film; its same-orientation references, colour-step tolerance and background-plane removal were also set after looking at these fields.',
       'The “it was here in 2010” note: its tolerances were set with WISE 0855’s challenge position in mind.',
       'Which stars in a pack count as the target: a matching motion is required, after the target flags were re-checked on these fields.',
-      'Spot the mover: offered only where Physics’ eye test on these fields says the move can be seen.',
+      'Spot the mover: offered only where Physics’ eye test says the move can be seen. That eye test was not blind (Physics knew which star and which way it should move), and ε Indi B’s “faint” rather than “seen” was a judgement call.',
+      'RW Aurigae’s cutout: re-made 48 pixels wide (from 40) after the first left too few comparison stars.',
+      'Barnard’s Star’s headline pair is a year apart (passes 1 and 3): the half-year pairs were marked not reliable after its edge fit’s offset was seen to flip with the scan direction.',
+      'WISE 0855: fitted together with its G 16.3 neighbour, after the all-colour picture showed the neighbour pulling its centre.',
+      'R Draconis “not measurable yet”: set after its flagged area was seen to exceed the star-image model’s reach in every detector.',
+      'Barnard’s Star’s east component: a later check found a method effect of about 0.1 pixel in east, beyond its quoted 0.05; no number was changed, and it is said next to that number.',
     ],
-    afterPending: 'Physics is confirming this list.',
+    afterDesigned:
+      'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the fast-mover search’s thresholds and its fake-mover yardstick, fixed on other sky first.',
+    afterPending: 'Checked and completed by Physics, 14 November 2026.',
     footer:
       'Every number above is read from the same data files as the tool itself, or from the run outputs linked.',
     /** The way in, from the band, a target's Facts tab, the legend and the credits page. */
