@@ -649,7 +649,10 @@ export const copy = {
   },
   search: {
     unreadable: (reason: string) =>
-      `We couldn't find that name or read that position (${reason}). Try a name like Vega or Barnard's Star, or a position like 17 57 48 +04 41 36.`,
+      `We couldn't find that name or read that position (${reason}). Try a name like Vega or Barnard's Star, or a position like 17 57 48 +04 41 36 (ICRS, J2000).`,
+    /** The search box's tooltip: which coordinate system a typed position is read in. */
+    frame:
+      'A star name, or a position as RA and Dec in ICRS (J2000), e.g. 08h55m10.8s −7d14m42s. Old B1950 positions are not converted.',
     wandererSoon: (name: string) => `That's ${name}. Its show arrives in the next version.`,
     /** The typed spot is where a moving target was in an earlier year. */
     oldPlace: (name: string, year: number, moved: string) =>

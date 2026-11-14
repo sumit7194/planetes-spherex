@@ -259,6 +259,9 @@ const search = h('input', {
   class: 'search glass',
   type: 'search',
   placeholder: copy.sky.search,
+  // Positions are ICRS (J2000): an old B1950 position is up to ~0.7° off by precession alone.
+  title: copy.search.frame,
+  'aria-description': copy.search.frame,
 });
 /**
  * The wordmark is the way home: from a show it goes back to the sky (aimed at the light just

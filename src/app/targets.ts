@@ -63,7 +63,10 @@ export interface PastPlace {
  * Whether a typed position is where a moving wanderer used to be: the year on its straight
  * track closest to the spot, if the spot lies within `tolArcsec` of the track and the year is at
  * least `minYears` from 2026. Null otherwise (including for the variables, which don't move).
- * Proper motion only, no parallax (≤ 0.8″ here, well inside the tolerance).
+ * Proper motion only: parallax (≤ 0.55″ here) and Barnard's perspective acceleration (≈ 0.4″
+ * since 2000) are ignored, both ≪ the 15″ tolerance (Physics, 14 Nov). Positions are ICRS (J2000);
+ * a B1950/FK4 position would be off by up to ~0.7° from precession, not motion, so it isn't
+ * converted here (the search box says so).
  */
 export function pastPlace(
   w: Wanderer,
