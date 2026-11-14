@@ -155,19 +155,40 @@ async def check(n: int = 3):
                   f"xt {a['xt'] - b['xt']:+.2e} yt {a['yt'] - b['yt']:+.2e} lam {lam:.5f} vs {b['lam']:.5f}")
 
 
-async def check_extra():
+def row_for_key(key: str) -> dict:
+    """A search-row stand-in for one bucket key (when IRSA's image search is down)."""
+    name = key.rsplit("/", 1)[1]
+    core = name[len("level2_"): name.index("_spx")]  # e.g. 2026W21_2A_0001_2D2
+    return dict(url=BUCKET + key, obs_id=core[:-2], det=int(core[-1]), t=0)
+
+
+async def check_extra(keys: list[str] | None = None):
     """VARIANCE, ZODI and the EPSF extension through the helper against direct S3 reads, on a DR1
-    exposure, a QR3 exposure and one near a detector edge (Physics' rule before any injection)."""
+    exposure, a QR3 exposure and one near a detector edge (Physics' rule before any injection).
+    With keys: those bucket photos, at their centres (no IRSA search needed)."""
     import hashlib
     import spherex as sx
     from astropy.io import fits
-    t = bp.load_targets()["w0855"]
-    rows = sx.search(t["ra"], t["dec"])
-    dr1 = next(r for r in rows if "/dr1/" in r["url"] or "dr1/" in s3_key(r["url"])[:4])
-    qr3 = next((r for r in rows if s3_key(r["url"]).startswith("qr3/")), None)
-    picks = [("DR1", dr1, t["ra"], t["dec"])]
-    if qr3:
-        picks.append(("QR3", qr3, t["ra"], t["dec"]))
+    from astropy.wcs import WCS as _WCS
+    picks = []
+    if keys:
+        async with aiohttp.ClientSession() as s:
+            rd = sx.RangeReader(s)
+            for k in keys:
+                r = row_for_key(k)
+                _, l0 = await rd.header(r["url"], 0, guess=2)
+                hi, _ = await rd.header(r["url"], l0, guess=30)
+                ra, dec = (float(v) for v in _WCS(hi).pixel_to_world_values(hi["NAXIS1"] / 2, hi["NAXIS2"] / 2))
+                picks.append((k.split("/", 1)[0].upper(), r, ra, dec))
+        dr1 = picks[0][1]
+    else:
+        t = bp.load_targets()["w0855"]
+        rows = sx.search(t["ra"], t["dec"])
+        dr1 = next(r for r in rows if "/dr1/" in r["url"] or "dr1/" in s3_key(r["url"])[:4])
+        qr3 = next((r for r in rows if s3_key(r["url"]).startswith("qr3/")), None)
+        picks = [("DR1", dr1, t["ra"], t["dec"])]
+        if qr3:
+            picks.append(("QR3", qr3, t["ra"], t["dec"]))
     async with aiohttp.ClientSession() as s:
         rd = sx.RangeReader(s)
         # A detector edge: a position 30 px inside the first photo's corner (box clipped by the edge).
@@ -216,8 +237,9 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--check-extra", action="store_true")
+    ap.add_argument("--keys", nargs="*", help="bucket keys for --check-extra (no IRSA search)")
     a = ap.parse_args()
     if a.check:
         asyncio.run(check())
     if a.check_extra:
-        asyncio.run(check_extra())
+        asyncio.run(check_extra(a.keys))

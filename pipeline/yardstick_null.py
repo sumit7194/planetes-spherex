@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import time
 from pathlib import Path
 
 import numpy as np
@@ -153,7 +154,15 @@ def main():
     for f in fields[a.first:a.first + a.count]:
         if f["field"] in done:
             continue
-        res = run_field(f)
+        try:
+            res = run_field(f)
+        except Exception as ex:  # noqa: BLE001
+            # An archive outage, not a choice: logged with its time and retried on a later run
+            # (the field is not written to the results, so it is picked up again).
+            with (OUT / "na_skipped.txt").open("a") as fh:
+                fh.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S%z')} {f['field']} {repr(ex)[:160]}\n")
+            print(f"{f['field']} skipped for now: {repr(ex)[:120]}", flush=True)
+            continue
         with RESULTS.open("a") as fh:
             for r in res or [dict(field=f["field"], seasons=[], detectors=0, consistentSignificance=[], nCandidates=0, steadyScatterPx=None)]:
                 fh.write(json.dumps(r) + "\n")

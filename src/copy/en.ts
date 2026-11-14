@@ -754,6 +754,8 @@ export const copy = {
     coaddLoading: 'Adding up the photos…',
     coaddLabel: (range: string, n: number) => `${range}: ${n} photos added together`,
     seriesLabel: 'Step through the photos',
+    loading: (n: number, mb: number, pct: number) =>
+      `Loading ${n} photos (${mb.toFixed(1)} MB)… ${pct}%`,
     /** The photo on screen, on demand (the challenge asks for metadata such as flags). */
     meta: {
       heading: 'About this photo',

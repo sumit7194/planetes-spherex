@@ -14,8 +14,9 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
-    "validate:pack": "node scripts/validate-pack.ts"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run validate:packs",
+    "validate:pack": "node scripts/validate-pack.ts",
+    "validate:packs": "for d in public/data/packs/*/*/; do node scripts/validate-pack.ts \"$d\" || exit 1; done"
   },
   "engines": {
     "node": ">=20"

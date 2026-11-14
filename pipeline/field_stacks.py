@@ -38,16 +38,26 @@ SIZE = 64
 HALF = int(SIZE * 0.75) + 6
 
 
+# Where the photo list comes from: IRSA's image search (as registered), or our own sky index
+# (sky_index.py; IRSA's search was down from 14 Nov ~22:15 IST). One source per run, never mixed.
+ROWS_FROM = "irsa"
+
+
 def search_rows(ra, dec):
-    for attempt in range(4):
+    if ROWS_FROM == "index":
+        import sky_index
+        rows = sky_index.search(ra, dec)
+        sx.group_passes(rows)
+        return rows
+    for attempt in range(7):
         try:
             rows = sx.search(ra, dec)
             sx.group_passes(rows)
             return rows
-        except Exception:  # noqa: BLE001  (IRSA's image search drops connections now and then)
-            if attempt == 3:
+        except Exception:  # noqa: BLE001  (IRSA's image search drops connections, 502s now and then)
+            if attempt == 6:
                 raise
-            time.sleep(10 * (attempt + 1))
+            time.sleep(min(90, 15 * (attempt + 1)))
 
 
 def groups_of(rows, mode: str) -> list[str]:

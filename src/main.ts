@@ -68,6 +68,7 @@ import { npix, pixelCentre } from './data/healpix';
 import {
   loadPack,
   loadTile as loadPackTile,
+  loadBundle,
   loadBundledTile,
   stackPair,
   type LoadedPack,
@@ -4378,6 +4379,21 @@ async function playColour(detector: number): Promise<void> {
   const frames = pack.manifest.frames
     .filter((f) => f.detector === detector)
     .sort((a, b) => a.mjd - b.mjd);
+  // One download for the whole colour range: the lens keeps the pair meanwhile, and the label
+  // says how much is coming (Viewer, 14 Nov).
+  const bundle = pack.manifest.bundles?.find((b) => b.detector === detector);
+  if (bundle) {
+    const mb = (bundle.bytesPerFrame * bundle.frameIds.length) / 1e6;
+    const say = (pct: number) => {
+      if (watching === detector && current?.pack === pack)
+        lensLabel.replaceChildren(h('span', {}, copy.watch.loading(frames.length, mb, pct)));
+    };
+    say(0);
+    await loadBundle(pack.base, bundle, (got, total) => say(Math.floor((100 * got) / total))).catch(
+      () => undefined,
+    );
+    if (watching !== detector || current?.pack !== pack) return;
+  }
   const tiles = await Promise.all(frames.map((f) => photoTile(pack, f)));
   if (watching !== detector || current?.pack !== pack) return;
   // No arrows over a series: they belong to the two compared looks.

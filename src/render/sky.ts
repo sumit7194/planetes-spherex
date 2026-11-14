@@ -372,12 +372,13 @@ export class SkyView {
     }
     if (!best) return;
     const [ra, dec, v, , hip, pmRa, pmDec] = best.star;
+    if (hip === undefined) return;
     const at = { ra, dec };
     const pm: [number, number] = [pmRa ?? 0, pmDec ?? 0];
     const x = rect.left + best.p.x / u;
     const y = rect.top + best.p.y / u;
-    this.#restStar = { hip: hip!, at, pm, x, y };
-    this.onStarRest({ hip: hip!, name: this.#names.get(hip!) ?? null, v, at, pm, x, y });
+    this.#restStar = { hip, at, pm, x, y };
+    this.onStarRest({ hip, name: this.#names.get(hip) ?? null, v, at, pm, x, y });
   }
   /** Shift + scroll over the sky: step the time sweep by weeks. */
   onSweep: (step: number) => void = () => {};

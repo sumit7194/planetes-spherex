@@ -45,6 +45,50 @@ export async function loadTile(
 const bundleFiles = new Map<string, Promise<{ buf: ArrayBuffer; index: Map<string, number> }>>();
 
 /**
+ * A detector's whole bundle, fetched once. `onProgress` (bytes so far, total) is called as it
+ * arrives when this call starts the download (Viewer, 14 Nov: say how much is coming).
+ */
+export function loadBundle(
+  base: string,
+  bundle: FrameBundle,
+  onProgress?: (received: number, total: number) => void,
+): Promise<{ buf: ArrayBuffer; index: Map<string, number> }> {
+  // Typed-array views need 4-byte-aligned offsets: a pack with an odd grid or a header would
+  // otherwise fail far from here (Viewer, 14 Nov).
+  if (bundle.bytesPerFrame % 4 !== 0)
+    throw new Error(`${bundle.file}: bytesPerFrame ${bundle.bytesPerFrame} is not a multiple of 4`);
+  const url = `${base}/${bundle.file}`;
+  let file = bundleFiles.get(url);
+  if (!file) {
+    const total = bundle.bytesPerFrame * bundle.frameIds.length;
+    file = fetchOk(url)
+      .then(async (r) => {
+        if (!onProgress || !r.body) return r.arrayBuffer();
+        // Read it in pieces to report progress; the size is known from the manifest.
+        const out = new Uint8Array(total);
+        const reader = r.body.getReader();
+        let got = 0;
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (got + value.length > total) throw new Error(`${url}: longer than expected`);
+          out.set(value, got);
+          got += value.length;
+          onProgress(got, total);
+        }
+        return out.buffer.slice(0, got);
+      })
+      .then((buf) => {
+        if (buf.byteLength !== total) throw new Error(`${url}: unexpected size`);
+        return { buf, index: new Map(bundle.frameIds.map((id, k) => [id, k])) };
+      });
+    bundleFiles.set(url, file);
+    file.catch(() => bundleFiles.delete(url));
+  }
+  return file;
+}
+
+/**
  * One photo from its detector's bundle: the same bytes as its own .f32 and .u8 files, sliced
  * from one shared download (no copy).
  */
@@ -54,22 +98,9 @@ export async function loadBundledTile(
   bundle: FrameBundle,
   frameId: string,
 ): Promise<Tile> {
-  const url = `${base}/${bundle.file}`;
-  let file = bundleFiles.get(url);
-  if (!file) {
-    file = fetchOk(url)
-      .then((r) => r.arrayBuffer())
-      .then((buf) => {
-        if (buf.byteLength !== bundle.bytesPerFrame * bundle.frameIds.length)
-          throw new Error(`${url}: unexpected size`);
-        return { buf, index: new Map(bundle.frameIds.map((id, k) => [id, k])) };
-      });
-    bundleFiles.set(url, file);
-    file.catch(() => bundleFiles.delete(url));
-  }
-  const { buf, index } = await file;
+  const { buf, index } = await loadBundle(base, bundle);
   const k = index.get(frameId);
-  if (k === undefined) throw new Error(`${frameId} is not in ${url}`);
+  if (k === undefined) throw new Error(`${frameId} is not in ${base}/${bundle.file}`);
   const n = size * size;
   const at = k * bundle.bytesPerFrame;
   return {
