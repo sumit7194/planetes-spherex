@@ -9,7 +9,7 @@
    "looksLike": "a new point of light",
    "label": "flagged",
    "evidence": [
-    "Flagged by the pipeline as not working (NONFUNC) and transient (TRANSIENT)",
+    "Flagged by the pipeline as permanently unusable (NONFUNC) and as a jump during the exposure (TRANSIENT)",
     "About 23,052 MJy/sr in one pixel, about 58,170 times its neighbours (about 0.4)",
     "Nothing there in 18 of 18 other photos of the same sky within 5 days"
    ],
@@ -58,20 +58,21 @@
    "looksLike": "a new source that appears once",
    "label": "flagged",
    "evidence": [
-    "Flagged as a transient (TRANSIENT) by the pipeline, over 12 pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch",
-    "Nothing there in 14 of 14 other photos of the same sky within 5 days",
+    "Flagged by the pipeline as a jump during the exposure (TRANSIENT), over 4 pixels, a typical size for a cosmic-ray hit",
+    "The pipeline also flags a ring of pixels around each hit (HALO)",
+    "Nothing there in 3 of 3 other photos of the same sky within 5 days",
     "No known source or asteroid at that place"
    ],
    "howToTell": "Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",
    "source": {
     "photos": [
-     "2025W49_1A_0280_2",
-     "2025W49_1A_0280_3"
+     "2025W24_1A_0631_3",
+     "2025W24_1A_0631_2"
     ],
-    "date": "2 December 2025",
-    "detector": "detector D5 (3.8–4.4 µm)",
-    "lambda": "4.08 µm",
-    "at": "248.00169,66.58035"
+    "date": "12 June 2025",
+    "detector": "detector D6 (4.4–5 µm)",
+    "lambda": "4.62 µm",
+    "at": "247.75584,66.72243"
    },
    "panels": [
     {
@@ -79,11 +80,11 @@
      "image": "hit-a.f32",
      "mark": "hit-a.mark.u8",
      "masked": "hit-a.masked.u8",
-     "caption": "2 December 2025: flagged",
-     "alt": "2 December 2025: a transient-flagged patch, outlined",
+     "caption": "12 June 2025: flagged",
+     "alt": "12 June 2025: a patch flagged as a jump (TRANSIENT), outlined",
      "ring": [
-      21.166666666666668,
-      2.9166666666666665
+      15.5,
+      30.5
      ]
     },
     {
@@ -91,11 +92,23 @@
      "image": "hit-b.f32",
      "mark": "hit-b.mark.u8",
      "masked": "hit-b.masked.u8",
-     "caption": "2 December 2025: the same sky",
-     "alt": "2 December 2025: the same sky, nothing there",
+     "caption": "12 June 2025: the same sky",
+     "alt": "12 June 2025: the same sky, nothing there",
      "ring": [
-      22.041111870276495,
-      2.7385450969638896
+      16.47738584191245,
+      30.331925111626106
+     ]
+    },
+    {
+     "size": 32,
+     "image": "hit-halo.f32",
+     "mark": "hit-halo.mark.u8",
+     "masked": "hit-halo.masked.u8",
+     "caption": "outlined: halo around the hit (HALO)",
+     "alt": "12 June 2025: the ring of pixels the pipeline flags around the hit, outlined",
+     "ring": [
+      15.5,
+      30.5
      ]
     }
    ]
@@ -157,7 +170,7 @@
    "label": "confirmed",
    "evidence": [
     "Barnard’s Star, Gaia DR3 G 8.2: far brighter at its centre than SPHEREx can measure",
-    "Flagged at its centre as saturated (BLOOM, OVERFLOW; 84 pixels) and around it as a bright star’s halo (HALO; 130 pixels)",
+    "Flagged at its centre as saturated (BLOOM, OVERFLOW; 84 pixels)",
     "Its light is real; only the centre’s numbers can’t be trusted"
    ],
    "howToTell": "A blob on a bright catalogued star with saturation flags is the star itself, not something new.",
@@ -178,14 +191,6 @@
      "masked": "sat-a.masked.u8",
      "caption": "outlined: saturation (BLOOM, OVERFLOW)",
      "alt": "Barnard's Star: the saturated centre outlined"
-    },
-    {
-     "size": 32,
-     "image": "sat-b.f32",
-     "mark": "sat-b.mark.u8",
-     "masked": "sat-b.masked.u8",
-     "caption": "outlined: halo (HALO)",
-     "alt": "Barnard's Star: the halo flags outlined"
     }
    ]
   },
@@ -245,7 +250,7 @@
    "looksLike": "a glitch, so not real",
    "label": "confirmed",
    "evidence": [
-    "Flagged as a transient (TRANSIENT) on 1 pixel; Gaia DR3 4472811789965981184 (G 17.7) lies 1.1 pixels away",
+    "Flagged as a jump during the exposure (TRANSIENT) on 1 pixel; Gaia DR3 4472811789965981184 (G 17.7) lies 1.1 pixels away",
     "The same star shows in 2 other photos of the same detector, about as bright (here 1.4× its usual brightness there)",
     "A flag marks pixels to treat with care. It doesn’t mean the source is fake: this is a catalogued star."
    ],

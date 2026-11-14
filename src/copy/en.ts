@@ -989,32 +989,39 @@ export const copy = {
     andAtTheOther: ', and at its other place ',
     flagCountFirst: (name: string, k: number, n: number) => `${name} in ${k} of ${n}`,
     /** Plain names for the flags (Viewer, 15 Nov), by the files' own bit names. */
+    /**
+     * Plain names for the flags. The authority is each plane's own description in the FLAGS
+     * header (the MSKDnnnn card), quoted beside each name; checked 15 Nov on
+     * level2_2025W19_1B_0116_1D3 (DR1, l2b-v27) after HALO had been misread (Viewer, Physics).
+     * PHANTOM, REFERENCE and SATELLITE_HALO are in v4's FIT_REJECT list but are not planes in the
+     * DR1 files, so they never fire here.
+     */
     flagPlain: {
-      TRANSIENT: 'transient (cosmic ray)',
-      OVERFLOW: 'overflow',
-      SUR_ERROR: 'ramp-fit error',
-      PHANTOM: 'electronic echo',
-      REFERENCE: 'reference pixel',
-      NONFUNC: 'dead pixel',
-      DICHROIC: 'filter edge',
-      MISSING_DATA: 'missing data',
-      HOT: 'hot pixel',
-      COLD: 'cold pixel',
-      FULLSAMPLE: 'full-sample pixel',
-      PHANMISS: 'echo not corrected',
-      NONLINEAR: 'near saturation',
-      PERSIST: 'afterglow of an earlier bright source',
-      OUTLIER: 'outlier',
-      CROSSTALK: 'crosstalk',
-      SOURCE: 'known source',
-      GHOST: 'ghost image',
-      GHOST_FPA: 'ghost image',
-      GHOST_EXT: 'ghost image',
-      STREAK: 'streak',
-      BLOOM: 'bloom from a bright star',
-      SNOWBALL: 'cosmic-ray burst',
-      HALO: 'bright-star halo',
-      SATELLITE_HALO: 'satellite halo',
+      TRANSIENT: 'jump during the exposure', // MSKD0000 "Transient detected during SUR"
+      OVERFLOW: 'overflow', // MSKD0001 "Overflow detected during SUR"
+      SUR_ERROR: 'onboard processing error', // MSKD0002 "Error in onboard processing"
+      PHANTOM: 'phantom', // not a plane in DR1 files
+      REFERENCE: 'reference pixel', // not a plane in DR1 files (JREF/KREF: "physical reference rows/cols on H2RG")
+      NONFUNC: 'permanently unusable pixel', // MSKD0006 "Permanently unusable"
+      DICHROIC: 'low efficiency (dichroic)', // MSKD0007 "Low efficiency due to dichroic"
+      MISSING_DATA: 'data lost onboard', // MSKD0009 "Onboard data lost"
+      HOT: 'hot pixel', // MSKD0010 "Hot pixel"
+      COLD: 'unusually low signal', // MSKD0011 "Anomalously low signal"
+      FULLSAMPLE: 'full readout kept', // MSKD0012 "Pixel full sample history is available" (not a fault)
+      PHANMISS: 'phantom correction not applied', // MSKD0014 "Phantom correction was not applied"
+      NONLINEAR: 'too bright to correct reliably', // MSKD0015 "Nonlinearity correction cannot be applied reliably"
+      PERSIST: 'afterglow (persistence)', // MSKD0017 "Persistent charge above threshold"
+      OUTLIER: 'outlier', // MSKD0019 "Pixel flagged by Detect Outliers"
+      CROSSTALK: 'crosstalk', // MSKD0020 "Pixel affected by crosstalk."
+      SOURCE: 'known source', // MSKD0021 "Pixel mapped to a known source"
+      GHOST: 'ghost of a bright star in the photo', // MSKD0022 "Affected by a bright source inside the exposure"
+      GHOST_FPA: 'ghost of a bright star on another detector', // MSKD0023 "Affected by a bright source on another detector"
+      GHOST_EXT: 'ghost of a bright star outside the view', // MSKD0024 "Pixel affected by a bright source outside FOV"
+      STREAK: 'streak', // MSKD0025 "Pixel affected by a streak"
+      BLOOM: 'bloom', // MSKD0026 "Pixel part of a bloom artifact"
+      SNOWBALL: 'snowball', // MSKD0027 "Pixel part of a snowball artifact"
+      HALO: 'halo around a hit', // MSKD0028 "Pixel part of a transient halo"; HISTORY "cosmic ray halo flagging"
+      SATELLITE_HALO: 'halo around a streak', // not a plane in DR1 files (L2 N_SAT_HALO: "streak halo")
     },
     /** Facts about one of the five that help read a blend (Physics, 15 Nov; sources in targets.json). */
     targetFacts: {

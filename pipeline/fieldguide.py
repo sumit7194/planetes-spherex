@@ -620,7 +620,7 @@ def export() -> None:
     cards.append(dict(
         id="bad-pixel", section="not-in-sky", title="A pixel that isn’t working",
         looksLike="a new point of light", label="flagged",
-        evidence=["Flagged by the pipeline as not working (NONFUNC) and transient (TRANSIENT)",
+        evidence=["Flagged by the pipeline as permanently unusable (NONFUNC) and as a jump during the exposure (TRANSIENT)",
                   f"About {c['excess']:,.0f} MJy/sr in one pixel, about {c['excess'] / c['bk']:,.0f} times its neighbours (about {c['bk']:.1f})"
                   if c["bk"] > 0 else f"About {c['excess']:,.0f} MJy/sr in one pixel, while the pixels around it read about {c['bk']:.1f}",
                   f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
@@ -636,16 +636,22 @@ def export() -> None:
     if c:
         other = other_photo(c, [], lambda sn: sn < 3)
         panels = [photo_panel("hit-a", c["path"], c["x"], c["y"], ("TRANSIENT",),
-                              f"{date_of(c['mjd'])}: flagged", f"{date_of(c['mjd'])}: a transient-flagged patch, outlined", True)]
+                              f"{date_of(c['mjd'])}: flagged", f"{date_of(c['mjd'])}: a patch flagged as a jump (TRANSIENT), outlined", True)]
         if other:
             o, ox, oy = other
             panels.append(photo_panel("hit-b", o["path"], ox, oy, (), f"{date_of(o['mjd'])}: the same sky",
                                       f"{date_of(o['mjd'])}: the same sky, nothing there", True))
+        # Physics: the HALO ring around the hit, which we had first misread as a bright star's halo.
+        panels.append(photo_panel("hit-halo", c["path"], c["x"], c["y"], ("HALO",), "outlined: halo around the hit (HALO)",
+                                  f"{date_of(c['mjd'])}: the ring of pixels the pipeline flags around the hit, outlined", True))
         d, lam = det_line(c["det"], c["lam"])
         cards.append(dict(
             id="cosmic-ray", section="not-in-sky", title="Cosmic ray or one-off glitch",
             looksLike="a new source that appears once", label="flagged",
-            evidence=[f"Flagged as a transient (TRANSIENT) by the pipeline, over {c['npix']} pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch",
+            evidence=[(f"Flagged by the pipeline as a jump during the exposure (TRANSIENT), over {c['npix']} pixels, a typical size for a cosmic-ray hit"
+                       if c["npix"] <= 5 else
+                       f"Flagged by the pipeline as a jump during the exposure (TRANSIENT), over {c['npix']} pixels: bigger than a typical cosmic-ray hit (1 to a few pixels), so it may be another kind of one-off glitch"),
+                      "The pipeline also flags a ring of pixels around each hit (HALO)",
                       f"Nothing there in {rc['nothing']} of {rc['n']} other photos of the same sky within 5 days",
                       "No known source or asteroid at that place"],
             howToTell="Something that shows in one photo and in none of the others of the same spot, minutes to days apart, isn’t a new object in the sky.",
@@ -682,16 +688,14 @@ def export() -> None:
         id="saturated", section="in-sky", title="A star too bright for the detector",
         looksLike="a strange blob or a spike", label="confirmed",
         evidence=["Barnard’s Star, Gaia DR3 G 8.2: far brighter at its centre than SPHEREx can measure",
-                  f"Flagged at its centre as saturated ({', '.join(b['names'])}; {b['area']} pixels) and around it as a bright star’s halo (HALO; {b['halo_px']} pixels)",
+                  f"Flagged at its centre as saturated ({', '.join(b['names'])}; {b['area']} pixels)",
                   "Its light is real; only the centre’s numbers can’t be trusted"],
         howToTell="A blob on a bright catalogued star with saturation flags is the star itself, not something new.",
         source=dict(photos=[b["obs"]], date=date_of(b["mjd"]), detector=d, **{"lambda": lam},
                     at="269.44630,4.76820"),
         panels=[photo_panel("sat-a", b["path"], b["x"], b["y"], SATURATION,
                             f"outlined: saturation ({', '.join(b['names'])})",
-                            "Barnard's Star: the saturated centre outlined"),
-                photo_panel("sat-b", b["path"], b["x"], b["y"], ("HALO",), "outlined: halo (HALO)",
-                            "Barnard's Star: the halo flags outlined")]))
+                            "Barnard's Star: the saturated centre outlined")]))
 
     # 4. The control: an ordinary star.
     c = named_["control"]["chosen"]
@@ -735,7 +739,7 @@ def export() -> None:
         cards.append(dict(
             id="flag-on-star", section="in-sky", title="A flag on a real star",
             looksLike="a glitch, so not real", label="confirmed",
-            evidence=[f"Flagged as a transient (TRANSIENT) on {h_['npix']} pixel; Gaia DR3 {g['id']} (G {g['G']:.1f}) lies {g['sep_px']:.1f} pixels away",
+            evidence=[f"Flagged as a jump during the exposure (TRANSIENT) on {h_['npix']} pixel; Gaia DR3 {g['id']} (G {g['G']:.1f}) lies {g['sep_px']:.1f} pixels away",
                       f"The same star shows in {h_['star_seen_in']} other photos of the same detector, about as bright (here {h_['here_excess'] / h_['star_median_excess']:.1f}× its usual brightness there)",
                       "A flag marks pixels to treat with care. It doesn’t mean the source is fake: this is a catalogued star."],
             howToTell="Check the catalogues and the other photos before dismissing a flagged source: a flag can sit on a real star.",
