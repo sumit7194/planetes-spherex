@@ -140,7 +140,16 @@ def radii(exps, ra, dec) -> dict[int, float | None]:
 
 
 def rows_for(ra, dec):
-    rows = [r for r in sx.search(ra, dec) if r["det"] in DETS]
+    for attempt in range(4):
+        try:
+            found = sx.search(ra, dec)
+            break
+        except Exception:  # noqa: BLE001  (IRSA's image search times out now and then)
+            if attempt == 3:
+                raise
+            import time
+            time.sleep(10 * (attempt + 1))
+    rows = [r for r in found if r["det"] in DETS]
     sx.group_passes(rows)
     return rows
 
@@ -215,8 +224,12 @@ def main():
     ap.add_argument("--test", action="store_true")
     a = ap.parse_args()
     if a.select:
-        cands = step1()
-        (REG / "candidates.json").write_text(json.dumps(cands, indent=1))
+        # The catalogue step is deterministic: reuse its list when a rerun follows a network failure.
+        if (REG / "candidates.json").exists():
+            cands = json.loads((REG / "candidates.json").read_text())
+        else:
+            cands = step1()
+            (REG / "candidates.json").write_text(json.dumps(cands, indent=1))
         print(len(cands), "candidates")
         rd, out, chosen = step2(cands)
         (REG / "chosen.json").write_text(json.dumps(dict(rdraRadius=rd, candidates=out, chosen=chosen), indent=1))
