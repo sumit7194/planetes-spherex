@@ -3480,8 +3480,8 @@ span[data-fit='1'] {
 }
 .colour-shift canvas {
   display: block;
-  width: 108px;
-  height: 108px;
+  width: 72px;
+  height: 72px;
   image-rendering: pixelated;
   border-radius: 4px;
 }
@@ -3507,13 +3507,13 @@ span[data-fit='1'] {
   text-align: center;
 }
 .cs-glyph.light {
-  color: #ffffff;
+  color: var(--starlight);
 }
 .cs-glyph.neighbour {
-  color: #6fd3ff;
+  color: var(--mist);
 }
 .cs-glyph.target {
-  color: #ffb347;
+  color: var(--predicted);
 }
 .colour-shift-key p {
   max-width: none;
@@ -3524,4 +3524,38 @@ span[data-fit='1'] {
 /* Keys use the panel's full width (a reading-width cap on hints made them wrap). */
 .diff-key p {
   max-width: none;
+}
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: auto 72px 72px;
+  gap: 3px 6px;
+  align-items: center;
+}
+.cs-col,
+.cs-row {
+  font-size: 11px;
+  color: var(--quiet);
+}
+.cs-col {
+  text-align: center;
+}
+.cs-row {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+.cs-question {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--starlight);
+}
+
+.cs-side {
+  flex: 1;
+  min-width: 0;
+}
+.cs-side .hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
 }

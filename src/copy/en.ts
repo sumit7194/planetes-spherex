@@ -337,28 +337,35 @@ export const copy = {
       diff: 'Difference',
       byDate: 'Colour by date',
       fade: 'Fade',
-      shift: 'Light by colour',
+      shift: 'Two colours',
     },
     /** Physics' demonstration (15 Nov): where the light sits in a short and a long colour. */
     colourShift: {
-      panel: (det: number, range: string) => `D${det} · ${range}`,
+      question: 'Whose light is it? The same spot in a short and a long colour.',
+      column: (det: number, range: string) => `D${det} · ${range}`,
       keyLight: "light's centre",
       keyNeighbour: (g: string) => `neighbour (Gaia, G ${g})`,
       keyTarget: (name: string) => `${name}, predicted`,
-      caption: (
-        shortRange: string,
-        n1: string,
-        longRange: string,
-        n2: string,
-        t2: string,
+      shift: (looks: { date: string; short: string; long: string }[], name: string) =>
+        `From the short colour to the long one, the light moves off the neighbour: ${looks
+          .map((l) => `${l.short}″ → ${l.long}″ (${l.date})`)
+          .join(', ')}, towards ${name}'s side.`,
+      motion: (name: string, t: string, n: string | null) =>
+        `${name} moved ${t}″ between the two looks; the neighbour ${n === null ? 'under 0.01″' : `${n}″`}.`,
+      alt: (date: string, range: string, n: string, t: string, name: string) =>
+        `${date}, ${range}: the light's centre is ${n}″ from the neighbour and ${t}″ from ${name}'s predicted place.`,
+      howHeading: 'How this was measured',
+      how: "Each look, 9 × 9 SPHEREx pixels, each colour stretched on its own. The light's centre is found as in \"What's at this spot?\": the brightest pixel near the spot, then the light-weighted middle of the 3 × 3 around it, good to about 1″ at this brightness (Physics), so no shares of light are given. Both places are moved to each look's date.",
+      distances: (
+        looks: { date: string; fromNeighbour: string; fromTarget: string }[],
         name: string,
       ) =>
-        `In ${shortRange} the light sits ${n1}″ from the neighbour; in ${longRange}, ${n2}″ from it and ${t2}″ from ${name}'s predicted place.`,
-      alt: (range: string, n: string, t: string, name: string) =>
-        `${range}: the light's centre is ${n}″ from the neighbour and ${t}″ from ${name}'s predicted place.`,
-      howHeading: 'How this was measured',
-      how: (date: string) =>
-        `The later look (${date}), 15 × 15 SPHEREx pixels, each colour stretched on its own. The light's centre is found as in "What's at this spot?": the brightest pixel near the spot, then the light-weighted middle of the 3 × 3 around it. Both places are moved to the look's date. A rough centre (about 1″ at this brightness), so no shares of light are given.`,
+        `In the long colour the centre is ${looks
+          .map(
+            (l) =>
+              `${l.fromNeighbour}″ from the neighbour and ${l.fromTarget}″ from ${name} (${l.date})`,
+          )
+          .join('; ')}. With centres good to about 1″, it sits between the two, not on either.`,
     },
     /** Fade between the two looks (3b, Viewer's design): the pixel values blended. */
     fade: {

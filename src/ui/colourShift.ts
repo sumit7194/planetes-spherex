@@ -11,13 +11,21 @@ import { h } from './dom';
 
 /** Pixels across each panel, and screen pixels per SPHEREx pixel. */
 export const CROP = 9;
-const ZOOM = 12;
+const ZOOM = 8;
 
-const MARK = {
-  light: '#ffffff',
-  neighbour: '#6fd3ff',
-  target: '#ffb347',
-};
+/**
+ * The app's own meanings (Viewer): starlight for the light, mist for a catalogue place, lilac for
+ * a prediction. The sky's tokens, since the panels are always dark.
+ */
+function marks(): { light: string; neighbour: string; target: string } {
+  const css = getComputedStyle(document.documentElement);
+  const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
+  return {
+    light: v('--sky-starlight', '#eef1f8'),
+    neighbour: v('--sky-mist', '#9aa3b8'),
+    target: v('--sky-predicted', '#b7a8ff'),
+  };
+}
 
 function panelCanvas(tile: Tile, p: ColourPanel, alt: string): HTMLCanvasElement {
   const n = tile.size;
@@ -55,37 +63,55 @@ function panelCanvas(tile: Tile, p: ColourPanel, alt: string): HTMLCanvasElement
     draw();
     ctx.stroke();
   };
+  const MARK = marks();
   const [nx, ny] = at(p.neighbour);
   outline(() => {
     ctx.beginPath();
-    ctx.arc(nx ?? 0, ny ?? 0, 6, 0, 2 * Math.PI);
+    ctx.arc(nx ?? 0, ny ?? 0, 5, 0, 2 * Math.PI);
   }, MARK.neighbour);
   const [tx, ty] = at(p.target);
   outline(() => {
     ctx.beginPath();
-    ctx.moveTo(tx ?? 0, (ty ?? 0) - 7);
-    ctx.lineTo((tx ?? 0) + 7, ty ?? 0);
-    ctx.lineTo(tx ?? 0, (ty ?? 0) + 7);
-    ctx.lineTo((tx ?? 0) - 7, ty ?? 0);
+    ctx.moveTo(tx ?? 0, (ty ?? 0) - 6);
+    ctx.lineTo((tx ?? 0) + 6, ty ?? 0);
+    ctx.lineTo(tx ?? 0, (ty ?? 0) + 6);
+    ctx.lineTo((tx ?? 0) - 6, ty ?? 0);
     ctx.closePath();
   }, MARK.target);
   const [lx, ly] = at(p.light);
   outline(() => {
     ctx.beginPath();
-    ctx.moveTo((lx ?? 0) - 5, ly ?? 0);
-    ctx.lineTo((lx ?? 0) + 5, ly ?? 0);
-    ctx.moveTo(lx ?? 0, (ly ?? 0) - 5);
-    ctx.lineTo(lx ?? 0, (ly ?? 0) + 5);
+    // A gap at the centre, so a "+" on top of the "○" leaves both readable (Viewer).
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ] as const) {
+      ctx.moveTo((lx ?? 0) + dx * 2, (ly ?? 0) + dy * 2);
+      ctx.lineTo((lx ?? 0) + dx * 6, (ly ?? 0) + dy * 6);
+    }
   }, MARK.light);
   return canvas;
 }
 
+export interface ColourShiftCell {
+  panel: ColourPanel;
+  tile: Tile;
+  alt: string;
+}
+
+/**
+ * Both looks, earlier above later (Physics: both, not the one with the bigger effect), the short
+ * colour left and the long one right; the key in a column beside the grid.
+ */
 export interface ColourShiftFigureInput {
-  panels: [ColourPanel, ColourPanel];
-  tiles: [Tile, Tile];
-  labels: [string, string];
-  alts: [string, string];
+  /** Rows: one per look, each [short colour, long colour]. */
+  rows: { label: string; cells: [ColourShiftCell, ColourShiftCell] }[];
+  columns: [string, string];
   key: { light: string; neighbour: string; target: string };
+  /** Text for the column beside the grid, under the key (it has room there). */
+  aside: (Node | null)[];
 }
 
 export function colourShiftFigure(f: ColourShiftFigureInput): HTMLElement {
@@ -94,21 +120,29 @@ export function colourShiftFigure(f: ColourShiftFigureInput): HTMLElement {
   return h(
     'div',
     { class: 'colour-shift' },
-    ...([0, 1] as const).map((i) =>
-      h(
-        'figure',
-        {},
-        panelCanvas(f.tiles[i], f.panels[i], f.alts[i]),
-        h('figcaption', {}, f.labels[i]),
-      ),
-    ),
-    // The key sits beside the panels, one mark per line, so it costs no height.
     h(
-      'ul',
-      { class: 'cs-key' },
-      h('li', {}, glyph('light', '+'), f.key.light),
-      h('li', {}, glyph('neighbour', '○'), f.key.neighbour),
-      h('li', {}, glyph('target', '◇'), f.key.target),
+      'div',
+      { class: 'cs-grid' },
+      h('span', {}),
+      h('span', { class: 'cs-col' }, f.columns[0]),
+      h('span', { class: 'cs-col' }, f.columns[1]),
+      ...f.rows.flatMap((r) => [
+        h('span', { class: 'cs-row' }, r.label),
+        ...r.cells.map((c) => panelCanvas(c.tile, c.panel, c.alt)),
+      ]),
+    ),
+    // The key and the caption sit beside the grid, so they cost no height.
+    h(
+      'div',
+      { class: 'cs-side' },
+      h(
+        'ul',
+        { class: 'cs-key' },
+        h('li', {}, glyph('light', '+'), f.key.light),
+        h('li', {}, glyph('neighbour', '○'), f.key.neighbour),
+        h('li', {}, glyph('target', '◇'), f.key.target),
+      ),
+      ...f.aside,
     ),
   );
 }

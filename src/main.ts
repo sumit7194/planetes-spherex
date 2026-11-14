@@ -81,7 +81,7 @@ import {
   type Entry as SearchEntry,
 } from './app/searchIndex';
 import { DEEP_MAX_FOV, deepMark, patchesForView, type Patch } from './app/deepStars';
-import { COLOUR_SHIFT, colourPanels } from './app/colourShift';
+import { COLOUR_SHIFT, colourPanels, type ColourPanel } from './app/colourShift';
 import { colourShiftFigure } from './ui/colourShift';
 import { npix, pixelCentre } from './data/healpix';
 import {
@@ -4339,65 +4339,110 @@ function colourShiftBlock(): HTMLElement | null {
   const id = pack.manifest.target.id as TargetId;
   const c = COLOUR_SHIFT[id];
   const w = WANDERERS.find((x) => x.id === id);
-  const late = current.show.seasons[1];
-  const stack = (d: number) => {
-    const s = pack.manifest.stacks.find(
-      (x) => x.kind === 'one-detector' && x.season === late && x.detectors[0] === d,
-    );
-    return s ? pack.stacks.get(s.id) : undefined;
-  };
-  const a = c && stack(c.detectors[0]);
-  const b = c && stack(c.detectors[1]);
-  if (!c || !w || !a || !b) return null;
-  const frames = pack.manifest.frames.filter((f) => f.season === late);
-  const mjd = frames.reduce((s, f) => s + f.mjd, 0) / Math.max(1, frames.length);
+  if (!c || !w) return null;
   const g = pack.manifest.grid;
-  const panels = colourPanels(
-    c,
-    [tileGrid(a), tileGrid(b)],
-    tileGrid(current.pair[1]),
-    { size: g.size, scaleArcsec: g.pixelScaleArcsec, centre: g.centre },
-    { at: w.at, pmRa: w.pm.ra, pmDec: w.pm.dec, epoch: WANDERER_EPOCH },
-    yearOfMjd(mjd),
-  );
+  const geo = { size: g.size, scaleArcsec: g.pixelScaleArcsec, centre: g.centre };
+  const target = { at: w.at, pmRa: w.pm.ra, pmDec: w.pm.dec, epoch: WANDERER_EPOCH };
   const t = copy.show.colourShift;
   const name = copy.wanderers[id].name;
   const range = (d: number) => detectorRange([d]);
-  const [p, q] = panels;
+  // Both looks the page compares, earlier first (Physics: never just the clearer one).
+  const looks = current.show.seasons.map((season, i) => {
+    const stack = (kind: 'one-detector' | 'all-colour', d?: number) => {
+      const s = pack.manifest.stacks.find(
+        (x) => x.kind === kind && x.season === season && (d === undefined || x.detectors[0] === d),
+      );
+      return s ? pack.stacks.get(s.id) : undefined;
+    };
+    const a = stack('one-detector', c.detectors[0]);
+    const b = stack('one-detector', c.detectors[1]);
+    const all = current?.pair[i];
+    const frames = pack.manifest.frames.filter((f) => f.season === season);
+    const mjd = frames.reduce((sum, f) => sum + f.mjd, 0) / Math.max(1, frames.length);
+    if (!a || !b || !all) return null;
+    const year = yearOfMjd(mjd);
+    const panels = colourPanels(c, [tileGrid(a), tileGrid(b)], tileGrid(all), geo, target, year);
+    return { a, b, panels, mjd, year };
+  });
+  const [early, late] = looks;
+  if (!early || !late) return null;
+  const cell = (tile: Tile, p: ColourPanel, date: string) => ({
+    tile,
+    panel: p,
+    alt: t.alt(date, range(p.detector), p.fromNeighbour.toFixed(1), p.fromTarget.toFixed(1), name),
+  });
+  // How far each source moved between the looks, from the two predicted places (checked live).
+  const moved = (pos: (year: number) => SkyPosition) =>
+    separationDeg(pos(early.year), pos(late.year)) * 3600;
+  const n = c.neighbour;
+  const targetMoved = moved((yr) => placeAt(w.at, w.pm.ra, w.pm.dec, WANDERER_EPOCH, yr));
+  const neighbourMoved = moved((yr) =>
+    placeAt({ ra: n.ra, dec: n.dec }, n.pmra, n.pmdec, 2016.0, yr),
+  );
   return h(
     'div',
     { class: 'diff-key colour-shift-key' },
+    h('p', { class: 'cs-question' }, t.question),
     colourShiftFigure({
-      panels,
-      tiles: [a, b],
-      labels: [t.panel(p.detector, range(p.detector)), t.panel(q.detector, range(q.detector))],
-      alts: [
-        t.alt(range(p.detector), p.fromNeighbour.toFixed(1), p.fromTarget.toFixed(1), name),
-        t.alt(range(q.detector), q.fromNeighbour.toFixed(1), q.fromTarget.toFixed(1), name),
+      columns: [
+        t.column(c.detectors[0], range(c.detectors[0])),
+        t.column(c.detectors[1], range(c.detectors[1])),
       ],
+      rows: [early, late].map((L) => {
+        const date = monthYear(L.mjd);
+        return {
+          label: date,
+          cells: [cell(L.a, L.panels[0], date), cell(L.b, L.panels[1], date)] as [
+            ReturnType<typeof cell>,
+            ReturnType<typeof cell>,
+          ],
+        };
+      }),
       key: {
         light: t.keyLight,
-        neighbour: t.keyNeighbour(c.neighbour.g.toFixed(1)),
+        neighbour: t.keyNeighbour(n.g.toFixed(1)),
         target: t.keyTarget(name),
       },
+      aside: [
+        // Lead with what's robust: the shift off the neighbour between the colours (Viewer).
+        h(
+          'p',
+          { class: 'hint' },
+          t.shift(
+            [early, late].map((L) => ({
+              date: monthYear(L.mjd),
+              short: L.panels[0].fromNeighbour.toFixed(1),
+              long: L.panels[1].fromNeighbour.toFixed(1),
+            })),
+            name,
+          ),
+          ' ',
+          t.motion(
+            name,
+            targetMoved.toFixed(1),
+            neighbourMoved < 0.01 ? null : neighbourMoved.toFixed(2),
+          ),
+        ),
+      ],
     }),
-    h(
-      'p',
-      { class: 'hint' },
-      t.caption(
-        range(p.detector),
-        p.fromNeighbour.toFixed(1),
-        range(q.detector),
-        q.fromNeighbour.toFixed(1),
-        q.fromTarget.toFixed(1),
-        name,
-      ),
-    ),
     h(
       'details',
       { class: 'why' },
       h('summary', {}, t.howHeading),
-      h('p', { class: 'hint' }, t.how(monthYear(mjd))),
+      h(
+        'p',
+        { class: 'hint' },
+        t.how,
+        ' ',
+        t.distances(
+          [early, late].map((L) => ({
+            date: monthYear(L.mjd),
+            fromNeighbour: L.panels[1].fromNeighbour.toFixed(1),
+            fromTarget: L.panels[1].fromTarget.toFixed(1),
+          })),
+          name,
+        ),
+      ),
     ),
   );
 }
@@ -5443,7 +5488,12 @@ function showWords(): Node[] {
   compare.splice(modeBar + 1, 0, compareModeBlock(null, pathFig));
   // The chooser is labelled "Compare looks" itself, so no heading (Viewer's audit: fit).
   // While marking, the lens shows the look, so the thumbnails give way to the card (fit).
-  compare.push(pairChooser(id), markMode || colourShiftOn ? null : looksRow(), spotRow);
+  // "Two colours" shows both looks itself, so the chooser gives way too (fit).
+  compare.push(
+    colourShiftOn ? null : pairChooser(id),
+    markMode || colourShiftOn ? null : looksRow(),
+    spotRow,
+  );
   const facts: (Node | null)[] = [
     ...factsTop,
     h('dl', { class: 'facts' }, ...rows),
