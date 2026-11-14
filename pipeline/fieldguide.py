@@ -793,7 +793,13 @@ def repick() -> None:
         e = pickle.loads((CACHE / row["path"]).read_bytes())
         src = mask_of(e, ("SOURCE",))
         badpx = mask_of(e, ("NONFUNC", "HOT"))
-        for r in regions(e, ("TRANSIENT",), touch={"source": src, "badpx": badpx}):
+        halo = mask_of(e, ("HALO",))
+        sat = mask_of(e, SATURATION)
+        # Within 30 px of a saturated pixel (a bright star's scattered light; Physics, after the
+        # first glitch pick sat on R Draconis's halo).
+        near_sat = (ndimage.distance_transform_edt(~sat) <= 30) if sat.any() else np.zeros_like(sat)
+        for r in regions(e, ("TRANSIENT",), touch={"source": src, "badpx": badpx, "halo": halo,
+                                                     "near_sat": near_sat}):
             if r["sn"] < SN_MIN or r["touches"]["source"]:
                 continue
             ra, dec = sky_of(e, r["x"], r["y"])
@@ -805,7 +811,7 @@ def repick() -> None:
                 hits.append(dict(rec, gaia=dict(id=g["id"], G=g["mag"], ra=g["ra"], dec=g["dec"],
                                                pmra=g["pmra"], pmdec=g["pmdec"], epoch=g["epoch"],
                                                sep_px=g["sep_px"])))
-            elif not r["touches"]["badpx"]:
+            elif not (r["touches"]["badpx"] or r["touches"]["halo"] or r["touches"]["near_sat"]):
                 # Cosmic ray: no SOURCE, no NONFUNC/HOT pixel, no Gaia star (Physics' re-pick).
                 cosmic.append(rec)
         if i % 3000 == 0:
