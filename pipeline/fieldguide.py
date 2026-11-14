@@ -553,7 +553,7 @@ def export() -> None:
         id="bad-pixel", section="not-in-sky", title="A pixel that isn’t working",
         looksLike="a new point of light", label="flagged",
         evidence=[f"Flagged NONFUNC (not working) and TRANSIENT by the pipeline",
-                  f"About {c['excess']:,.0f} MJy/sr in one pixel, far brighter than any star could make one pixel",
+                  f"About {c['excess']:,.0f} MJy/sr in one pixel, while the pixels around it read about {c['bk']:.1f}",
                   f"Nothing there in {cf['nothing_sn_lt3']} of {cf['n']} other photos of the same sky within 5 days"],
         howToTell="A real source shows in the other photos of the same spot; a bad pixel shows in one.",
         source=dict(photos=[c["obs"]] + ([other[0]["obs"]] if other else []), date=date_of(c["mjd"]),

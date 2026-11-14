@@ -10,7 +10,7 @@
    "label": "flagged",
    "evidence": [
     "Flagged NONFUNC (not working) and TRANSIENT by the pipeline",
-    "About 23,052 MJy/sr in one pixel, far brighter than any star could make one pixel",
+    "About 23,052 MJy/sr in one pixel, while the pixels around it read about 0.4",
     "Nothing there in 18 of 18 other photos of the same sky within 5 days"
    ],
    "howToTell": "A real source shows in the other photos of the same spot; a bad pixel shows in one.",
