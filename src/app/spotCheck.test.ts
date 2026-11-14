@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   apertureSN,
+  distinctPlaces,
   majorityFlags,
+  photoGrid,
+  samePixelProbes,
   ARTEFACT_FLAGS,
   flagNamesNear,
   INFO_FLAGS,
@@ -110,5 +113,80 @@ describe("Physics' later rules (15 Nov)", () => {
     // Exactly half is not more than half; OUTLIER never counts.
     expect(majorityFlags([new Set(['HOT']), new Set()]).counted).toEqual([]);
     expect(majorityFlags([new Set(['OUTLIER']), new Set(['OUTLIER'])]).counted).toEqual([]);
+  });
+});
+
+describe('D6, the detector test', () => {
+  it('counts places on the detectors more than 2 px apart', () => {
+    expect(
+      distinctPlaces([
+        { det: 1, x: 100, y: 100 },
+        { det: 1, x: 101, y: 101 },
+        { det: 1, x: 140, y: 100 },
+        { det: 2, x: 100, y: 100 },
+      ]),
+    ).toBe(3);
+  });
+  it('probes only the same detector, where the spot itself lands elsewhere', () => {
+    const ref = { det: 3, x: 500, y: 500 };
+    const list = [
+      { det: 3, x: 510, y: 501, id: 'too close' },
+      { det: 4, x: 900, y: 900, id: 'other detector' },
+      { det: 3, x: 530, y: 500, id: 'a' },
+      { det: 3, x: 300, y: 700, id: 'b' },
+    ];
+    expect(samePixelProbes(ref, list).map((p) => p.id)).toEqual(['a', 'b']);
+    expect(samePixelProbes(ref, list, 1).map((p) => p.id)).toEqual(['a']);
+  });
+});
+
+describe("the target only when it's the nearest (Viewer, 15 Nov)", () => {
+  it('calls it a blend when a known star is nearer the light', () =>
+    expect(
+      verdict(
+        facts({
+          sn: [30, 34],
+          target: 'WISE 0855',
+          targetSep: 6.0,
+          nearestOther: { name: 'Gaia DR3 1 (G 16.3)', sep: 0.5 },
+        }),
+      ),
+    ).toEqual({
+      kind: 'blend',
+      target: 'WISE 0855',
+      targetSep: 6.0,
+      other: 'Gaia DR3 1 (G 16.3)',
+      otherSep: 0.5,
+    }));
+  it('names the target when it is the nearest', () =>
+    expect(
+      verdict(
+        facts({
+          sn: [30, 34],
+          target: 'WISE 0855',
+          targetSep: 0.8,
+          nearestOther: { name: 'Gaia DR3 1', sep: 7 },
+        }),
+      ).kind,
+    ).toBe('target'));
+});
+
+describe('masked pixels in a photo (15 Nov)', () => {
+  it('leaves out a flagged dead pixel instead of reading it as a star', () => {
+    const w = 32;
+    const img = new Float32Array(w * w);
+    for (let k = 0; k < img.length; k++) img[k] = 0.3 + ((k * 7) % 5) * 0.02;
+    const flags = new Int32Array(w * w);
+    img[16 * w + 16] = 563;
+    flags[16 * w + 16] = (1 << 0) | (1 << 2) | (1 << 6);
+    const bits = { TRANSIENT: 0, SUR_ERROR: 2, NONFUNC: 6, OUTLIER: 19 };
+    const raw = { w, h: w, at: (x: number, y: number) => img[y * w + x] ?? NaN };
+    expect(apertureSN(raw, 16, 16) ?? 0).toBeGreaterThan(100);
+    expect(Math.abs(apertureSN(photoGrid(img, flags, w, w, bits), 16, 16) ?? 99)).toBeLessThan(5);
+  });
+  it('an OUTLIER flag alone masks nothing (it fires on real asteroids)', () => {
+    const img = new Float32Array(4).fill(1);
+    const flags = new Int32Array(4).fill(1 << 19);
+    expect(photoGrid(img, flags, 2, 2, { OUTLIER: 19 }).at(0, 0)).toBe(1);
   });
 });

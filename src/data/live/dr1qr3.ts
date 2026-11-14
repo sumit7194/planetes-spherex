@@ -817,7 +817,8 @@ export async function readPsf(
 
 export async function readNative(
   photo: LivePhoto,
-  centre: SkyPosition,
+  /** A sky position, or a detector pixel (0-based) for reading the same pixel across photos (D6). */
+  centre: SkyPosition | { x: number; y: number },
   half = 20,
   signal?: AbortSignal,
   extra = false,
@@ -837,7 +838,7 @@ export async function readNative(
   const header = new TextDecoder('ascii').decode(hiBytes.subarray(0, hi.length));
   const nx = num(hi.header, 'NAXIS1');
   const ny = num(hi.header, 'NAXIS2');
-  const c = new Wcs(hi.header).toPixel(centre.ra, centre.dec);
+  const c = 'ra' in centre ? new Wcs(hi.header).toPixel(centre.ra, centre.dec) : centre;
   if (!c) return null;
   const xc = Math.round(c.x);
   const yc = Math.round(c.y);

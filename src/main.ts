@@ -111,7 +111,10 @@ import { NEAR_DEG, SkyView, type CatalogueStar, type Figure, type Lantern } from
 import {
   apertureSN,
   BLEND_ARCSEC,
+  distinctPlaces,
   majorityFlags,
+  photoGrid,
+  samePixelProbes,
   flagNamesNear,
   INFO_FLAGS,
   MATCH_ARCSEC,
@@ -119,7 +122,6 @@ import {
   SPOT_SN,
   tileGrid,
   verdict,
-  type Grid,
   type SpotFacts,
   type Verdict,
 } from './app/spotCheck';
@@ -3385,7 +3387,17 @@ interface SpotCheckResult {
   seen: { n: number; m: number } | null;
   facts: SpotFacts;
   verdict: Verdict | null;
-  checked: { gaia: CheckState; catwise: CheckState; asteroids: CheckState; flags: CheckState };
+  checked: {
+    gaia: CheckState;
+    catwise: CheckState;
+    asteroids: CheckState;
+    flags: CheckState;
+    detector: CheckState;
+  };
+  /** D6: how many different detector places the photos that show it put it (information). */
+  places: number | null;
+  /** D6: the same detector pixel in other photos looking elsewhere: bright in `bright` of `n`. */
+  samePixel: { bright: number; n: number } | null;
   /** Known stars within R, nearest first, each at its closest over the two looks (Viewer 1b). */
   matches: SpotMatch[];
   /** Each flag name's count among the photos that show the spot (information). */
@@ -3524,7 +3536,15 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     seen: null,
     facts,
     verdict: null,
-    checked: { gaia: 'asking', catwise: 'asking', asteroids: 'asking', flags: 'asking' },
+    checked: {
+      gaia: 'asking',
+      catwise: 'asking',
+      asteroids: 'asking',
+      flags: 'asking',
+      detector: 'asking',
+    },
+    places: null,
+    samePixel: null,
     matches: [],
     flagCounts: [],
     close: [],
@@ -3536,6 +3556,8 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     result.matches.sort((x, y) => x.sep - y.sep);
     result.close.sort((x, y) => x.sep - y.sep);
     result.state = 'done';
+    facts.targetSep = result.targetSep;
+    facts.nearestOther = result.matches[0] ?? null;
     result.verdict = verdict(facts);
     render();
   };
@@ -3604,7 +3626,16 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     update();
   });
   // Each photo of the looks, read small through the helper: is the spot there, and which flags.
-  type PhotoRead = { look: 0 | 1; mjd: number; sn: number | null; flags: Set<string> };
+  type PhotoRead = {
+    look: 0 | 1;
+    mjd: number;
+    sn: number | null;
+    flags: Set<string>;
+    photo: LivePhoto;
+    det: number;
+    x: number;
+    y: number;
+  };
   const reads: PhotoRead[] = [];
   const photoReads = helperActive()
     ? within(
@@ -3612,11 +3643,15 @@ async function runSpotCheck(shift: Shift): Promise<void> {
           await eachLimited(list, 16, async ({ photo, look }) => {
             const box = await readNative(photo, at, 10).catch(() => null);
             if (!box) return;
-            const g: Grid = { w: box.w, h: box.h, at: (x, y) => box.image[y * box.w + x] ?? NaN };
+            const g = photoGrid(box.image, box.flags, box.w, box.h, box.bits);
             const x = box.xt - box.x0;
             const y = box.yt - box.y0;
             reads.push({
               look,
+              photo,
+              det: photo.det,
+              x: box.xt,
+              y: box.yt,
               mjd: box.mjd,
               sn: apertureSN(g, x, y),
               flags: flagNamesNear(box.flags, box.w, box.h, x, y, box.bits),
@@ -3647,13 +3682,45 @@ async function runSpotCheck(shift: Shift): Promise<void> {
       ).counted;
     result.flagCounts = majorityFlags(shows.map((p) => p.flags)).fractions;
     facts.info = result.flagCounts.map(([n]) => n).filter((n) => INFO_FLAGS.has(n));
+    result.places = distinctPlaces(shows);
     update();
-    return shows;
+    return { shows, all: photos };
+  });
+  // D6: the detector pixel under the spot in its clearest photo, read in other photos of that
+  // detector where the spot itself lands elsewhere. A defect stays put; real sky moves on.
+  const detector = photosDone.then(async (got) => {
+    if (stale()) return;
+    const ref = got?.shows.reduce<PhotoRead | null>(
+      (b, p) => (b && (b.sn ?? 0) >= (p.sn ?? 0) ? b : p),
+      null,
+    );
+    const probes = ref ? samePixelProbes(ref, got?.all ?? []) : [];
+    if (!ref || !probes.length) {
+      result.checked.detector = 'failed';
+      update();
+      return;
+    }
+    const sns: number[] = [];
+    await within(
+      eachLimited(probes, 8, async (p) => {
+        const box = await readNative(p.photo, { x: ref.x, y: ref.y }, 10).catch(() => null);
+        if (!box) return;
+        const g = photoGrid(box.image, box.flags, box.w, box.h, box.bits);
+        const v = apertureSN(g, ref.x - box.x0, ref.y - box.y0);
+        if (v !== null) sns.push(v);
+      }),
+      CHECK_MS * 2,
+    );
+    if (stale()) return;
+    result.checked.detector = sns.length ? 'done' : 'failed';
+    result.samePixel = { bright: sns.filter((v) => v >= SPOT_SN).length, n: sns.length };
+    update();
   });
   // SkyBoT at the dates of the photos that show the spot (or the looks' mean dates).
-  const asteroids = photosDone.then(async (shows) => {
+  const asteroids = photosDone.then(async (got) => {
     if (stale()) return;
-    const by = (look: 0 | 1) => (shows ?? []).filter((p) => p.look === look).map((p) => p.mjd);
+    const shows = got?.shows ?? [];
+    const by = (look: 0 | 1) => shows.filter((p) => p.look === look).map((p) => p.mjd);
     const dates: [number[], number[]] = [
       by(0).length ? by(0) : [ctx.mjd[0]],
       by(1).length ? by(1) : [ctx.mjd[1]],
@@ -3678,7 +3745,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     update();
   });
   // The verdict waits only for what answered (every check ends by its deadline).
-  await Promise.all([gaia, cat, asteroids]);
+  await Promise.all([gaia, cat, asteroids, detector]);
   if (stale()) return;
   finish();
 }
@@ -3793,6 +3860,11 @@ function spotCard(): HTMLElement | null {
       t.catwiseName,
     ),
     checkLine(r.checked.flags, () => t.checkFlags(all(f.artefacts), f.info), t.flagsName),
+    checkLine(
+      r.checked.detector,
+      () => t.checkDetector(r.places ?? 0, r.samePixel?.bright ?? 0, r.samePixel?.n ?? 0),
+      t.detectorName,
+    ),
   );
   // While checking, each check shows as it lands (Viewer 3).
   if (r.state === 'checking' && r.sn.some((x) => x !== null && x >= SPOT_SN)) lines.push(checks);
@@ -3800,15 +3872,17 @@ function spotCard(): HTMLElement | null {
     const head =
       v.kind === 'nothing'
         ? t.nothing
-        : v.kind === 'target'
-          ? t.target(v.name, (r.targetSep ?? 0).toFixed(1))
-          : v.kind === 'asteroid'
-            ? t.asteroid(v.names.join(', '))
-            : v.kind === 'star'
-              ? t.star(matchText || v.names.join(', '))
-              : v.kind === 'artefact'
-                ? t.artefact(v.flags.join(', '))
-                : t.unknown;
+        : v.kind === 'blend'
+          ? t.blendHead(v.other, v.otherSep.toFixed(1), v.target, v.targetSep.toFixed(1))
+          : v.kind === 'target'
+            ? t.target(v.name, (r.targetSep ?? 0).toFixed(1))
+            : v.kind === 'asteroid'
+              ? t.asteroid(v.names.join(', '))
+              : v.kind === 'star'
+                ? t.star(matchText || v.names.join(', '))
+                : v.kind === 'artefact'
+                  ? t.artefact(v.flags.join(', '))
+                  : t.unknown;
     lines.unshift(h('p', { class: 'spot-check-verdict', role: 'status' }, head));
     if (v.kind === 'star' && v.flagged.length)
       lines.push(h('p', { class: 'hint' }, t.starFlagged(v.flagged.join(', '))));
@@ -3823,7 +3897,9 @@ function spotCard(): HTMLElement | null {
             ? (r.matches[0]?.name ?? v.names[0])
             : null;
       const other = r.close.find((x) => x.name !== named);
-      if (other) lines.push(h('p', { class: 'hint' }, t.blend(other.name, other.sep.toFixed(1))));
+      // A blend headline already says it.
+      if (other && v.kind !== 'blend')
+        lines.push(h('p', { class: 'hint' }, t.blend(other.name, other.sep.toFixed(1))));
       if (r.flagCounts.length && r.seen)
         lines.push(
           h(
@@ -3893,10 +3969,11 @@ function spotReport(r: SpotCheckResult): string {
     r.seen
       ? `Seen at S/N >= 5 in ${r.seen.n} of ${r.seen.m} photos read`
       : 'Photos: not read one by one',
-    `Verdict: ${v?.kind ?? 'n/a'}${v?.kind === 'target' ? ` (${v.name}, predicted position ${r.targetSep?.toFixed(1) ?? '?'}" from the spot)` : ''}`,
+    `Verdict: ${v?.kind ?? 'n/a'}${v?.kind === 'target' ? ` (${v.name}, predicted position ${r.targetSep?.toFixed(1) ?? '?'}" from the spot)` : v?.kind === 'blend' ? ` (light centred on ${v.other} at ${v.otherSep.toFixed(1)}"; ${v.target}, the page's target, predicted ${v.targetSep.toFixed(1)}" away)` : ''}`,
     `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}"): ${r.checked.asteroids === 'done' ? all(f.asteroids) : 'not checked'}`,
     `Known stars (Gaia DR3, CatWISE2020, moved to each look's date): ${r.checked.gaia === 'done' || r.checked.catwise === 'done' ? r.matches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}${r.checked.catwise === 'done' ? '' : ' (CatWISE2020 not checked)'}`,
     `Known sources within 2 px (12.3"): ${r.close.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none'}`,
+    `Detector test (information): shows at ${r.places ?? 'n/a'} detector places; same detector pixel bright (S/N >= 5) in ${r.samePixel ? `${r.samePixel.bright} of ${r.samePixel.n}` : 'n/a'} other photos looking elsewhere`,
     `Artefact flags (v4 FIT_REJECT, by name; counted if set in more than half the photos that show the spot): ${r.checked.flags === 'done' ? all(f.artefacts) : 'not checked'}`,
     `Flag counts among the ${r.seen?.n ?? 0} photos that show it: ${r.flagCounts.map(([n, k]) => `${n} ${k}`).join(', ') || 'none'}`,
     t.reportNote,

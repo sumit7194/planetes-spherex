@@ -921,6 +921,11 @@ export const copy = {
     flagCounts: (list: string) => `Flags in the photos that show it (information): ${list}.`,
     flagCount: (name: string, k: number, n: number) => `${name} in ${k} of ${n}`,
     asking: (what: string) => `${what}: checking…`,
+    blendHead: (other: string, otherSep: string, target: string, targetSep: string) =>
+      `The light here is centred on ${other}, ${otherSep}″ away. ${target}, this page's target, is predicted ${targetSep}″ away: inside the same SPHEREx pixel, so the two blend here.`,
+    detectorName: 'Same detector pixel in other photos',
+    checkDetector: (places: number, bright: number, n: number) =>
+      `On the detectors (information): it shows at ${places} different detector place${places === 1 ? '' : 's'}; the detector pixel under it is bright (S/N 5+) in ${bright} of ${n} other photos looking elsewhere. A defect stays put on the detector; real sky moves on.`,
     asteroid: (names: string) => `A known asteroid: ${names}.`,
     star: (names: string) => `A known star: ${names}.`,
     starFlagged: (flags: string) =>
