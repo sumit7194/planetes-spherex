@@ -4426,7 +4426,6 @@ function colourShiftBlock(): HTMLElement | null {
             target: skyToPixel(placeAt(w.at, w.pm.ra, w.pm.dec, WANDERER_EPOCH, L.year), geo),
           },
           t.ratio.alt(date, name),
-          1.375,
         ),
         h('figcaption', {}, date),
       );
@@ -4451,9 +4450,9 @@ function colourShiftBlock(): HTMLElement | null {
         h(
           'ul',
           { class: 'cs-key cs-ratio-key' },
-          sw('background: rgb(214 84 44)', t.ratio.red),
-          sw('background: rgb(226 226 226)', t.ratio.equal),
-          sw('background: rgb(74 116 204)', t.ratio.blue),
+          sw('background: rgb(47 143 134)', t.ratio.red),
+          sw('background: rgb(92 97 110)', t.ratio.equal),
+          sw('background: rgb(227 237 165)', t.ratio.blue),
           sw('', t.ratio.masked, 'cs-swatch cs-hatch'),
           h(
             'li',

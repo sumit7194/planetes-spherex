@@ -362,12 +362,12 @@ export const copy = {
         equal: 'equal',
         blue: 'more 1.1–1.6 µm light',
         masked: 'too faint, saturated or flagged',
-        ring: 'the reddest real source',
+        ring: 'the reddest source here: a quasar, not WISE 0855',
         caption: (name: string) =>
           `On this field the ratio doesn't pick out ${name}: its neighbour's light hides it. The reddest real source (ringed) is a quasar (Gaia: no parallax or motion, classified quasar; WISE W1−W2 = 1.24), not a brown dwarf.`,
-        whatRed: 'What red means',
+        whatRed: 'What the colours mean',
         redMeans:
-          'Red in this ratio means more light at 4.4–5 µm than at 1.1–1.6 µm: cool brown dwarfs, but also distant quasars and dusty galaxies. White means equally bright in both colours (per unit frequency); ordinary stars look blue. Both looks are shown; each stack has its own noise level, and pixels below S/N 5 in either colour are hatched.',
+          'Teal means more light at 4.4–5 µm than at 1.1–1.6 µm ("redder", as astronomers say): cool brown dwarfs, but also distant quasars and dusty galaxies. Grey means equally bright in both colours (per unit frequency); ordinary stars look pale yellow-green. The map shows the central 40 × 40 pixels of the field. Both looks are shown; each stack has its own noise level, and pixels below S/N 5 in either colour are hatched.',
         alt: (date: string, name: string) =>
           `${date}: colour ratio of the whole field, the quasar ringed and ${name}'s predicted place marked.`,
       },

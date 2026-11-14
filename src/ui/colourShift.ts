@@ -150,12 +150,19 @@ export function colourShiftFigure(f: ColourShiftFigureInput): HTMLElement {
   );
 }
 
-/** The ratio's colour: log2(long ÷ short) from −2 (blue: more short light) to +2 (red). */
+/**
+ * The ratio's colour: log2(long ÷ short) from −2 to +2, in the app's own wavelength colours
+ * (Viewer): the short end's pale yellow-green for more 1.1–1.6 µm light, the long end's teal for
+ * more 4.4–5 µm light, neutral grey for equal. Never red: red means "flagged" here.
+ */
+export const RATIO_SHORT: [number, number, number] = [227, 237, 165];
+export const RATIO_EQUAL: [number, number, number] = [92, 97, 110];
+export const RATIO_LONG: [number, number, number] = [47, 143, 134];
 export function ratioColour(r: number): [number, number, number] {
   const t = Math.max(0, Math.min(1, (Math.log2(r) + 2) / 4));
-  const lo: [number, number, number] = [74, 116, 204];
-  const mid: [number, number, number] = [226, 226, 226];
-  const hi: [number, number, number] = [214, 84, 44];
+  const lo = RATIO_SHORT;
+  const mid = RATIO_EQUAL;
+  const hi = RATIO_LONG;
   const [a, b, u] = t < 0.5 ? [lo, mid, t * 2] : [mid, hi, (t - 0.5) * 2];
   return [0, 1, 2].map((k) => Math.round((a[k] ?? 0) + ((b[k] ?? 0) - (a[k] ?? 0)) * u)) as [
     number,
@@ -172,9 +179,14 @@ export function ratioCanvas(
   ratio: { size: number; ratio: Float32Array },
   marks: { reddest?: { x: number; y: number }; target?: { x: number; y: number } },
   alt: string,
-  zoom = 2.25,
+  zoom = 2.2,
+  crop = 40,
 ): HTMLCanvasElement {
-  const n = ratio.size;
+  // The central `crop` pixels (Viewer: the whole field made sources dots); the field's reddest
+  // source must lie inside it.
+  const full = ratio.size;
+  const c0 = Math.round(full / 2 - crop / 2);
+  const n = crop;
   const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
   const side = Math.round(n * zoom);
   const canvas = h('canvas', {
@@ -189,17 +201,21 @@ export function ratioCanvas(
   ctx.scale(dpr, dpr);
   for (let y = 0; y < n; y++)
     for (let x = 0; x < n; x++) {
-      const v = ratio.ratio[y * n + x] ?? NaN;
+      const v = ratio.ratio[(y + c0) * full + (x + c0)] ?? NaN;
       const px = x * zoom;
       const py = (n - 1 - y) * zoom; // north up
       if (Number.isFinite(v) && v > 0) {
         const [r, g, b] = ratioColour(v);
         ctx.fillStyle = `rgb(${r} ${g} ${b})`;
-      } else ctx.fillStyle = (x + y) % 3 === 0 ? '#2a3046' : '#161a28';
+        // Masked: a quiet hatch, so the few real sources stand out (Viewer).
+      } else ctx.fillStyle = (x + y) % 3 === 0 ? '#20253a' : '#161a28';
       ctx.fillRect(px, py, zoom + 0.5, zoom + 0.5);
     }
   const M = marks;
-  const at = (q: { x: number; y: number }) => [(q.x + 0.5) * zoom, (n - 1 - q.y + 0.5) * zoom];
+  const at = (q: { x: number; y: number }) => [
+    (q.x - c0 + 0.5) * zoom,
+    (n - 1 - (q.y - c0) + 0.5) * zoom,
+  ];
   const stroke = (draw: () => void, colour: string) => {
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = 'rgba(0,0,0,0.75)';

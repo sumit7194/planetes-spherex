@@ -3625,7 +3625,7 @@ span[data-fit='1'] {
   border-radius: 2px;
 }
 .cs-hatch {
-  background: repeating-linear-gradient(45deg, #2a3046 0 2px, #161a28 2px 5px);
+  background: repeating-linear-gradient(45deg, #20253a 0 2px, #161a28 2px 5px);
 }
 .colour-shift-key > p.hint {
   font-size: 12px;
