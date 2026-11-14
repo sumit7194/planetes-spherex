@@ -2561,9 +2561,14 @@ span[data-fit='1'] {
 /* ---------- the homepage (agreed with Viewer, 14 Nov): search column + band variant D ---------- */
 
 .words .home-headline {
-  font-size: clamp(26px, 2.6vw, 36px);
-  margin: 0 0 14px;
-  max-width: 17em;
+  font-size: clamp(24px, 2.2vw, 30px);
+  margin: 0 0 6px;
+}
+.words .home-welcome {
+  font-size: 15px;
+  color: var(--mist);
+  max-width: 34em;
+  margin: 0 0 16px;
 }
 .home-search .search.glass {
   display: block;
@@ -3019,4 +3024,9 @@ span[data-fit='1'] {
   .top .combo .search {
     width: 100%;
   }
+}
+
+/* A closed legend takes no room (some browsers still lay out a closed <details>' content). */
+.legend:not([open]) > :not(summary) {
+  display: none;
 }

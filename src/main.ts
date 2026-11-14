@@ -1937,7 +1937,8 @@ let surpriseOffer: { spot: SurpriseSpot; timer: number } | null = null;
 let surpriseCancelled = false;
 /** Said to screen readers: where the sky is flying. */
 const surpriseStatus = h('p', { class: 'visually-hidden', role: 'status' });
-document.body.append(surpriseStatus);
+// In the header: appended to the body it sat below the page and made it scroll.
+header.append(surpriseStatus);
 // Any input during the flight takes over: no dive (Viewer: a quick nudge-back must count too).
 for (const [target, ev] of [
   [skyCanvas, 'pointerdown'],
@@ -2997,10 +2998,10 @@ function renderWords(): Node[] {
 function homeColumn(): HTMLElement[] {
   const parts: (HTMLElement | null)[] = [
     h('h2', { class: 'home-headline' }, copy.home.headline),
+    h('p', { class: 'home-welcome' }, touchOnly ? copy.home.welcomeTouch : copy.home.welcome),
     h('div', { class: 'home-search on-sky' }, searchBox),
     searchNote ? h('p', { class: 'hint search-note', role: 'alert' }, searchNote) : null,
     surpriseButton(),
-    h('p', { class: 'home-quiet' }, touchOnly ? copy.home.quietTouch : copy.home.quiet),
     legend(true),
   ];
   return parts.filter((x): x is HTMLElement => x !== null);

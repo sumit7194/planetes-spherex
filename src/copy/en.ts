@@ -137,7 +137,12 @@ export const copy = {
    * the five rows (variant D). Headline: what the visitor can do, not a claim about change.
    */
   home: {
-    headline: 'Pick any spot in the sky: see how it looked, pass after pass.',
+    /** Sumit, 14 Nov: the old two-line instruction felt unwelcoming. A question, then the facts. */
+    headline: 'Where would you like to look?',
+    welcome:
+      'SPHEREx has photographed every spot in the sky, months apart. Type a star or a position, or click the sky.',
+    welcomeTouch:
+      'SPHEREx has photographed every spot in the sky, months apart. Type a star or a position, or tap the sky.',
     placeholder: "A position (RA, Dec) or a star's name",
     /** Under the field while it's empty: what to type, and the frame (ICRS). */
     echoEmpty: "RA and Dec in ICRS (J2000), in degrees or hours, or a star's name.",

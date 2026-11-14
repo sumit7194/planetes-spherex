@@ -509,7 +509,7 @@ export class SkyView {
     const rho = Math.hypot(x, y);
     const d0 = this.#centre.dec * RAD;
     if (rho === 0) return { ...this.#centre };
-    const c = Math.atan(rho);
+    const c = angleFromRadius(rho, this.#stereoK);
     const dec = Math.asin(Math.cos(c) * Math.sin(d0) + (y * Math.sin(c) * Math.cos(d0)) / rho);
     const dRa = Math.atan2(
       x * Math.sin(c),
@@ -825,12 +825,19 @@ export class SkyView {
     const cosC = Math.sin(d0) * Math.sin(dec) + Math.cos(d0) * Math.cos(dec) * Math.cos(dRa);
     const x = -Math.cos(dec) * Math.sin(dRa);
     const y = Math.cos(d0) * Math.sin(dec) - Math.sin(d0) * Math.cos(dec) * Math.cos(dRa);
-    // A pinhole camera: the gnomonic projection. Points far off-axis stretch without end, so
-    // stop well before the sideways limit.
-    if (cosC < 0.2) return null;
+    // Exploring the sky: the stereographic projection, as planetarium software uses for wide
+    // views. It keeps shapes true, so the edges of a 140°-wide page don't stretch (Sumit, 14
+    // Nov: the grid "looks a bit unnatural"). With Earth or the 3D scene on screen (riding,
+    // stepping out) it eases back to the pinhole camera (gnomonic) they're drawn with. Both
+    // have the same scale at the centre, so the ring, the lens field and zoom don't change.
+    const k = this.#stereoK;
+    // Fully stereographic it can show 104° off-axis; any pinhole share must stay inside 88°,
+    // where the blend is still one-to-one (and the pinhole camera alone stops at 78°).
+    if (cosC < (k >= 1 ? -0.25 : 0.2 - 0.165 * k)) return null;
+    const m = (1 - k) / cosC + (k * 2) / (1 + cosC);
     const a = this.#axis();
     const f = a.r / Math.tan((this.#fov / 2) * RAD);
-    const [rx, ry] = this.#rolled(x / cosC, y / cosC);
+    const [rx, ry] = this.#rolled(x * m, y * m);
     return { x: a.x + rx * f, y: a.y - ry * f, depth: 1 };
   }
 
@@ -843,7 +850,20 @@ export class SkyView {
     if (this.workMs.length > 600) this.workMs.splice(0, this.workMs.length - 600);
   }
 
+  /**
+   * How stereographic the inside view is (1) or pinhole (0): pinhole while Earth or the 3D scene
+   * shows (riding, stepping out), so the stars stay registered with them; eased between.
+   */
+  #stereoK = 1;
+  #stepStereo(): void {
+    const target =
+      this.#entry === 'inside' && !this.#riding && this.#near <= 0 && this.#nearGoal <= 0 ? 1 : 0;
+    const k = this.#stereoK + (target - this.#stereoK) * 0.25;
+    this.#stereoK = Math.abs(k - target) < 0.01 ? target : k;
+  }
+
   #drawFrame(): void {
+    this.#stepStereo();
     const ctx = this.#ctx;
     const { width: w, height: h } = this.canvas;
     ctx.clearRect(0, 0, w, h);
@@ -1179,14 +1199,14 @@ export class SkyView {
     const step = inside ? decGridStep(this.#fov) : 30;
     for (let ra = 0; ra < 360; ra += raStep) {
       this.#line(
-        Array.from({ length: 61 }, (_, i) => ({ ra, dec: -90 + i * 3 })),
+        Array.from({ length: 181 }, (_, i) => ({ ra, dec: -90 + i })),
         COLOURS.grid,
         u,
       );
     }
     for (let dec = -90 + step; dec <= 90 - step; dec += step) {
       this.#line(
-        Array.from({ length: 121 }, (_, i) => ({ ra: i * 3, dec })),
+        Array.from({ length: 361 }, (_, i) => ({ ra: i, dec })),
         COLOURS.grid,
         u,
       );
@@ -2898,6 +2918,26 @@ function cssFont(name: string, fallback: string): string {
 function smooth(t: number): number {
   const x = Math.max(0, Math.min(1, t));
   return x * x * (3 - 2 * x);
+}
+
+/**
+ * The angle off the axis (radians) of a point `rho` focal lengths out, for a projection that is
+ * `k` stereographic (2 tan(c/2)) and 1 − k pinhole (tan c): Newton's method from a blend of
+ * the two exact answers.
+ */
+export function angleFromRadius(rho: number, k: number): number {
+  if (k <= 0) return Math.atan(rho);
+  if (k >= 1) return 2 * Math.atan(rho / 2);
+  let c = (1 - k) * Math.atan(rho) + k * 2 * Math.atan(rho / 2);
+  for (let i = 0; i < 8; i++) {
+    const fc = (1 - k) * Math.tan(c) + 2 * k * Math.tan(c / 2) - rho;
+    const d = (1 - k) / Math.cos(c) ** 2 + k / Math.cos(c / 2) ** 2;
+    const next = c - fc / d;
+    if (!Number.isFinite(next)) break;
+    c = Math.max(0, Math.min(Math.PI * 0.95, next));
+    if (Math.abs(fc) < 1e-10) break;
+  }
+  return c;
 }
 
 /** A point `e` of the way along the great circle from `a` to `b` (`arcDeg` apart). */
