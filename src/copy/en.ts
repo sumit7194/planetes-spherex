@@ -100,7 +100,8 @@ export const copy = {
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
     sunToday: 'The Sun today, on its yearly path',
-    sunOn: 'The Sun on {date}, on its yearly path',
+    /** The Sun on the day SPHEREx last photographed the spot looked at (Sumit, 14 Nov: say why). */
+    sunOn: 'The Sun on {date}, when SPHEREx last photographed this spot',
     lookingNear: (star: string) => `Looking near ${star}`,
     nearestNamed: (star: string) => `Nearest named star: ${star}`,
     lensField: 'a close-up shows this much',
