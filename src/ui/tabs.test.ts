@@ -18,12 +18,12 @@ describe('panel tabs', () => {
     expect(tabAfterKey(ORDER, 'facts', 'Home')).toBe('compare');
     expect(tabAfterKey(ORDER, 'watch', 'End')).toBe('spectrum');
     expect(tabAfterKey(ORDER, 'watch', 'a')).toBeNull();
-    expect(tabAfterKey(ORDER, 'coadds', 'ArrowRight')).toBeNull();
   });
 
   it('falls back to the first tab when the page lacks the one asked for', () => {
     expect(pickTab(ORDER, 'facts')).toBe('facts');
-    expect(pickTab(ORDER, 'coadds')).toBe('compare');
-    expect(pickTab(['series', 'coadds'], null)).toBe('series');
+    expect(pickTab(['compare', 'facts'], 'watch')).toBe('compare');
+    expect(pickTab(['facts', 'spectrum'], null)).toBe('facts');
+    expect(parseTab('series')).toBeNull();
   });
 });

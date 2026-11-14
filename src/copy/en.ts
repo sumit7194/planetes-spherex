@@ -271,6 +271,7 @@ export const copy = {
   /** Keyboard help (the ? key). */
   keys: {
     title: 'Keys',
+    button: 'Keys ?',
     hint: 'Keys: Space to compare, ← → for each look, D for the difference, ? for all.',
     close: 'Close',
     list: [
@@ -297,6 +298,7 @@ export const copy = {
       "Other telescopes see it brighten and fade over months. This is a look at SPHEREx's photos, not a measurement of its brightness.",
   },
   look: {
+    passes: (n: number) => `${n} pass${n === 1 ? '' : 'es'}`,
     /** Known asteroids in a live look's photos (SkyBoT, IMCCE), 14 Nov. */
     movers: {
       asking: 'Asking SkyBoT (IMCCE) for known asteroids in these photos…',
@@ -575,6 +577,7 @@ export const copy = {
     checked: (of: number) => `checked for colour, of ${of.toLocaleString('en-GB')}`,
   },
   watch: {
+    moreViews: 'More ways to look: all photos added together, and SPHEREx\u2019s sky map',
     pickHeading: 'Watch every photo of one of the five',
     pickHint:
       'Pick one to play all its photos, one colour range at a time, or click a light on the sky.',
@@ -627,6 +630,7 @@ export const copy = {
     show: 'Show what changed',
     photos: 'Show the photos',
     pill: 'what changed',
+    howToRead: 'How to read this',
     none: 'not enough other dates in this colour',
     fainter: (limit: number) => `fainter, −${limit}σ`,
     brighter: (limit: number) => `+${limit}σ, brighter`,
@@ -693,7 +697,8 @@ export const copy = {
     hints: {
       compare: 'Blink two same-colour photos taken months apart: did anything move?',
       watch: 'Play every photo in this colour range in date order, or what changed.',
-      watchFive: 'Pick a colour range to play its photos in date order.',
+      // Empty: the colour windows' own heading says it right below.
+      watchFive: '',
       facts: 'What was measured here, how sure it is, and what wasn\u2019t.',
       spectrum: 'How bright this spot is at each wavelength SPHEREx sees.',
     },

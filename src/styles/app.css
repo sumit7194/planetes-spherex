@@ -546,7 +546,10 @@ canvas.sky.backdrop {
    1280x720 laptop. The stage is flattened so the view and the words join the page grid. */
 @media (min-width: 981px) {
   #app.panel-full {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 500px);
+    /* One centred composition (the stage's rule): the lens column is sized from the lens (plus
+       room for the minimap and the true-scale figure), not from what's left of the screen. */
+    grid-template-columns: minmax(0, calc(var(--hero) + 300px)) minmax(320px, 480px);
+    justify-content: center;
     grid-template-rows: auto minmax(0, 1fr) auto;
     column-gap: clamp(24px, 3vw, 48px);
   }
@@ -777,6 +780,56 @@ canvas.sky.backdrop {
 .words.tabbed .coin-line {
   margin: 6px 0 8px;
   font-size: 13px;
+}
+/* Watch inside a tab: shorter colour bars and a one-line hint, so a playing film still fits. */
+.words.tabbed .windows {
+  margin-top: 0;
+}
+.words.tabbed .windows .bar {
+  height: 30px;
+}
+.words.tabbed .windows .hint {
+  max-width: none;
+}
+/* While a series plays, the tab's hint steps aside: the series' own lines say it. */
+.words.tabbed .panel-body:has(.series-bar:not(:empty)) > .tab-hint {
+  display: none;
+}
+/* A live look's Watch tab: the tab already names it, and the honest line runs full width. */
+.words.tabbed .live-range > h3 {
+  display: none;
+}
+.words.tabbed .live-range > .hint {
+  max-width: none;
+  margin-bottom: 8px !important;
+}
+/* Inside tabs a status line shows two lines before its More (three elsewhere). */
+.words.tabbed .status-line .fit-body:not(.open) {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.coadds-fold .coadds h3 {
+  display: none;
+}
+.coadds-fold > .context {
+  margin-top: 8px;
+}
+/* The measured result in the summary is ember: ember means measured. */
+.words.tabbed .panel-summary .hero-move .big {
+  color: var(--measured);
+}
+.words.tabbed .spot-row {
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-top: 10px;
+}
+.words.tabbed .spot-what {
+  margin: 0 !important;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.words.tabbed .film-howto {
+  margin-top: 4px;
 }
 .words.tabbed .release-line {
   font-size: 12.5px;

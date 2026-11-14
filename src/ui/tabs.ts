@@ -4,21 +4,16 @@
  * wasn't measured; the tabs hold what a visitor does with it, each sized to fit the column, so
  * the column never scrolls.
  *
- * Keyboard: the standard tablist pattern. ← → Home End move between tabs only while a tab has
- * focus (← → elsewhere already step photos and guesses); Enter/Space are native button clicks.
+ * Keyboard: the tablist pattern with manual activation (selecting a tab has side effects: on the
+ * five's pages Watch switches the room and ends a series). ← → Home End move focus between tabs
+ * only while a tab has focus (← → elsewhere already step photos and guesses); Enter or Space
+ * (a native button click) selects. Focus stays on the selected tab across the re-render.
  */
 import { h } from './dom';
 
-export type PanelTab = 'compare' | 'watch' | 'facts' | 'spectrum' | 'series' | 'coadds';
+export type PanelTab = 'compare' | 'watch' | 'facts' | 'spectrum';
 
-export const PANEL_TABS: readonly PanelTab[] = [
-  'compare',
-  'watch',
-  'facts',
-  'spectrum',
-  'series',
-  'coadds',
-];
+export const PANEL_TABS: readonly PanelTab[] = ['compare', 'watch', 'facts', 'spectrum'];
 
 /** A tab name from the URL, or null when it isn't one. */
 export function parseTab(s: string | null): PanelTab | null {
@@ -82,8 +77,9 @@ export function tabbedPanel(opts: {
         role: 'tab',
         id: `tab-${t.id}`,
         'aria-selected': String(on),
-        'aria-controls': `tabpanel-${t.id}`,
         tabindex: on ? 0 : -1,
+        // Only the selected tab's panel exists, so only it names one.
+        'aria-controls': on ? `tabpanel-${t.id}` : undefined,
         'data-tab': t.id,
         class: t.cue && !on ? 'cue' : undefined,
       },
@@ -91,7 +87,10 @@ export function tabbedPanel(opts: {
       t.badge ? h('small', { class: 'badge' }, t.badge) : null,
     );
     b.addEventListener('click', () => {
-      if (!on) opts.onSelect(t.id);
+      if (on) return;
+      // Keep the keyboard's place: the tab is rebuilt by the render this click causes.
+      if (document.activeElement === b) focusAfterRender = t.id;
+      opts.onSelect(t.id);
     });
     list.append(b);
   }
@@ -103,8 +102,10 @@ export function tabbedPanel(opts: {
     if (!next) return;
     e.preventDefault();
     e.stopPropagation();
-    focusAfterRender = next;
-    opts.onSelect(next);
+    // Manual activation: move focus (roving tabindex); Enter or Space selects.
+    for (const btn of list.querySelectorAll<HTMLElement>('[role=tab]'))
+      btn.tabIndex = btn.dataset['tab'] === next ? 0 : -1;
+    (list.querySelector(`[data-tab="${next}"]`) as HTMLElement | null)?.focus();
   });
   const tab = opts.tabs.find((t) => t.id === active);
   const panel = h(
@@ -114,6 +115,8 @@ export function tabbedPanel(opts: {
       role: 'tabpanel',
       id: `tabpanel-${active}`,
       'aria-labelledby': `tab-${active}`,
+      // Reachable by Tab even when it holds only text (e.g. Facts).
+      tabindex: 0,
     },
     tab?.hint ? h('p', { class: 'tab-hint' }, tab.hint) : null,
     ...(tab?.content ?? []),

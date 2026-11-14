@@ -485,6 +485,7 @@ for (const room of ['play', 'learn', 'watch'] as const) {
   b.addEventListener('click', () => {
     if (room !== state.room) leaveDifference();
     if (room !== 'watch' && watching !== null) void playColour(watching);
+    if (room === 'watch') watchOpened = true;
     dispatch({ type: 'setRoom', room });
     if (room === 'learn') runTourStep(0);
   });
@@ -2524,7 +2525,6 @@ function showWords(): Node[] {
   const spectrum = spectrumSection(id);
 
   // The five's pages use the same summary + tabs; Watch is the Watch room itself.
-  const fiveSummary: (Node | null)[] = [eyebrow];
   const pack = current.pack;
   const fiveTabs = (
     compare: (Node | null)[],
@@ -2538,35 +2538,25 @@ function showWords(): Node[] {
         ? [
             colourWindows(pack, playColour, watching),
             ...(watching !== null ? [seriesBar, filmNote, seriesMeta] : []),
-            // The extras fold away so the tab fits; the context map was already a fold.
+            // The two extra views share one fold so the tab fits while a film plays.
             h(
               'details',
               { class: 'why coadds-fold' },
-              h('summary', {}, copy.watch.coaddHeading),
+              h('summary', {}, copy.watch.moreViews),
               coaddSection(pack),
+              contextSection(pack),
             ),
-            contextSection(pack),
           ]
         : [],
-      { badge: String(pack.manifest.frames.length), cue: !watchSeen.has(id) },
+      { badge: String(pack.manifest.frames.length), cue: watchCue() },
     ),
     tabSpec('facts', facts),
     tabSpec(
       'spectrum',
       spectrumTab.length ? spectrumTab : [h('p', { class: 'hint' }, copy.panel.noSpectrum)],
+      { badge: spectra.get(id)?.status === 'measured' ? '●' : null },
     ),
   ];
-  if (state.room === 'watch') {
-    // The headline result stays in the summary on every tab.
-    fiveSummary.push(
-      h(
-        'h2',
-        {},
-        show.kind === 'motion' && ready ? copy.show.movedDir(w.name, show.direction) : w.name,
-      ),
-    );
-    return panelOf(fiveSummary, fiveTabs([], [], spectrum ? [spectrum] : []));
-  }
 
   const out: (HTMLElement | null)[] = [eyebrow];
   const rows: Node[] = [];
@@ -2888,20 +2878,33 @@ function showWords(): Node[] {
   );
   const spotEl = !spot ? compare.find((n) => n?.classList.contains('spot')) : undefined;
   const spotBtn = spotEl?.querySelector('button') ?? null;
+  let spotRow: HTMLElement | null = null;
   if (spotBtn) {
-    spotBtn.title = copy.spot.what;
+    // The explanation stays visible beside the button (touch has no tooltips) and is its description.
+    const what = h('span', { class: 'hint spot-what', id: 'spot-what' }, copy.spot.what);
+    spotBtn.setAttribute('aria-describedby', 'spot-what');
+    spotRow = h('div', { class: 'actions spot-row' }, spotBtn, what);
     compare = compare.filter((n) => n !== spotEl);
   }
+  const keysBtn = touchOnly
+    ? null
+    : h(
+        'button',
+        { type: 'button', class: 'keys-button', 'aria-haspopup': 'dialog' },
+        copy.keys.button,
+      );
+  keysBtn?.addEventListener('click', openKeys);
   compare.push(
     h('h3', {}, copy.facts.looks),
     pairChooser(id),
     looksRow(),
+    spotRow,
     h(
       'div',
       { class: 'actions links' },
-      spotBtn,
       copyLinkButton(),
       aladinLink(current.pack.manifest.grid.centre),
+      keysBtn,
     ),
     h(
       'p',
@@ -2926,7 +2929,11 @@ function showWords(): Node[] {
   }
   if (story)
     facts.push(h('details', { class: 'why' }, h('summary', {}, copy.show.why), h('p', {}, story)));
-  return panelOf(summary, fiveTabs(compare, facts, spectrum ? [spectrum] : []));
+  // In the Watch room the summary (with the measured result) is the same; only the tab differs.
+  return panelOf(
+    summary,
+    fiveTabs(state.room === 'watch' ? [] : compare, facts, spectrum ? [spectrum] : []),
+  );
 }
 
 /** The context sections, one per target, kept across renders (their slider and open state). */
@@ -3096,7 +3103,12 @@ function lookWords(): HTMLElement[] {
         'span',
         { class: 'unit' },
         h('span', {}, copy.look.photosHere),
-        h('span', { class: 'dates' }, `${monthYear(plan.firstMjd)} → ${monthYear(plan.lastMjd)}`),
+        h(
+          'span',
+          { class: 'dates' },
+          `${monthYear(plan.firstMjd)} → ${monthYear(plan.lastMjd)}`,
+          'seasons' in plan ? ` · ${copy.look.passes(plan.seasons)}` : '',
+        ),
       ),
     ),
   );
@@ -3168,7 +3180,7 @@ function lookWords(): HTMLElement[] {
         ]),
         tabSpec('watch', [liveRangeSection(look), fieldControl(look.tiles.length)], {
           badge: range.photos.length > 2 ? String(range.photos.length) : null,
-          cue: !watchSeen.has('live'),
+          cue: watchCue(),
         }),
         tabSpec('facts', [
           // The same rows as a show's, so a look's empty rows say plainly what it isn't.
@@ -3190,7 +3202,9 @@ function lookWords(): HTMLElement[] {
             h('p', {}, copy.look.wobble),
           ),
         ]),
-        tabSpec('spectrum', [liveSpectrumSection(look)]),
+        tabSpec('spectrum', [liveSpectrumSection(look)], {
+          badge: look.spectrum?.result ? '●' : null,
+        }),
       ]);
     }
   }
@@ -3453,10 +3467,16 @@ sheetHandle.addEventListener('click', () => {
 
 /** The open tab per page: 'live' for live looks, else the target's id. */
 const panelTabs = new Map<string, PanelTab>();
-/** Pages where the visitor has opened Watch (no more quiet cue there). */
-const watchSeen = new Set<string>();
-/** A shared link's ?tab=, used once for the page it opens. */
+/** Whether the visitor has opened Watch anywhere this visit (the quiet cue shows once). */
+let watchOpened = false;
+/** A shared link's ?tab=, for the page that link opens only. */
 let startTab = parseTab(new URLSearchParams(location.search).get('tab'));
+let startTabPage: string | null = null;
+
+/** The Watch cue: once the pair has played (a ready show or a finished look), until opened. */
+function watchCue(): boolean {
+  return !watchOpened && (state.place.kind === 'ready' || state.place.kind === 'look');
+}
 
 function pageKey(): string {
   return 'target' in state.place ? state.place.target : 'live';
@@ -3466,7 +3486,9 @@ function pageKey(): string {
 function activeTab(): PanelTab {
   const key = pageKey();
   if (key !== 'live' && state.room === 'watch') return 'watch';
-  const t = panelTabs.get(key) ?? startTab ?? 'compare';
+  if (startTab && startTabPage === null) startTabPage = key;
+  const fromLink = startTabPage === key ? startTab : null;
+  const t = panelTabs.get(key) ?? fromLink ?? 'compare';
   return key !== 'live' && t === 'watch' ? 'compare' : t;
 }
 
@@ -3479,7 +3501,7 @@ function selectTab(tab: PanelTab): void {
   const was = activeTab();
   startTab = null;
   panelTabs.set(key, tab);
-  if (tab === 'watch') watchSeen.add(key);
+  if (tab === 'watch') watchOpened = true;
   if (key === 'live') {
     if (was === 'watch' && tab !== 'watch') leaveLiveRange();
     writeUrl();
@@ -3765,8 +3787,14 @@ function drawFilmNote(on: boolean, target: boolean): void {
       h('span', {}, copy.film.brighter(DIFF_LIMIT)),
     ),
     filmFrameLine,
-    h('p', { class: 'hint' }, copy.film.label),
-    ...(target ? [h('p', { class: 'hint' }, copy.film.target)] : []),
+    // Physics' full wording, one click away so the Watch tab fits while a film plays.
+    h(
+      'details',
+      { class: 'why film-howto' },
+      h('summary', {}, copy.film.howToRead),
+      h('p', { class: 'hint' }, copy.film.label),
+      ...(target ? [h('p', { class: 'hint' }, copy.film.target)] : []),
+    ),
   );
 }
 
@@ -4437,7 +4465,10 @@ function render(): void {
   const inShow = state.place.kind !== 'sky';
   homeLink.setAttribute('aria-label', inShow ? copy.nav.backToSky : copy.nav.home);
   homeLink.title = inShow ? copy.nav.backToSky : copy.nav.home;
+  const tabHadFocus = !!(document.activeElement as HTMLElement | null)?.closest?.('.panel-tabs');
   words.replaceChildren(...renderWords());
+  if (tabHadFocus)
+    (words.querySelector('.panel-tabs [aria-selected="true"]') as HTMLElement | null)?.focus();
   const tabbed = !!words.querySelector('.panel-tabbed');
   words.classList.toggle('tabbed', tabbed);
   // Phones: the tabbed column is a sheet with three heights; the handle steps through them.
@@ -4474,7 +4505,7 @@ function writeUrl(): void {
   if ('at' in state.place && lookField !== 4) q.set('field', String(lookField));
   if (state.place.kind !== 'sky') {
     const tab = activeTab();
-    if (tab !== 'compare' && !('target' in state.place && tab === 'watch')) q.set('tab', tab);
+    if (tab !== 'compare') q.set('tab', tab);
   }
   if ('target' in state.place) {
     q.set('target', state.place.target);
