@@ -37,7 +37,8 @@ describe.each(TARGETS)('%s: bundles and precomputed sums', (target) => {
       const buf = bytes(`${base}/${b.file}`);
       expect(buf.byteLength).toBe(b.bytesPerFrame * b.frameIds.length);
       b.frameIds.forEach((id, k) => {
-        const f = m.frames.find((x) => x.id === id)!;
+        const f = m.frames.find((x) => x.id === id);
+        if (!f) throw new Error(`${id} is in a bundle but not in the manifest`);
         const at = k * b.bytesPerFrame;
         expect(same(new Uint8Array(buf, at, 4 * n), raw(`${base}/${f.image}`))).toBe(true);
         expect(same(new Uint8Array(buf, at + 4 * n, n), raw(`${base}/${f.flags}`))).toBe(true);
