@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planetes · about and credits</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script>
+      (function () {
+        var pick = null;
+        try { pick = localStorage.getItem('planetes-scheme'); } catch (e) {}
+        var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.ui = pick === 'light' || pick === 'dark' ? pick : dark ? 'dark' : 'light';
+      })();
+    </script>
+    <script type="module">import './src/styles.css';</script>
+    <style>
+      main.about { max-width: 820px; }
+      .about h1 { font-size: clamp(34px, 4vw, 48px); margin: 18px 0 10px; }
+      .about h2 { font-size: 24px; margin: 30px 0 8px; }
+      .about p, .about li { color: var(--mist); }
+      .about table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      .about td, .about th { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--dusk-line); vertical-align: top; }
+      .about th { color: var(--quiet); font-weight: 400; }
+      .about td:first-child { color: var(--starlight); white-space: nowrap; }
+      .about blockquote { margin: 10px 0; padding: 10px 14px; border-left: 2px solid var(--dusk-line); color: var(--mist); font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="./" aria-label="Planetes home">
+        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-opacity=".45"/><circle cx="16" cy="16" r="5.5" fill="var(--sky-show)"/><circle cx="26" cy="9" r="2.2" fill="currentColor"/></svg>
+        <span>Planetes</span>
+      </a>
+    </header>
+    <main class="about">
+      <h1>About Planetes</h1>
+      <p>Planetes is a public web tool for NASA's SPHEREx mission. Type a position in the sky and it plays SPHEREx's infrared photos of that spot, pass by pass, so anyone can see what moved or changed: nearby stars, brown dwarfs, stars that brighten and fade. It was built by team <b>Planetes</b> (Sumit, Gorakhpur, India) for the NASA Space Apps Challenge 2026, challenge <b>“Planet X and SPHEREx”</b>.</p>
+
+      <h2>How to read what you see</h2>
+      <ul>
+        <li><span class="mk measured"></span>Ember: measured by this tool (rough centroids and quick aperture photometry, with their scatter).</li>
+        <li><span class="mk predicted"></span>Dashed lilac: predicted from a catalogue's proper motion (Gaia DR3, or the literature for WISE 0855).</li>
+        <li><span class="mk flag"></span>Red outlines: pixels the SPHEREx pipeline flagged as saturated. They are outlined, never hidden; their values are not measurements.</li>
+        <li>Grey: masked pixels (flagged artefacts) in difference images.</li>
+        <li>SPHEREx pixels are 6.15″ across. Barnard's Star moves about 10″ a year, so under two pixels: zoom in and watch the ring.</li>
+      </ul>
+
+      <h2>Data</h2>
+      <table>
+        <tr><th>Source</th><th>Used for</th></tr>
+        <tr><td>SPHEREx DR1 and QR3 spectral images</td><td>Every photo shown. NASA/JPL-Caltech, served by IRSA (NASA/IPAC Infrared Science Archive) from the public S3 bucket <code>nasa-irsa-spherex</code>; found with IRSA's SIA service.</td></tr>
+        <tr><td>SPHEREx DR1 all-sky HiPS cube</td><td>The context map with 102 wavelengths (IRSA).</td></tr>
+        <tr><td>CatWISE2020</td><td>Overlay of WISE sources with proper motions (IRSA TAP).</td></tr>
+        <tr><td>Gaia DR3</td><td>Overlay of stars with proper motions, and the motions of Barnard's Star and Epsilon Indi (ESA/Gaia/DPAC, ESA Gaia archive).</td></tr>
+        <tr><td>Luhman &amp; Esplin (2016)</td><td>Proper motion of WISE 0855−0714.</td></tr>
+        <tr><td>CDS Sesame</td><td>Looking up star names.</td></tr>
+      </table>
+      <blockquote>“This publication makes use of data products from the Spectro-Photometer for the History of the Universe, Epoch of Reionization and Ices Explorer (SPHEREx), which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration.”</blockquote>
+      <blockquote>This work has made use of data from the European Space Agency (ESA) mission Gaia (https://www.cosmos.esa.int/gaia), processed by the Gaia Data Processing and Analysis Consortium (DPAC). This publication makes use of data products from CatWISE2020 and the Wide-field Infrared Survey Explorer.</blockquote>
+
+      <h2>Software</h2>
+      <table>
+        <tr><td>Aladin Lite v3</td><td>CDS, Strasbourg (GPL-3.0), loaded from jsDelivr for the context map.</td></tr>
+        <tr><td>astropy, numpy, scipy, aiohttp</td><td>The pack builder (BSD / MIT / Apache licences).</td></tr>
+        <tr><td>Vite, TypeScript</td><td>Building the web app (MIT / Apache-2.0).</td></tr>
+        <tr><td>Source Serif 4, Source Sans 3</td><td>Typefaces by Adobe (SIL Open Font License), via Fontsource.</td></tr>
+      </table>
+
+      <h2>Inspiration</h2>
+      <p>WiseView (byw.tools/wiseview) and the Backyard Worlds: Planet 9 project, where volunteers found many brown dwarfs by blinking WISE images.</p>
+
+      <h2>Prior work and AI use</h2>
+      <p>The idea is Sumit's. He prepared before the event in private practice projects; what this project reuses from them (a stretch module, design tokens, a design language and tested archive recipes) is listed in <a href="https://github.com/sumit7194/planetes-spherex/blob/main/PRIOR_WORK.md">PRIOR_WORK.md</a>. Everything else was written during the hackathon.</p>
+      <p>This project was built with substantial help from Claude (Anthropic), an AI assistant, which wrote most of the code and draft text under the team's direction and review. Data handling and the numbers shown were checked against IRSA's documentation and catalogue predictions. No AI-generated images, audio or video are used.</p>
+    </main>
+  </body>
+</html>

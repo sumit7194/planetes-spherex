@@ -1,0 +1,43 @@
+name: Build a pack (runs next to NASA's S3 bucket)
+
+# Builds a SPHEREx pack for a target or any position on a US runner, close to s3://nasa-irsa-spherex,
+# and commits it to public/packs. Re-run for every target when IRSA publishes a new release.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target slug from pipeline/targets.json (leave empty to use ra/dec)"
+        required: false
+      ra:
+        description: "RA in degrees"
+        required: false
+      dec:
+        description: "Dec in degrees"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Build
+        working-directory: pipeline
+        run: |
+          uv sync
+          if [ -n "${{ inputs.target }}" ]; then
+            uv run python build_pack.py "${{ inputs.target }}" --conc 48
+          else
+            uv run python build_pack.py --ra "${{ inputs.ra }}" --dec "${{ inputs.dec }}" --conc 48
+          fi
+      - name: Commit
+        run: |
+          git config user.name "planetes-bot"
+          git config user.email "planetes-bot@users.noreply.github.com"
+          git add public/packs
+          git commit -m "Pack: ${{ inputs.target }}${{ inputs.ra }} ${{ inputs.dec }}" || echo "nothing to commit"
+          git push

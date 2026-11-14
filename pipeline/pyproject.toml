@@ -1,0 +1,14 @@
+[project]
+name = "planetes-pipeline"
+version = "0.1.0"
+description = "Builds SPHEREx time-series packs for the Planetes viewer"
+requires-python = ">=3.11"
+dependencies = [
+  "aiohttp>=3.9",
+  "astropy>=6.1",
+  "numpy>=1.26",
+  "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+service = ["fastapi>=0.110", "uvicorn>=0.29"]

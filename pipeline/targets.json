@@ -1,0 +1,92 @@
+{
+  "note": "Positions at epoch 2026.0. Proper motions in mas/yr; pmSource says where each comes from.",
+  "targets": [
+    {
+      "slug": "barnard",
+      "name": "Barnard's Star",
+      "kind": "mover",
+      "blurb": "The star with the fastest motion across our sky: about 10 arcseconds a year, northwards.",
+      "ra": 269.446268,
+      "dec": 4.768204,
+      "epoch": 2026.0,
+      "pmra": -801.551,
+      "pmdec": 10362.394,
+      "pmSource": "Gaia DR3",
+      "det": 6,
+      "motionDets": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "slug": "w0855",
+      "name": "WISE 0855−0714",
+      "kind": "mover",
+      "blurb": "The coldest known brown dwarf, 7.4 light years away, moving about 8 arcseconds a year. Dark in visible light; it glows only at the longest SPHEREx wavelengths.",
+      "ra": 133.760052,
+      "dec": -7.242598,
+      "epoch": 2026.0,
+      "pmra": -8118.0,
+      "pmdec": 673.0,
+      "pmSource": "Luhman & Esplin 2016",
+      "det": 6,
+      "motionDets": [
+        5,
+        6
+      ]
+    },
+    {
+      "slug": "epsind-b",
+      "name": "Epsilon Indi B",
+      "kind": "mover",
+      "blurb": "A pair of brown dwarfs orbiting the star Epsilon Indi, 12 light years away, moving about 4.7 arcseconds a year.",
+      "ra": 331.09665,
+      "dec": -56.800664,
+      "epoch": 2026.0,
+      "pmra": 3966.7,
+      "pmdec": -2536.2,
+      "pmSource": "Gaia DR3 (Epsilon Indi A, shared motion)",
+      "det": 3,
+      "motionDets": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "slug": "rw-aur",
+      "name": "RW Aurigae",
+      "kind": "variable",
+      "blurb": "A young star still wrapped in dust, whose brightness changes as clouds pass in front of it.",
+      "ra": 76.95609,
+      "dec": 30.401128,
+      "epoch": 2026.0,
+      "pmra": 0.0,
+      "pmdec": 0.0,
+      "pmSource": "negligible over 1.5 years",
+      "det": 3,
+      "motionDets": null
+    },
+    {
+      "slug": "r-dra",
+      "name": "R Draconis",
+      "kind": "variable",
+      "blurb": "A pulsating red giant (a Mira variable) that brightens and fades over about 245 days.",
+      "ra": 248.167233,
+      "dec": 66.755024,
+      "epoch": 2026.0,
+      "pmra": 0.0,
+      "pmdec": 0.0,
+      "pmSource": "negligible over 1.5 years",
+      "det": 6,
+      "motionDets": null
+    }
+  ]
+}
