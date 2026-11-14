@@ -6,7 +6,8 @@
  *    │                                                               │
  *    └──tapSky / search──▶ finding ──indexReady──▶ filling ──seasonsIn──▶ look
  *
- * Learn and Watch are room settings (the dial), not separate places, so they live in `room`.
+ * Learn is a room setting (the dial), not a separate place, so it lives in `room`; 'watch' is the
+ * room state behind a five's page Watch tab (no longer in the dial).
  */
 
 import type { SkyPosition } from '../data/coords';
@@ -84,7 +85,12 @@ export function transition(state: ViewerState, event: ViewerEvent): ViewerState 
       return place.kind === 'holding' ? at({ kind: 'ready', target: place.target }) : state;
 
     case 'goTo':
-      return at({ kind: 'finding', at: event.at });
+      // Watch is a tab of one of the five's pages; a new look starts in Play.
+      return {
+        ...state,
+        place: { kind: 'finding', at: event.at },
+        room: state.room === 'watch' ? 'play' : state.room,
+      };
     case 'indexReady':
       return place.kind === 'finding'
         ? at({ kind: 'filling', at: place.at, shown: 0, planned: event.planned })

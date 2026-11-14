@@ -164,7 +164,7 @@ export const copy = {
     examplesLabel: 'Try',
     /** The challenge page's own coordinates for WISE 0855 (its 2010 place). */
     examples: {
-      w0855: "WISE 0855, the challenge's position",
+      w0855: 'Type a position, like this',
       w0855Value: '08h55m10.831s −07d14m42.53s',
       barnard: "Barnard's Star",
       teegarden: "Teegarden's Star, 5″ a year",
@@ -214,7 +214,9 @@ export const copy = {
         simbad: 'SIMBAD',
         position: 'position',
       },
-      tryGroup: 'Try',
+      fiveGroup: 'The challenge’s five',
+      notPhotographed: 'not photographed in DR1 + QR3 yet',
+      tryGroup: 'Or try',
       nearGroup: 'Near here',
       footer: 'RA and Dec in ICRS (J2000), in degrees or hours, or a name.',
       count: (n: number) => (n === 0 ? 'No matches' : n === 1 ? '1 match' : `${n} matches`),
@@ -448,6 +450,7 @@ export const copy = {
   },
   look: {
     passes: (n: number) => `${n} pass${n === 1 ? '' : 'es'}`,
+    passesWhen: (n: number, months: string) => `${n} pass${n === 1 ? '' : 'es'} (${months})`,
     /** Known asteroids in a live look's photos (SkyBoT, IMCCE), 14 Nov. */
     movers: {
       asking: 'Asking SkyBoT (IMCCE) for known asteroids in these photos…',
@@ -730,9 +733,6 @@ export const copy = {
   },
   watch: {
     moreViews: 'More ways to look: all photos added together, and SPHEREx\u2019s sky map',
-    pickHeading: 'Watch every photo of one of the five',
-    pickHint:
-      'Pick one to play all its photos, one colour range at a time, or click a light on the sky.',
     windowsHeading: 'Colours SPHEREx saw here',
     window: (n: number) => (n === 1 ? '1 photo' : `${n} photos`),
     range: (lo: number, hi: number) => `${lo} to ${hi} microns`,

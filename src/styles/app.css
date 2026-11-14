@@ -72,11 +72,13 @@
   display: inline-flex;
   margin: 0 auto;
   padding: 3px;
-  border-radius: 20px;
+  border-radius: 999px;
 }
+/* True pills inside a true pill, so the selected one's ends run parallel to the capsule's
+   (16px corners in a 19px capsule left a wider gap at the corners; Sumit, 14 Nov). */
 .dial button {
   border: 0;
-  border-radius: 16px;
+  border-radius: 999px;
   padding: 4px 18px;
   background: none;
   color: var(--glass-ink-quiet);
@@ -238,7 +240,7 @@ canvas.sky.backdrop {
   pointer-events: none;
 }
 [data-place='sky'] .entry-switch,
-[data-place='sky'] .words :is(button, input, a) {
+[data-place='sky'] .words :is(button, input, a, .combo-pop) {
   pointer-events: auto;
 }
 /* Words and cards sit on a soft scrim, never a box, so they read over any sky. */
@@ -2943,9 +2945,39 @@ span[data-fit='1'] {
   width: 380px;
 }
 .combo-list {
+  position: relative;
   list-style: none;
   margin: 0;
   padding: 0;
+}
+/* One highlight that glides to the option Enter would choose: for arrow keys, the resting mouse
+   and typing alike (Sumit, 14 Nov). Brighter, with a ring, once an option is actively chosen. */
+.combo-glide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--sky-dusk) 60%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 120ms ease,
+    background-color 120ms ease;
+}
+.combo-glide.on {
+  opacity: 1;
+}
+.combo-glide.chosen {
+  background: color-mix(in srgb, var(--sky-dusk) 90%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--look) 50%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .combo-glide {
+    transition: none;
+  }
 }
 .combo-group {
   padding: 8px 10px 4px;
@@ -2962,14 +2994,11 @@ span[data-fit='1'] {
   border-radius: 9px;
 }
 .combo-opt {
+  position: relative;
   cursor: pointer;
 }
-.combo-opt:hover {
-  background: color-mix(in srgb, var(--sky-dusk) 55%, transparent);
-}
-.combo-opt.active {
-  background: color-mix(in srgb, var(--sky-dusk) 90%, transparent);
-  outline: 1px solid color-mix(in srgb, var(--look) 50%, transparent);
+.combo-group {
+  position: relative;
 }
 .combo-label {
   display: flex;
@@ -3069,4 +3098,22 @@ span[data-fit='1'] {
 #app.home[data-entry='flat'] .words .surprise {
   padding: 6px 14px;
   font-size: 13.5px;
+}
+
+/* "How we tested" under the search: the judges' way in, now the strip lives in Learn. */
+.home-tests {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+.home-tests a {
+  color: var(--sky-look);
+  text-decoration: none;
+}
+.home-tests a:hover,
+.home-tests a:focus-visible {
+  text-decoration: underline;
+}
+#app.home[data-entry='flat'] .words .home-tests {
+  margin: 6px 0 0;
+  font-size: 12.5px;
 }

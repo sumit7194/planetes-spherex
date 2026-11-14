@@ -530,13 +530,15 @@ function goSpace(): void {
   if (state.entry !== 'inside') switchEntry('inside');
   sky.stepOutTo(1);
 }
-for (const room of ['play', 'learn', 'watch'] as const) {
+// Play and Learn only (Sumit and Viewer, 14 Nov): Watch was a second door to the panel's Watch
+// tab, which is where a star's photos over time live; on the five's pages that tab still uses
+// the 'watch' room state, and Play stays lit.
+for (const room of ['play', 'learn'] as const) {
   const b = h('button', { type: 'button', 'data-room': room }, copy.rooms[room]);
   b.addEventListener('click', () => {
     if (room !== state.room) leaveDifference();
     if (state.room === 'learn' && room !== 'learn') leaveLearn();
-    if (room !== 'watch' && watching !== null) void playColour(watching);
-    if (room === 'watch') watchOpened = true;
+    if (watching !== null) void playColour(watching);
     dispatch({ type: 'setRoom', room });
     if (room === 'learn') runTourStep(0);
   });
@@ -1052,17 +1054,22 @@ function buildOptions(q: string): { opts: Opt[]; footer: string } {
   const f = copy.home.find;
   const t = q.trim();
   if (!t) {
-    // Empty: the examples Sumit wanted out of the page, here on focus.
+    // Empty: the challenge's five, each with its status (they were the strip's rows before the
+    // strip moved to Learn; Viewer, 14 Nov), then a typed position and one more star to try.
     const ex = copy.home.examples;
-    const w = searchIndex.find((e) => e.id === 'w0855');
-    const b = searchIndex.find((e) => e.id === 'barnard');
-    const tg = searchIndex.find((e) => e.name === ex.teegardenName);
     const opts: Opt[] = [];
+    for (const wd of WANDERERS) {
+      const e = searchIndex.find((x) => x.id === wd.id);
+      if (!e) continue;
+      opts.push({ ...entryOpt(e, f.fiveGroup), id: `five:${wd.id}`, tag: fiveStatus(wd.id) });
+    }
+    const w = searchIndex.find((e) => e.id === 'w0855');
+    const tg = searchIndex.find((e) => e.name === ex.teegardenName);
     if (w)
       opts.push({
         id: 'try:w0855',
         label: ex.w0855,
-        tag: f.tags.test,
+        tag: f.tags.position,
         meta: ex.w0855Value,
         group: f.tryGroup,
         at: w.at,
@@ -1073,7 +1080,6 @@ function buildOptions(q: string): { opts: Opt[]; footer: string } {
           submitSearch();
         },
       });
-    if (b) opts.push({ ...entryOpt(b, f.tryGroup), id: 'try:barnard' });
     if (tg) opts.push({ ...entryOpt(tg, f.tryGroup), id: 'try:teegarden' });
     return { opts, footer: f.footer };
   }
@@ -1171,9 +1177,58 @@ function buildOptions(q: string): { opts: Opt[]; footer: string } {
   return { opts, footer: '' };
 }
 
+/** One of the five's status in the status vocabulary ("moved, measured", "fainter, measured"…). */
+function fiveStatus(id: TargetId): string {
+  const status = caseStatus(id);
+  if (!status) return copy.home.find.tags.test;
+  if (status === 'brightness')
+    return cardChip(id, status)?.textContent || copy.statusChip.brightness;
+  return copy.statusChip[status];
+}
+
 function refreshOptions(): void {
   const { opts, footer } = buildOptions(search.value);
-  combo.setOptions(opts, footer);
+  combo.setOptions(withPasses(opts), footer);
+}
+
+/**
+ * When SPHEREx photographed a spot, by pass: "3 passes (Sep 2025, Mar 2026, Sep 2026)". The
+ * months only when each pass has one start (a deep field's long continuous run counts as
+ * several passes by Physics' rule, and one month would not name them).
+ */
+function passesText(mjds: number[]): string {
+  const n = passCount(mjds);
+  const starts = passStarts(mjds);
+  return starts.length === n && n > 0
+    ? copy.look.passesWhen(n, starts.map(shortMonth).join(', '))
+    : copy.look.passes(n);
+}
+
+function livePassText(fallback: number): string {
+  return live?.photos.length
+    ? passesText(live.photos.map((p) => p.mjd))
+    : copy.look.passes(fallback);
+}
+
+/** The followed option says when SPHEREx photographed it, once the sky index answers
+ * (Viewer, 14 Nov: the most useful moment is before Enter; it was the strip's spot row). */
+function withPasses(opts: Opt[]): Opt[] {
+  const t = typed;
+  if (!t || (!t.mjds && !t.failed)) return opts;
+  const line = t.failed ? '' : t.mjds?.length ? passesText(t.mjds) : copy.home.find.notPhotographed;
+  if (!line) return opts;
+  return opts.map((o) =>
+    o.at && `${o.at.ra.toFixed(4)},${o.at.dec.toFixed(4)}` === t.key
+      ? { ...o, meta: o.meta ? `${o.meta} · ${line}` : line }
+      : o,
+  );
+}
+
+/** After the typed spot's photos arrive: the open list says so (never inside setOptions). */
+function refreshPassesSoon(): void {
+  queueMicrotask(() => {
+    if (document.activeElement === search) refreshOptions();
+  });
 }
 
 /** The sky and the band follow the active option (else the first): its spot lines and row now,
@@ -1203,6 +1258,7 @@ function followOpt(o: Opt | null): void {
   if (own) {
     typed.mjds = own.map((f) => f[0]);
     if (state.place.kind === 'sky') renderBand();
+    refreshPassesSoon();
   }
   followTimer = window.setTimeout(() => {
     flyToTyped(at, key);
@@ -1216,7 +1272,9 @@ function followOpt(o: Opt | null): void {
         if (seq === typedSeq && typed) typed.failed = true;
       })
       .finally(() => {
-        if (seq === typedSeq && state.place.kind === 'sky') renderBand();
+        if (seq !== typedSeq) return;
+        if (state.place.kind === 'sky') renderBand();
+        refreshPassesSoon();
       });
   }, 400);
 }
@@ -3029,6 +3087,8 @@ function homeColumn(): HTMLElement[] {
     h('div', { class: 'home-search on-sky' }, searchBox),
     searchNote ? h('p', { class: 'hint search-note', role: 'alert' }, searchNote) : null,
     surpriseButton(),
+    // Judges need this; it lived in the strip, which moved to Learn (Viewer, 14 Nov).
+    h('p', { class: 'home-tests' }, h('a', { href: 'tests.html' }, copy.tests.linkShort)),
     legend(true),
   ];
   return parts.filter((x): x is HTMLElement => x !== null);
@@ -3058,16 +3118,6 @@ function surpriseButton(): HTMLElement {
 
 function showWords(): Node[] {
   const place = state.place;
-  if (place.kind === 'sky' && state.room === 'watch') {
-    // Watch needs a target: say so, and offer the five, rather than look like Play.
-    const pick = h('div', { class: 'actions watch-pick' });
-    for (const w of WANDERERS.filter((x) => x.ready)) {
-      const b = h('button', { type: 'button' }, copy.wanderers[w.id].name);
-      b.addEventListener('click', () => void go(w.id));
-      pick.append(b);
-    }
-    return [h('h2', {}, copy.watch.pickHeading), h('p', {}, copy.watch.pickHint), pick, legend()];
-  }
   if (place.kind === 'sky') return homeColumn();
   if (place.kind === 'trouble') return [h('p', {}, copy.trouble[place.reason])];
   if (!('target' in place)) return lookWords();
@@ -3710,9 +3760,7 @@ function lookWords(): HTMLElement[] {
           `${monthYear(plan.firstMjd)} → ${monthYear(plan.lastMjd)}`,
           // Passes by Physics' rule, as the homepage band counts them (the plan's own "seasons"
           // cut deep fields into quarter-year steps for blinking, so they'd say 6 at R Draconis).
-          'seasons' in plan
-            ? ` · ${copy.look.passes(live?.photos.length ? passCount(live.photos.map((p) => p.mjd)) : plan.seasons)}`
-            : '',
+          'seasons' in plan ? ` · ${livePassText(plan.seasons)}` : '',
         ),
       ),
     ),
@@ -4849,6 +4897,15 @@ function drawBand(): void {
   const place = state.place;
   const dock = (middle: HTMLElement | null, key: HTMLElement) =>
     middle ? h('div', { class: 'dock-row' }, middle, key) : key;
+  band.hidden = false;
+  if (place.kind === 'sky' && state.room !== 'learn') {
+    // The strip (when SPHEREx photographed the five, a typed spot, the weeks) lives in Learn
+    // (Sumit, 14 Nov): Play's sky is the search and the map, and the map takes the room.
+    skyBandNow = null;
+    band.replaceChildren();
+    band.hidden = true;
+    return;
+  }
   if (place.kind === 'sky') {
     const rows = homeBand();
     if (rows) {
@@ -5266,7 +5323,10 @@ function render(): void {
   app.dataset['entry'] = state.entry;
   app.dataset['show'] = current?.show.kind ?? 'none';
   for (const b of dial.querySelectorAll('button'))
-    b.setAttribute('aria-pressed', String(b.dataset['room'] === state.room));
+    b.setAttribute(
+      'aria-pressed',
+      String(b.dataset['room'] === (state.room === 'watch' ? 'play' : state.room)),
+    );
   markEntry();
   const inShow = state.place.kind !== 'sky';
   homeLink.setAttribute('aria-label', inShow ? copy.nav.backToSky : copy.nav.home);

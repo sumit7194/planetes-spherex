@@ -1,10 +1,12 @@
 /**
  * The search field's dropdown (ARIA combobox 1.2, list autocomplete; agreed with Viewer, 14 Nov).
  * The field keeps focus; ↑ ↓ move the active option (aria-activedescendant), Enter chooses it
- * (or the first one), Esc closes the list, a second Esc clears the field, Tab leaves. Hovering
- * only highlights: only the keyboard (and typing) moves the active option, so the sky that
- * follows it never swings about under a passing pointer. Options are rendered on every keystroke;
- * the screen-reader count is debounced so it doesn't chatter.
+ * (or the first one), Esc closes the list, a second Esc clears the field, Tab leaves. Resting
+ * the mouse on an option makes it the active one too (Sumit, 14 Nov), after a short pause and
+ * only on real pointer movement, so a pointer passing over (or the list scrolling under a still
+ * one) doesn't swing the sky. One highlight glides between options, for keys, mouse and typing.
+ * Options are rendered on every keystroke; the screen-reader count is debounced so it doesn't
+ * chatter.
  */
 import { h } from './dom';
 
@@ -69,18 +71,30 @@ export function combobox(
   let options: ComboOption[] = [];
   let active = -1;
   let statusTimer = 0;
+  let hoverTimer = 0;
+  // The highlight: one element that slides to the option Enter would choose.
+  const glide = h('li', { class: 'combo-glide', role: 'presentation', 'aria-hidden': 'true' });
   const choosable = () => options.filter((o) => !o.note);
 
   const current = (): ComboOption | null =>
     (active >= 0 ? options[active] : undefined) ?? choosable()[0] ?? null;
 
-  function paint(): void {
+  function paint(scroll = true): void {
+    const shown = current();
+    let at: HTMLElement | null = null;
     for (const li of list.querySelectorAll<HTMLElement>('[role="option"]')) {
       const on = li.dataset['i'] === String(active);
       li.setAttribute('aria-selected', String(on));
       li.classList.toggle('active', on);
-      if (on) li.scrollIntoView({ block: 'nearest' });
+      if (on && scroll) li.scrollIntoView({ block: 'nearest' });
+      if (shown && li.dataset['i'] === String(options.indexOf(shown))) at = li;
     }
+    if (at) {
+      glide.style.transform = `translateY(${at.offsetTop}px)`;
+      glide.style.height = `${at.offsetHeight}px`;
+    }
+    glide.classList.toggle('on', !!at);
+    glide.classList.toggle('chosen', active >= 0);
     const a = active >= 0 ? options[active] : undefined;
     if (a) input.setAttribute('aria-activedescendant', `${listId}-${active}`);
     else input.removeAttribute('aria-activedescendant');
@@ -93,6 +107,7 @@ export function combobox(
     options = next;
     active = was ? options.findIndex((o) => o.id === was && !o.note) : -1;
     list.replaceChildren(
+      glide,
       ...options.flatMap((o, i) => {
         const head =
           o.group && (i === 0 || options[i - 1]?.group !== o.group)
@@ -124,6 +139,18 @@ export function combobox(
             active = i;
             on.choose(o);
           });
+          // Resting the mouse here makes it the active option (only real movement counts).
+          li.addEventListener('pointermove', (e) => {
+            if (e.pointerType !== 'mouse' || active === i) return;
+            window.clearTimeout(hoverTimer);
+            hoverTimer = window.setTimeout(() => {
+              if (options[i] !== o) return;
+              active = i;
+              paint(false);
+              on.active(current());
+            }, 90);
+          });
+          li.addEventListener('pointerleave', () => window.clearTimeout(hoverTimer));
         }
         return [...head, li];
       }),

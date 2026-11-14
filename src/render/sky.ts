@@ -631,6 +631,8 @@ export class SkyView {
   /** Each figure's middle, and how far its lines have grown in (0 hidden, 1 drawn). */
   #figureMid: SkyPosition[] = [];
   #figureReveal: number[] = [];
+  /** On the flat map, whether each figure is wanted (for the show/hide hysteresis). */
+  #figureShown: boolean[] = [];
   #figureClock = 0;
 
   /** The Sun moves to a date (the week on show), or back to today. */
@@ -1307,9 +1309,29 @@ export class SkyView {
   /** A typed spot (before Enter): its own RA and Dec lines, labelled, crossing at the spot. */
   #spot: SkyPosition | null = null;
   setSpot(p: SkyPosition | null, name: string | null = null): void {
+    // From one option to the next the marker and its lines glide along the great circle
+    // (Sumit, 14 Nov: the sky should answer the list smoothly); a first spot just appears.
+    const from = this.#spotNow();
+    this.#spotGlide =
+      p && from && this.#spinning
+        ? { from, arc: separationDeg([from.ra, from.dec], [p.ra, p.dec]), t0: performance.now() }
+        : null;
     this.#spot = p;
     this.#spotName = name;
     this.draw();
+  }
+  #spotGlide: { from: SkyPosition; arc: number; t0: number } | null = null;
+  /** Where the typed spot is drawn now: on its way during a glide (260 ms, eased out). */
+  #spotNow(): SkyPosition | null {
+    const g = this.#spotGlide;
+    const s = this.#spot;
+    if (!g || !s) return s;
+    const k = Math.min(1, (performance.now() - g.t0) / 260);
+    if (k >= 1) {
+      this.#spotGlide = null;
+      return s;
+    }
+    return slerpSky(g.from, s, g.arc, 1 - Math.pow(1 - k, 3));
   }
   /** The spot's name, shown beside its marker on the flat map. */
   #spotName: string | null = null;
@@ -1406,7 +1428,7 @@ export class SkyView {
     const ink = rgba(this.#t.mist, 0.55);
     ctx.font = `${11 * u}px ${this.#fontSans}`;
     const o = this.#openSky(u);
-    const spot = this.#spot;
+    const spot = this.#spotNow();
     // The typed spot's own lines first: they carry its numbers to the edges.
     if (spot && inside) {
       const look = this.#t.look;
@@ -2686,6 +2708,9 @@ export class SkyView {
       f.x += (at.x - f.x) * Math.min(1, k * 2);
       f.y += (at.y - f.y) * Math.min(1, k * 2);
     }
+    // On the flat map, leaving the map (for the search, say) keeps the last set of figures
+    // rather than dropping them (Viewer, 14 Nov); touch never sets it, so it keeps the centre.
+    if (!at && this.#entry === 'flat') return;
     f.a += ((at ? 1 : 0) - f.a) * k;
   }
 
@@ -2704,9 +2729,27 @@ export class SkyView {
     const dt = this.#figureClock ? Math.min(100, now - this.#figureClock) : 0;
     this.#figureClock = now;
     this.#figures.forEach((f, k) => {
-      const mid = this.#figureMid[k];
-      const mp = mid ? this.project(mid) : null;
-      const inView = !!mp && this.#focusWeight(mp) > 0.5;
+      let inView: boolean;
+      if (flat) {
+        // Near when any of its stars is (the pointer on a figure's bright star counts, even if
+        // its middle is outside), with hysteresis so a figure on the edge doesn't blink: it
+        // comes in above 0.5 and goes only below 0.25 (Viewer, 14 Nov).
+        let w = 0;
+        for (const [a, b] of f.segments) {
+          for (const pt of [a, b]) {
+            const pp = this.project(pt);
+            if (pp) w = Math.max(w, this.#focusWeight(pp));
+          }
+          if (w > 0.5) break;
+        }
+        const was = (this.#figureReveal[k] ?? 0) > 0 && !!this.#figureShown[k];
+        inView = w > 0.5 || (was && w > 0.25);
+        this.#figureShown[k] = inView;
+      } else {
+        const mid = this.#figureMid[k];
+        const mp = mid ? this.project(mid) : null;
+        inView = !!mp && this.#focusWeight(mp) > 0.5;
+      }
       let t = this.#figureReveal[k] ?? 0;
       if (!this.#spinning) t = inView ? 1 : 0;
       else t = inView ? Math.min(1, t + dt / 1100) : Math.max(0, t - dt / 600);
