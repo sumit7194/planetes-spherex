@@ -1,7 +1,7 @@
 # Field guide ("What fools you"): rules fixed before any example is searched for
 
 - **What:** a page of real SPHEREx photos of things that look like a discovery and aren't, or aren't new. Every example is a real photo found by a fixed rule, never chosen or drawn by eye.
-- **Rules:** set by Physics on 15 Nov 2026 (received 02:38 IST); page design by Viewer (02:44 IST). Written here at 02:47 IST, before any search has run.
+- **Rules:** set by Physics and the page design by Viewer, both received on 15 Nov 2026 shortly before 02:41 IST. Written here and committed at 02:41 IST (3bd6c10), before any search ran.
 - **Status:** registered. No example has been searched for yet.
 
 ## 0. Data, and what is excluded
@@ -36,6 +36,7 @@
 Physics signs the chosen examples and their evidence lines before anything is pushed; Viewer reviews the page.
 
 ## 5. Log
-- 15 Nov 2026, 02:47 IST: plan registered. Next: the exclusion filter, then the search per kind.
-- 15 Nov 2026, ~02:55 IST: **exclusion filter run** (`pipeline/fieldguide.py index`): 13,543 cached boxes, 436 empty; of the 13,107 with data, **0 within 1° of a V or T patch** (closest of the five targets: RW Aurigae, 26.9° from T-3). The boxes come from 34 sky fields (the five targets plus fields from earlier runs). Only headers were read for this step.
-- 15 Nov 2026, ~03:00 IST: **search started** (`fieldguide.py search`) for six flag-name kinds: cosmic-ray (TRANSIENT), hot-or-dead-pixel (HOT, NONFUNC), persistence (PERSIST), ghost (GHOST, GHOST_FPA, GHOST_EXT), halo (HALO), streak (STREAK, SATELLITE_HALO). Saturation, blend, asteroid and the control star are named examples, not searched. Background ring: unflagged pixels (no FIT_REJECT name) 3–8 px outside each region.
+- 15 Nov 2026, 02:41 IST: plan registered (3bd6c10). Next: the exclusion filter, then the search per kind.
+- 15 Nov 2026, 02:42 IST: **exclusion filter run** (`pipeline/fieldguide.py index`): 13,543 cached boxes, 436 empty; of the 13,107 with data, **0 within 1° of a V or T patch** (closest of the five targets: RW Aurigae, 26.9° from T-3). The boxes come from 34 sky fields (the five targets plus fields from earlier runs). Only headers were read for this step.
+- 15 Nov 2026, 02:43 IST: **search started** (`fieldguide.py search`) for six flag-name kinds: cosmic-ray (TRANSIENT), hot-or-dead-pixel (HOT, NONFUNC), persistence (PERSIST), ghost (GHOST, GHOST_FPA, GHOST_EXT), halo (HALO), streak (STREAK, SATELLITE_HALO). Saturation, blend, asteroid and the control star are named examples, not searched. Background ring: unflagged pixels (no FIT_REJECT name) 3–8 px outside each region.
+- Correction (02:45 IST): the times above were first written as guesses; they now carry the clock and commit times.
