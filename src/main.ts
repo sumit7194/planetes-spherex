@@ -475,7 +475,11 @@ window.addEventListener(
 const spaceButton = h('button', { type: 'button', 'data-space': '' }, copy.sky.entrySpace);
 for (const entry of ['inside', 'flat'] as const) {
   const b = h('button', { type: 'button', 'data-entry': entry }, copy.sky.entrySwitch[entry]);
-  b.addEventListener('click', () => goEntry(entry));
+  b.addEventListener('click', () => {
+    // The visitor's own pick: leaving Learn won't undo it (Viewer, 15 Nov).
+    learnFrom = tourSetEntry = null;
+    goEntry(entry);
+  });
   entrySwitch.append(b);
   // "From space" (Earth, the orbit and the ring) lives in Learn, step 1, since 14 Nov.
 }
@@ -1547,6 +1551,7 @@ const combo = combobox(search, {
     }
     if (!opt || opt.note) return;
     combo.close();
+    visitorLeavesLearn();
     // Not inside the keydown: opening a look moves the field from the homepage column to the
     // header, and moving a focused field mid-event loses keys and autofill (Viewer, 14 Nov).
     setTimeout(opt.go, 0);
@@ -1561,7 +1566,13 @@ const combo = combobox(search, {
 const searchBox = combo.el;
 
 /** Opens what the field holds: one of the five, a named star, or a live look at a position. */
+/** A search is the visitor taking over: it leaves Learn like any other exit (Viewer, 15 Nov). */
+function visitorLeavesLearn(): void {
+  if (state.room === 'learn') dispatch({ type: 'setRoom', room: 'play' });
+}
+
 function submitSearch(): void {
+  visitorLeavesLearn();
   // A name first: one of the five, or an IAU-named star (a look at its catalogue position).
   const key = searchKey(search.value);
   const wanderer = wandererByName.get(key);
@@ -6004,21 +6015,23 @@ const TOUR_ACTS: (() => void)[] = [
   () => {
     if (state.place.kind !== 'sky') leaveShow();
     sky.ride(false);
-    goEntry('flat');
+    tourEntry('flat');
     tourSweep(true);
   },
   // "From out here": Earth and SPHEREx's orbit (3D, or the 2D Earth without WebGL). Ride along.
   () => {
     if (state.place.kind !== 'sky') leaveShow();
     tourSweep(false);
-    goSpace();
+    // As goSpace, with the view change recorded as the tour's.
+    if (state.entry !== 'inside') tourEntry('inside');
+    sky.stepOutTo(1);
   },
   // "The whole sky": the flat all-sky map, wherever the visitor was.
   () => {
     if (state.place.kind !== 'sky') leaveShow();
     tourSweep(false);
     sky.ride(false);
-    goEntry('flat');
+    tourEntry('flat');
   },
   // Back inside, turning toward the runaway.
   () => {
@@ -6026,7 +6039,7 @@ const TOUR_ACTS: (() => void)[] = [
     tourSweep(false);
     sky.ride(false);
     void (async () => {
-      if (state.entry !== 'inside') await goEntry('inside');
+      if (state.entry !== 'inside') tourEntry('inside');
       const w = WANDERERS.find((x) => x.id === 'barnard');
       if (w) void sky.flyTo(w.at, 20, prefersReducedMotion() ? 0 : 1200);
     })();
@@ -6077,10 +6090,13 @@ function leaveLearn(): void {
   tourSweep(false);
   sky.ride(false);
   if (state.entry === 'inside' && sky.steppedOut) sky.stepOutTo(0);
-  // Back to the view the visitor came from, on the sky (a target's page keeps its own view).
+  // Back to the view the visitor came from, if the view is still the one the tour set; a
+  // target's page keeps its own view.
   const from = learnFrom;
-  learnFrom = null;
-  if (from && state.place.kind === 'sky' && state.entry !== from) goEntry(from);
+  const tourSet = tourSetEntry;
+  learnFrom = tourSetEntry = null;
+  if (from && state.place.kind === 'sky' && state.entry === tourSet && state.entry !== from)
+    goEntry(from);
 }
 
 /** Learn, step 2: ride along with SPHEREx's real pointing (motion, so not under reduced motion). */
@@ -7360,14 +7376,26 @@ function toggleSweep(): void {
 
 /** The room at the last render, so leaving Learn by any route resets what only Learn uses. */
 let renderedRoom = state.room;
-/** The view the visitor had when Learn began; leaving Learn returns to it (the tour moves it). */
+/**
+ * What the tour did to the view (Viewer, 15 Nov): the visitor's view before the tour first moved
+ * it, and the view the tour last set. Leaving Learn restores the first only if the view is still
+ * the tour's; a view the visitor picked themselves during Learn is theirs to keep.
+ */
 let learnFrom: Entry | null = null;
+let tourSetEntry: Entry | null = null;
+function tourEntry(e: Entry): void {
+  learnFrom ??= state.entry;
+  tourSetEntry = e;
+  // Out at Earth, step back in before changing view, so the sky isn't left stepped out behind
+  // the flat map (Back from "From out here").
+  if (e !== 'inside' && state.entry === 'inside' && sky.steppedOut) sky.stepOutTo(0);
+  goEntry(e);
+}
 
 function render(): void {
   // Leaving Learn by any route (Play, the logo, a target, the back button), not only Play's
   // button: its brighter coverage, the sweep, riding and the step out all end (Sumit, 15 Nov:
   // the logo kept Learn's coverage in Play).
-  if (renderedRoom !== 'learn' && state.room === 'learn') learnFrom = state.entry;
   if (renderedRoom === 'learn' && state.room !== 'learn') {
     renderedRoom = state.room;
     leaveLearn();
