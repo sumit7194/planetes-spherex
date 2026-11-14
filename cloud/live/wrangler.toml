@@ -9,3 +9,8 @@ compatibility_date = "2026-11-01"
 [placement]
 mode = "targeted"
 hostname = "nasa-irsa-spherex.s3.amazonaws.com"
+
+# R2: answers made from NASA's never-changing files, kept for good (Sumit enabled R2, 15 Nov).
+[[r2_buckets]]
+binding = "FRAMES"
+bucket_name = "planetes-frames"

@@ -564,8 +564,74 @@ async function psf(url: URL, ctx: ExecutionContext): Promise<Response> {
   return new Response(out, { headers: h });
 }
 
+/** The R2 bucket the helper keeps its answers in (Sumit enabled R2, 15 Nov). Typed minimally. */
+interface R2Like {
+  get(key: string): Promise<{
+    body: ReadableStream;
+    httpMetadata?: { contentType?: string };
+    customMetadata?: Record<string, string>;
+  } | null>;
+  put(
+    key: string,
+    value: ArrayBuffer,
+    opts: { httpMetadata: { contentType: string }; customMetadata: Record<string, string> },
+  ): Promise<unknown>;
+}
+interface Env {
+  FRAMES?: R2Like;
+}
+
+/**
+ * Answers made from NASA's files, which never change (each reprocessing gets a new file name):
+ * kept in R2 for good, so a frame is built from the bucket once, ever. The edge and the Workers
+ * cache stay in front; catalogue answers (Gaia, CatWISE, names) only use the expiring cache.
+ */
+const KEEP = new Set(['/v1/frame', '/v1/probe', '/v1/native', '/v1/psf']);
+/** Headers kept with a stored answer (the rest are rebuilt). */
+const KEPT_HEADERS = ['cache-control', 'x-planetes-ms', 'x-planetes-upstream-bytes'];
+
+function storeKey(route: string, url: URL): string {
+  const q = [...url.searchParams.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return `${VERSION}${route}?${new URLSearchParams(q).toString()}`;
+}
+
 export default {
-  async fetch(request: Request, _env: unknown, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+    const route = url.pathname.replace(/\/+$/, '');
+    if (request.method !== 'GET' || !env.FRAMES || !KEEP.has(route)) return handle(request, ctx);
+    const key = storeKey(route, url);
+    try {
+      const obj = await env.FRAMES.get(key);
+      if (obj) {
+        const h = new Headers({ ...CORS, ...(obj.customMetadata ?? {}) });
+        h.set('content-type', obj.httpMetadata?.contentType ?? 'application/octet-stream');
+        h.set('x-planetes-cache', 'store');
+        return new Response(obj.body, { headers: h });
+      }
+    } catch {
+      /* the store is a speed-up only: on any trouble, build the answer as before */
+    }
+    const res = await handle(request, ctx);
+    if (res.status !== 200 || !res.headers.get('cache-control')?.includes('public')) return res;
+    const buf = await res.arrayBuffer();
+    const meta: Record<string, string> = {};
+    for (const k of KEPT_HEADERS) {
+      const v = res.headers.get(k);
+      if (v) meta[k] = v;
+    }
+    ctx.waitUntil(
+      env.FRAMES.put(key, buf, {
+        httpMetadata: { contentType: res.headers.get('content-type') ?? 'application/octet-stream' },
+        customMetadata: meta,
+      }).catch(() => undefined),
+    );
+    return new Response(buf, { status: res.status, headers: res.headers });
+  },
+};
+
+async function handle(request: Request, ctx: ExecutionContext): Promise<Response> {
+  {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
     if (request.method !== 'GET') return bad('GET only', 405);
     const url = new URL(request.url);
@@ -676,5 +742,5 @@ export default {
     ctx.waitUntil(cache.put(cacheKey, out.clone()));
     h.set('x-planetes-cache', 'miss');
     return new Response(body, { status: res.status, headers: h });
-  },
-};
+  }
+}
