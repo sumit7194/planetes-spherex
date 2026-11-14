@@ -37,3 +37,5 @@ Physics signs the chosen examples and their evidence lines before anything is pu
 
 ## 5. Log
 - 15 Nov 2026, 02:47 IST: plan registered. Next: the exclusion filter, then the search per kind.
+- 15 Nov 2026, ~02:55 IST: **exclusion filter run** (`pipeline/fieldguide.py index`): 13,543 cached boxes, 436 empty; of the 13,107 with data, **0 within 1° of a V or T patch** (closest of the five targets: RW Aurigae, 26.9° from T-3). The boxes come from 34 sky fields (the five targets plus fields from earlier runs). Only headers were read for this step.
+- 15 Nov 2026, ~03:00 IST: **search started** (`fieldguide.py search`) for six flag-name kinds: cosmic-ray (TRANSIENT), hot-or-dead-pixel (HOT, NONFUNC), persistence (PERSIST), ghost (GHOST, GHOST_FPA, GHOST_EXT), halo (HALO), streak (STREAK, SATELLITE_HALO). Saturation, blend, asteroid and the control star are named examples, not searched. Background ring: unflagged pixels (no FIT_REJECT name) 3–8 px outside each region.
