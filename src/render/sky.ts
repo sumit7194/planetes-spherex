@@ -2074,11 +2074,12 @@ export class SkyView {
   #nearGoal = 0;
 
   /**
-   * Whether scrolling (or pinching) out past the widest sky steps out to Earth. Off on the
-   * homepage (Viewer, 14 Nov: an accidental mode change mid-scroll); Learn turns it on.
-   * When off, pushing past the widest view tells the page once (`onWiderWanted`).
+   * Whether scrolling (or pinching) out past the widest sky steps out to Earth. Off everywhere
+   * (Sumit, 15 Nov): Earth and the orbit appear only when Learn's tour step takes you there
+   * (stepOutTo); once out, scrolling still moves in and out. When off, pushing past the widest
+   * view tells the page once (`onWiderWanted`).
    */
-  stepOutByScroll = true;
+  stepOutByScroll = false;
   onWiderWanted: () => void = () => {};
 
   /** The detent at Look around's widest: true once enough scroll has gathered against it. */

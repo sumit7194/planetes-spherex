@@ -595,7 +595,7 @@ for (const room of ['play', 'learn'] as const) {
   const b = h('button', { type: 'button', 'data-room': room }, copy.rooms[room]);
   b.addEventListener('click', () => {
     if (room !== state.room) leaveDifference();
-    if (state.room === 'learn' && room !== 'learn') leaveLearn();
+    // Leaving Learn resets in render(), whichever way the visitor leaves.
     if (watching !== null) void playColour(watching);
     dispatch({ type: 'setRoom', room });
     if (room === 'learn') runTourStep(0);
@@ -6077,6 +6077,10 @@ function leaveLearn(): void {
   tourSweep(false);
   sky.ride(false);
   if (state.entry === 'inside' && sky.steppedOut) sky.stepOutTo(0);
+  // Back to the view the visitor came from, on the sky (a target's page keeps its own view).
+  const from = learnFrom;
+  learnFrom = null;
+  if (from && state.place.kind === 'sky' && state.entry !== from) goEntry(from);
 }
 
 /** Learn, step 2: ride along with SPHEREx's real pointing (motion, so not under reduced motion). */
@@ -7354,10 +7358,23 @@ function toggleSweep(): void {
   render();
 }
 
+/** The room at the last render, so leaving Learn by any route resets what only Learn uses. */
+let renderedRoom = state.room;
+/** The view the visitor had when Learn began; leaving Learn returns to it (the tour moves it). */
+let learnFrom: Entry | null = null;
+
 function render(): void {
+  // Leaving Learn by any route (Play, the logo, a target, the back button), not only Play's
+  // button: its brighter coverage, the sweep, riding and the step out all end (Sumit, 15 Nov:
+  // the logo kept Learn's coverage in Play).
+  if (renderedRoom !== 'learn' && state.room === 'learn') learnFrom = state.entry;
+  if (renderedRoom === 'learn' && state.room !== 'learn') {
+    renderedRoom = state.room;
+    leaveLearn();
+  }
+  renderedRoom = state.room;
   markRide();
-  // Scrolling out steps out to Earth only in Learn; on the homepage it stops at the widest sky.
-  sky.stepOutByScroll = state.room === 'learn';
+  // Scrolling out stops at the widest sky everywhere; Earth is Learn's tour step (Sumit, 15 Nov).
   if (state.place.kind !== 'sky' || state.entry !== 'inside') wholeSkyHint.hidden = true;
   sky.marks = state.place.kind === 'sky';
   app.dataset['place'] = state.place.kind;
