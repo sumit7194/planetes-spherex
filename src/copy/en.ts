@@ -344,6 +344,8 @@ export const copy = {
       fringes:
         'Thin coloured fringes on steady stars come from the blur changing between the two looks, not from motion.',
       masked: 'Hatched: masked or saturated in either look, so no colour is shown.',
+      speckle:
+        'Coloured speckle in the dark background is noise: these are single photos, not stacks.',
     },
     diffButton: 'Show the difference',
     diffLabel: (later: number, earlier: number) => `Look ${later} minus look ${earlier}`,

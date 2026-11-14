@@ -2137,6 +2137,9 @@ async function startLiveRange(look: LiveLook): Promise<void> {
  * cuts at 2 per second, looping until paused; never on its own under reduced motion.
  */
 function watchLiveRange(job: LiveRange): void {
+  // The series takes the lens: colour by date ends (Viewer, 15 Nov).
+  liveColouring = false;
+  colouring = false;
   stopReveal?.();
   const frames = job.frames;
   job.playing = true;
@@ -3390,6 +3393,7 @@ function liveTimeColourKey(look: LiveLook): HTMLElement | null {
       h('span', {}, k.white),
     ),
     h('p', { class: 'hint' }, k.brightness),
+    h('p', { class: 'hint' }, k.speckle),
     h('p', { class: 'hint' }, k.fringes),
     h('p', { class: 'hint' }, h('i', { class: 'diff-hatch', 'aria-hidden': 'true' }), k.masked),
   );
@@ -5185,6 +5189,9 @@ interface SeriesSource {
  * unusable. Returns the series, so late answers (SkyBoT) can check it's still the one playing.
  */
 function runSeries(src: SeriesSource): NonNullable<typeof series> {
+  // A series (Watch, Play all, the film) takes the lens: colour by date ends (Viewer, 15 Nov).
+  liveColouring = false;
+  colouring = false;
   const n = src.tiles.length;
   const stretch = sharedStretch(src.tiles.map((t) => t.pixels));
   let i = 0;
