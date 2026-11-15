@@ -3859,3 +3859,54 @@ span[data-fit='1'] {
     transition: none;
   }
 }
+
+/* ---------- Play <-> Learn: one glide, not a jump (Sumit, 15 Nov) ----------
+   main.ts wraps the room switch in a View Transition; these names let each part move from its
+   old place to its new one. The Play/Learn switch is pinned to the header's centre on wide
+   screens, so the search moving into the header can't push it from under the pointer. */
+@media (min-width: 981px) {
+  .top {
+    position: relative;
+  }
+  .top > .dial {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+  }
+  /* With the dial out of the row, the search (when it's in the header) and Credits keep to the
+     right, as before. */
+  .top > .combo,
+  .top > .credits-link {
+    margin-left: auto;
+  }
+  .top > .combo + .credits-link {
+    margin-left: 0;
+  }
+}
+.top > .dial {
+  view-transition-name: room-dial;
+}
+.stage > .view {
+  view-transition-name: room-view;
+}
+.stage > .words {
+  view-transition-name: room-words;
+}
+#app > .band {
+  view-transition-name: room-band;
+}
+.combo {
+  view-transition-name: room-search;
+}
+::view-transition-group(*) {
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

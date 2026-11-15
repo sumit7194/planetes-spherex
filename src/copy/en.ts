@@ -1210,6 +1210,7 @@ export const copy = {
     tagline: 'the wanderers in SPHEREx’s sky',
     /** The text pages' header links (src/ui/header.ts). */
     pagesLabel: 'Pages',
+    theSky: '← The sky',
     pages: {
       tests: 'How we tested',
       fieldguide: 'What fools you',

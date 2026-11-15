@@ -37,6 +37,11 @@ export function siteHeader(current: SitePage): HTMLElement {
       /* a plain link then */
     }
   });
+  requestAnimationFrame(() =>
+    document
+      .querySelector('.site-nav [aria-current="page"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'center' }),
+  );
   return h(
     'header',
     { class: 'top site-top' },
@@ -44,6 +49,8 @@ export function siteHeader(current: SitePage): HTMLElement {
     h(
       'nav',
       { class: 'site-nav', 'aria-label': copy.nav.pagesLabel },
+      // The way back, visible (Viewer): a page reached from a judge's link has no "back".
+      h('a', { href: './', class: 'site-sky' }, copy.nav.theSky),
       ...LINKS.map(([id, href]) =>
         h('a', { href, ...(id === current ? { 'aria-current': 'page' } : {}) }, copy.nav.pages[id]),
       ),

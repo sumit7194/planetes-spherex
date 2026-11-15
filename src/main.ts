@@ -622,11 +622,20 @@ function goSpace(): void {
 for (const room of ['play', 'learn'] as const) {
   const b = h('button', { type: 'button', 'data-room': room }, copy.rooms[room]);
   b.addEventListener('click', () => {
-    if (room !== state.room) leaveDifference();
-    // Leaving Learn resets in render(), whichever way the visitor leaves.
-    if (watching !== null) void playColour(watching);
-    dispatch({ type: 'setRoom', room });
-    if (room === 'learn') runTourStep(0);
+    if (room === state.room) return;
+    const go = () => {
+      leaveDifference();
+      // Leaving Learn resets in render(), whichever way the visitor leaves.
+      if (watching !== null) void playColour(watching);
+      dispatch({ type: 'setRoom', room });
+      if (room === 'learn') runTourStep(0);
+    };
+    // Play <-> Learn re-lays the page (the column, the band, the search's place): the browser
+    // glides each named part to its new place instead of a one-frame jump (Sumit, 15 Nov).
+    // Without View Transitions, or under reduced motion, it simply switches.
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (doc.startViewTransition && !prefersReducedMotion()) doc.startViewTransition(go);
+    else go();
   });
   dial.append(b);
 }
@@ -6556,7 +6565,8 @@ const TOUR_ACTS: (() => void)[] = [
   () => {
     if (state.place.kind !== 'sky') leaveShow();
     sky.ride(false);
-    tourEntry('flat');
+    // In whichever view the visitor was (Sumit, 15 Nov: pressing Learn shouldn't switch Look
+    // around to the flat map); the coverage sweep draws on both.
     tourSweep(true);
   },
   // "From out here": Earth and SPHEREx's orbit (3D, or the 2D Earth without WebGL). Ride along.
