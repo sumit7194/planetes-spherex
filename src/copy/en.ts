@@ -790,8 +790,9 @@ export const copy = {
     brightness: 'Brightness',
     spectrum: 'Spectrum',
     /** N4: how faint a mover a look could have caught; not measured until the fake movers run. */
-    sensitivityNotYet: 'limit not measured yet',
-    sensitivityWhy: 'How we tested',
+    /** The limit belongs to our search, not to this look (Viewer). */
+    sensitivityLead: 'our search’s reach:',
+    sensitivityNotYet: 'not measured yet',
     spectrumMeasured: 'measured · see Spectrum',
     spectrumTooBright: 'too bright: saturated',
     spectrumBlended: 'too faint beside a brighter star',
@@ -1341,7 +1342,7 @@ export const copy = {
       title: 'How faint and slow a mover can that search find?',
       what: 'Fake slow movers planted in 40 other fields, with false alarms counted on 200 more; the plan, the fields and the scores were fixed before any photo is read.',
       status:
-        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): the search’s threshold is 11.19, where about 5 false candidates are expected among 550 field-pairs. The fake movers, which say how faint and slow a mover it finds, haven’t been run yet, so there is no limit yet.',
+        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): to count as a candidate, a source must appear to move more than 11.19 times as far as the field’s steady stars do; at that threshold about 5 false candidates are expected among 550 pairs of passes over those 200 fields. The fake movers, which say how faint, and how slow, a mover it can find, haven’t been run yet, so there is no limit yet.',
     },
     twins: {
       title: 'Finding stars with the same colours',

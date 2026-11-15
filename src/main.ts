@@ -6033,8 +6033,8 @@ function lookWords(): HTMLElement[] {
             ...factRow(
               'look',
               copy.facts.move,
-              `${copy.facts.dash.look}; ${copy.facts.sensitivityNotYet} (`,
-              h('a', { href: 'tests.html#yardstick' }, copy.facts.sensitivityWhy),
+              `${copy.facts.dash.look} (${copy.facts.sensitivityLead} `,
+              h('a', { href: 'tests.html#yardstick' }, copy.facts.sensitivityNotYet),
               ')',
             ),
             ...factRow('unmeasured', copy.facts.predicted, copy.facts.dash.none),
