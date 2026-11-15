@@ -1065,7 +1065,11 @@ export const copy = {
       `Artefact flags in most photos: ${artefacts.length ? artefacts.join(', ') : 'none'}.`,
     notChecked: (what: string) => `${what}: couldn't be checked just now`,
     asteroidsName: 'Known asteroids (SkyBoT)',
-    catwiseName: 'CatWISE2020 (its archive at IRSA)',
+    catwiseName: 'CatWISE2020 (IRSA, or VizieR when IRSA is down)',
+    /** G1: when neither archive answers, one of the five uses its saved rows. */
+    catwiseSaved:
+      "CatWISE2020 (our saved copy for this target: IRSA's answer when its pack was built)",
+    catwiseVia: (archive: string) => `CatWISE2020 (via ${archive}, as IRSA didn't answer)`,
     flagsName: 'Flags in each photo (needs the cloud helper)',
     fieldGuide: 'What fools you: real examples of artefacts and blends →',
     copy: 'Copy report',

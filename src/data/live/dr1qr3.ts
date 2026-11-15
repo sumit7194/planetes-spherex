@@ -1348,7 +1348,7 @@ export async function catwiseNear(
   at: SkyPosition,
   radiusArcsec: number,
   signal?: AbortSignal,
-): Promise<CatwiseStar[] | null> {
+): Promise<{ stars: CatwiseStar[]; archive: string } | null> {
   if (!helperActive()) return null;
   try {
     const r = await helperGet(
@@ -1357,8 +1357,12 @@ export async function catwiseNear(
       signal,
     );
     if (!r) return null;
-    const d = (await r.json()) as { stars: CatwiseStar[] };
-    return d.stars.filter((x) => Number.isFinite(x.ra) && Number.isFinite(x.dec));
+    // The helper asks IRSA first, then VizieR's copy of the same catalogue (G1, 15 Nov).
+    const d = (await r.json()) as { stars: CatwiseStar[]; archive?: string };
+    return {
+      stars: d.stars.filter((x) => Number.isFinite(x.ra) && Number.isFinite(x.dec)),
+      archive: d.archive ?? 'IRSA',
+    };
   } catch (e) {
     if (signal?.aborted) throw e;
     return null;

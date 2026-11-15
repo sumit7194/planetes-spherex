@@ -262,6 +262,135 @@ async function gaiaPatch(url: URL, ctx: ExecutionContext): Promise<Response> {
 
 const IRSA_TAP = 'https://irsa.ipac.caltech.edu/TAP/sync';
 
+interface CatwiseRow {
+  id: string;
+  ra: number | null;
+  dec: number | null;
+  pmra: number;
+  pmdec: number;
+  w1: number | null;
+  w2: number | null;
+}
+const numOrNull = (v: string | undefined) =>
+  v === undefined || v.trim() === '' ? null : Number(v);
+
+/** IRSA's TAP, cone on the motion-epoch position; a string says why it failed. */
+async function catwiseIrsa(ra: number, dec: number, r: number): Promise<CatwiseRow[] | string> {
+  const adql =
+    'SELECT source_name, ra_pm, dec_pm, pmra, pmdec, w1mpro_pm, w2mpro_pm FROM catwise_2020 ' +
+    `WHERE CONTAINS(POINT('ICRS', ra_pm, dec_pm), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1`;
+  const q = new URLSearchParams({ QUERY: adql, FORMAT: 'csv' });
+  // One short try: when IRSA is down the visitor's deadline is better spent on VizieR.
+  let text: string;
+  try {
+    const res = await fetch(`${IRSA_TAP}?${q}`, {
+      headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!res.ok) return `IRSA HTTP ${res.status}`;
+    text = await res.text();
+  } catch (e) {
+    return `IRSA: ${(e as Error).message}`;
+  }
+  const lines = text.trim().split(/\r?\n/);
+  const head = (lines.shift() ?? '').split(',');
+  const names = ['source_name', 'ra_pm', 'dec_pm', 'pmra', 'pmdec', 'w1mpro_pm', 'w2mpro_pm'];
+  const at = names.map((n) => head.indexOf(n));
+  if (at.some((c) => c < 0)) return 'IRSA: unexpected columns';
+  const rows = lines.filter((l) => l.length);
+  if (rows.some((l) => l.split(',').length !== head.length)) return 'IRSA: incomplete answer';
+  return rows.map((l) => {
+    const f = l.split(',');
+    const [id, ra2, dec2, pmra, pmdec, w1, w2] = at.map((c) => f[c]);
+    return {
+      id: (id ?? '').replace(/"/g, '').trim(),
+      ra: numOrNull(ra2),
+      dec: numOrNull(dec2),
+      // Both archives give arcsec/yr; sent as mas/yr, as the Gaia route does.
+      pmra: (numOrNull(pmra) ?? 0) * 1000,
+      pmdec: (numOrNull(pmdec) ?? 0) * 1000,
+      w1: numOrNull(w1),
+      w2: numOrNull(w2),
+    };
+  });
+}
+
+/** VizieR hosts for CatWISE2020 (II/365), tried in order when IRSA fails. */
+const VIZIER_HOSTS: [string, string][] = [
+  ['https://vizier.cds.unistra.fr', 'VizieR (CDS)'],
+  ['https://vizier.cfa.harvard.edu', 'VizieR (CDS mirror at Harvard)'],
+];
+
+/**
+ * VizieR's copy: the same columns (Name, RAPMdeg/DEPMdeg at MJD 57170, pmRA/pmDE in arcsec/yr,
+ * W1/W2mproPM). VizieR's cone is on the catalogue's main position, so it asks 2″ wider and
+ * keeps sources whose motion-epoch position is within r, as IRSA's query does.
+ */
+async function catwiseVizier(
+  host: string,
+  ra: number,
+  dec: number,
+  r: number,
+): Promise<CatwiseRow[] | string> {
+  const q = new URLSearchParams({
+    '-source': 'II/365/catwise',
+    '-c': `${ra} ${dec >= 0 ? '+' : ''}${dec}`,
+    '-c.rs': String(r + 2),
+    '-out': 'Name,RAPMdeg,DEPMdeg,pmRA,pmDE,W1mproPM,W2mproPM',
+    '-out.max': 'unlimited',
+  });
+  let text: string;
+  try {
+    const res = await fetch(`${host}/viz-bin/asu-tsv?${q}`, {
+      headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!res.ok) return `${host} HTTP ${res.status}`;
+    text = await res.text();
+  } catch (e) {
+    return `${host}: ${(e as Error).message}`;
+  }
+  const lines = text.split(/\r?\n/).filter((l) => l.length && !l.startsWith('#'));
+  const hi = lines.findIndex((l) => l.split('\t')[0]?.trim() === 'Name');
+  if (hi < 0) return `${host}: no table in the answer`;
+  const head = (lines[hi] ?? '').split('\t').map((x) => x.trim());
+  const names = ['Name', 'RAPMdeg', 'DEPMdeg', 'pmRA', 'pmDE', 'W1mproPM', 'W2mproPM'];
+  const at = names.map((n) => head.indexOf(n));
+  if (at.some((c) => c < 0)) return `${host}: unexpected columns`;
+  // After the header come a units line and a dashes line.
+  const rows = lines.slice(hi + 3).filter((l) => l.split('\t').length === head.length);
+  const d2r = Math.PI / 180;
+  const out: CatwiseRow[] = [];
+  for (const l of rows) {
+    const f = l.split('\t');
+    const [id, ra2, dec2, pmra, pmdec, w1, w2] = at.map((c) => f[c]);
+    const a = numOrNull(ra2);
+    const b = numOrNull(dec2);
+    if (a === null || b === null) continue;
+    const sep =
+      (Math.acos(
+        Math.min(
+          1,
+          Math.sin(b * d2r) * Math.sin(dec * d2r) +
+            Math.cos(b * d2r) * Math.cos(dec * d2r) * Math.cos((a - ra) * d2r),
+        ),
+      ) /
+        d2r) *
+      3600;
+    if (sep > r) continue;
+    out.push({
+      id: (id ?? '').trim(),
+      ra: a,
+      dec: b,
+      pmra: (numOrNull(pmra) ?? 0) * 1000,
+      pmdec: (numOrNull(pmdec) ?? 0) * 1000,
+      w1: numOrNull(w1),
+      w2: numOrNull(w2),
+    });
+  }
+  return out;
+}
+
 /**
  * CatWISE2020 near a position, for "What's at this spot?" (D9): positions at MJD 57170 (2015.4),
  * motions in mas/yr. From IRSA's TAP (browsers can't query it: no CORS). Cached 30 days.
@@ -282,54 +411,29 @@ async function catwise(url: URL, ctx: ExecutionContext): Promise<Response> {
     h.set('x-planetes-cache', 'hit');
     return new Response(hit.body, { status: hit.status, headers: h });
   }
-  const adql =
-    'SELECT source_name, ra_pm, dec_pm, pmra, pmdec, w1mpro_pm, w2mpro_pm FROM catwise_2020 ' +
-    `WHERE CONTAINS(POINT('ICRS', ra_pm, dec_pm), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1`;
-  const q = new URLSearchParams({ QUERY: adql, FORMAT: 'csv' });
   const t0 = Date.now();
-  let text = '';
-  for (let attempt = 0; attempt < 2; attempt++) {
-    let res: Response;
-    try {
-      res = await fetch(`${IRSA_TAP}?${q}`, {
-        headers: { 'user-agent': 'planetes-live/1 (Space Apps 2026 helper)' },
-        signal: AbortSignal.timeout(20_000),
-      });
-    } catch (e) {
-      if (attempt === 1) return bad(`CatWISE query failed: ${(e as Error).message}`, 502);
-      continue;
+  // IRSA first; when its TAP is down, VizieR's copy of the same catalogue (II/365), CDS or its
+  // Harvard mirror (G1, 15 Nov: IRSA's TAP was down overnight). Same columns, same units.
+  let got = await catwiseIrsa(ra, dec, r);
+  let archive = 'IRSA';
+  const why: string[] = [];
+  if (typeof got === 'string') {
+    why.push(got);
+    for (const [host, name] of VIZIER_HOSTS) {
+      const v = await catwiseVizier(host, ra, dec, r);
+      if (typeof v !== 'string') {
+        got = v;
+        archive = name;
+        break;
+      }
+      why.push(v);
     }
-    if (res.ok) {
-      text = await res.text();
-      break;
-    }
-    if (res.status < 500 || attempt === 1) return bad(`IRSA HTTP ${res.status}`, 502);
   }
-  const lines = text.trim().split(/\r?\n/);
-  const head = (lines.shift() ?? '').split(',');
-  const names = ['source_name', 'ra_pm', 'dec_pm', 'pmra', 'pmdec', 'w1mpro_pm', 'w2mpro_pm'];
-  const at = names.map((n) => head.indexOf(n));
-  if (at.some((c) => c < 0)) return bad('CatWISE answer had unexpected columns', 502);
-  const rows = lines.filter((l) => l.length);
-  if (rows.some((l) => l.split(',').length !== head.length))
-    return bad('CatWISE answer was incomplete', 502);
-  const num = (v: string | undefined) => (v === undefined || v === '' ? null : Number(v));
-  const stars = rows.map((l) => {
-    const f = l.split(',');
-    const [id, ra2, dec2, pmra, pmdec, w1, w2] = at.map((c) => f[c]);
-    return {
-      id: (id ?? '').replace(/"/g, '').trim(),
-      ra: num(ra2),
-      dec: num(dec2),
-      // IRSA gives arcsec/yr; sent as mas/yr, as the Gaia route does.
-      pmra: (num(pmra) ?? 0) * 1000,
-      pmdec: (num(pmdec) ?? 0) * 1000,
-      w1: num(w1),
-      w2: num(w2),
-    };
-  });
+  if (typeof got === 'string') return bad(`CatWISE: no archive answered (${why.join('; ')})`, 502);
+  const stars = got;
   const body = JSON.stringify({
     catalog: 'CatWISE2020',
+    archive,
     epochMjd: 57170,
     centre: { ra, dec },
     radiusArcsec: r,

@@ -55,6 +55,7 @@ import {
 import {
   apertureFlux,
   catwiseNear,
+  type CatwiseStar,
   readNative,
   gaiaNear,
   findPhotos,
@@ -3478,6 +3479,8 @@ interface SpotCheckResult {
   asteroidMatches: SpotMatch[];
   /** Whether SkyBoT's places were moved to SPHEREx's own position (every date had a header). */
   asteroidsFromSpherex: boolean;
+  /** Where CatWISE came from: an archive's name, 'saved' (the target's overlay file), or null. */
+  catwiseFrom: string | null;
   /** Known stars within R, nearest first, each at its closest over the two looks (Viewer 1b). */
   matches: SpotMatch[];
   /** Each flag name's count among the photos that show the spot (information). */
@@ -3636,6 +3639,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     samePixel: null,
     asteroidMatches: [],
     asteroidsFromSpherex: false,
+    catwiseFrom: null,
     matches: [],
     flagCounts: [],
     close: [],
@@ -3727,7 +3731,16 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     }
     update();
   });
-  const cat = within(catwiseNear(at, 150), CHECK_MS).then((cw) => {
+  // G1 (15 Nov): the helper asks IRSA, then VizieR; if neither answers, one of the five's pages
+  // uses the CatWISE rows saved in its overlay file (IRSA's answer when the pack was built).
+  const cat = within(catwiseNear(at, 150), CHECK_MS).then(async (got) => {
+    if (stale()) return;
+    let cw = got?.stars ?? null;
+    result.catwiseFrom = got ? got.archive : null;
+    if (!cw && ctx.target) {
+      cw = savedCatwise(await loadOverlay(ctx.target.wanderer.id), at, 150);
+      if (cw) result.catwiseFrom = 'saved';
+    }
     if (stale()) return;
     result.checked.catwise = cw ? 'done' : 'failed';
     for (const s of cw ?? [])
@@ -4027,7 +4040,15 @@ function spotCard(): HTMLElement | null {
     ),
     checkLine(
       r.checked.catwise,
-      () => t.checkStars('CatWISE2020', withSep(r.matches, 'CatWISE')),
+      () =>
+        t.checkStars(
+          r.catwiseFrom === 'saved'
+            ? t.catwiseSaved
+            : r.catwiseFrom && r.catwiseFrom !== 'IRSA'
+              ? t.catwiseVia(r.catwiseFrom)
+              : 'CatWISE2020',
+          withSep(r.matches, 'CatWISE'),
+        ),
       t.catwiseName,
     ),
     checkLine(r.checked.flags, () => t.checkFlags(all(f.artefacts).map(plainFlag)), t.flagsName),
@@ -6031,6 +6052,11 @@ function fairColourStrip(lambdas: number[], lambda: number): HTMLElement {
 type OverlaySource = {
   at_season: Record<string, [number, number, number, number]>;
   target: boolean;
+  /** CatWISE rows also carry these (pipeline/planetes_pack.py write_overlay). */
+  source_name?: string;
+  W1?: number | null;
+  pmra_arcsec_yr?: number | null;
+  pmdec_arcsec_yr?: number | null;
 };
 type OverlayFile = {
   gaia_dr3?: OverlaySource[];
@@ -6067,6 +6093,41 @@ function passPlaces(file: OverlayFile | null): PassPlaces | null {
   const rows = [...(file.gaia_dr3 ?? []), ...(file.catwise2020 ?? [])].filter((r) => r.target);
   const row = rows.sort((a, b) => offset(a) - offset(b))[0];
   return row ? { seasonMjd: file.season_mean_mjd, atSeason: row.at_season } : null;
+}
+
+/**
+ * CatWISE rows saved in a target's overlay file, as the helper would give them: positions moved
+ * back from the file's first pass to CatWISE's own epoch (MJD 57170), motions in mas/yr, within
+ * `radiusArcsec` of `at`. Null when the file has none (G1, 15 Nov).
+ */
+function savedCatwise(
+  file: OverlayFile | null,
+  at: SkyPosition,
+  radiusArcsec: number,
+): CatwiseStar[] | null {
+  const rows = file?.catwise2020;
+  if (!rows?.length || !file?.season_mean_mjd) return null;
+  const out: CatwiseStar[] = [];
+  for (const r of rows) {
+    const key = Object.keys(r.at_season)[0];
+    const p = key === undefined ? undefined : r.at_season[key];
+    const t = key === undefined ? undefined : file.season_mean_mjd[key];
+    if (!p || t === undefined || !r.source_name) continue;
+    const pmra = (r.pmra_arcsec_yr ?? 0) * 1000;
+    const pmdec = (r.pmdec_arcsec_yr ?? 0) * 1000;
+    const back = placeAt({ ra: p[0], dec: p[1] }, pmra, pmdec, yearOfMjd(t), yearOfMjd(57170));
+    if (separationDeg(back, at) * 3600 > radiusArcsec) continue;
+    out.push({
+      id: r.source_name,
+      ra: back.ra,
+      dec: back.dec,
+      pmra,
+      pmdec,
+      w1: r.W1 ?? null,
+      w2: null,
+    });
+  }
+  return out;
 }
 
 /** Physics' catalogue overlay files, by wanderer (null while loading, or if missing). */
