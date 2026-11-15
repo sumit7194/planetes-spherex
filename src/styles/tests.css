@@ -1,8 +1,6 @@
 /* "How we tested": the credits page's frame, with test rows (facts in three columns). */
 #tests h2 {
-  font: 600 13px var(--sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font: 600 var(--t-label) var(--sans);
   color: var(--quiet);
   margin: 40px 0 12px;
 }
@@ -22,12 +20,12 @@
 }
 .challenge blockquote {
   margin: 0;
-  font: italic 16px / 1.5 var(--serif);
+  font: italic var(--t-body) / 1.5 var(--serif);
   color: var(--starlight);
 }
 .challenge figcaption {
   margin-top: 6px;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 
 /* The five: name | seen | measured | limit; the check folded underneath. */
@@ -38,9 +36,7 @@
   gap: 16px;
 }
 .test-head {
-  font: 600 12px var(--sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font: 600 var(--t-meta) var(--sans);
   color: var(--quiet);
   padding-bottom: 6px;
   border-bottom: 1px solid var(--dusk-line);
@@ -48,15 +44,15 @@
 .test {
   padding: 14px 0;
   border-bottom: 1px solid var(--dusk-line);
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .test h3 {
-  font: 600 16px var(--sans);
+  font: 600 var(--t-body) var(--sans);
   color: var(--starlight);
   margin: 0 0 4px;
 }
 .test-name q {
-  font: italic 13px var(--serif);
+  font: italic var(--t-label) var(--serif);
   color: var(--quiet);
 }
 .test .cell {
@@ -83,22 +79,22 @@
 }
 .test .hard {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet) !important;
 }
 .test .links {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .test .cell .line + .line {
   margin-top: 8px;
 }
 .test .live {
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .test .earlier {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
   padding-left: 12px;
   border-left: 2px solid var(--dusk-line);
 }
@@ -107,7 +103,7 @@
 }
 .test summary {
   color: var(--quiet);
-  font-size: 13px;
+  font-size: var(--t-label);
   cursor: pointer;
 }
 .test details p {
@@ -125,12 +121,12 @@
 }
 .test .reg,
 .note {
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet) !important;
 }
 .after {
   color: var(--mist);
-  font-size: 14px;
+  font-size: var(--t-label);
   max-width: 62ch;
   padding-left: 18px;
 }
@@ -139,7 +135,7 @@
 }
 #tests footer {
   margin-top: 40px;
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
@@ -158,9 +154,7 @@
   .test .cell::before {
     content: attr(data-label);
     flex: 0 0 100%;
-    font: 600 11px var(--sans);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font: 600 var(--t-meta) var(--sans);
     color: var(--quiet);
   }
 }

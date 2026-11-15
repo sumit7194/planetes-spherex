@@ -10,7 +10,7 @@ body {
   height: 100%;
   background: var(--night);
   color: var(--starlight);
-  font: 16px/1.55 var(--sans);
+  font: var(--t-body)/1.55 var(--sans);
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }

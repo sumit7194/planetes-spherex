@@ -6,7 +6,7 @@
  * (the one derived value, the pooled rate, is the file's own).
  */
 import { copy } from '../copy/en';
-import { h } from './dom';
+import { h, minus } from './dom';
 
 const t = copy.detectors.explorer;
 const BASE = `${import.meta.env.BASE_URL}research/v4/`;
@@ -15,7 +15,7 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 function s(tag: string, attrs: Record<string, string | number> = {}, ...kids: (Node | string)[]) {
   const el = document.createElementNS(SVGNS, tag);
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
-  for (const k of kids) el.append(k);
+  for (const k of kids) el.append(typeof k === 'string' ? minus(k) : k);
   return el;
 }
 

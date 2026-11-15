@@ -1509,12 +1509,6 @@ function passesText(mjds: number[]): string {
     : copy.look.passes(n);
 }
 
-function livePassText(fallback: number): string {
-  return live?.photos.length
-    ? passesText(live.photos.map((p) => p.mjd))
-    : copy.look.passes(fallback);
-}
-
 /** The followed option says when SPHEREx photographed it, once the sky index answers
  * (Viewer, 14 Nov: the most useful moment is before Enter; it was the strip's spot row). */
 function withPasses(opts: Opt[]): Opt[] {
@@ -6065,7 +6059,10 @@ function lookWords(): HTMLElement[] {
           `${monthYear(plan.firstMjd)} → ${monthYear(plan.lastMjd)}`,
           // Passes by Physics' rule, as the homepage band counts them (the plan's own "seasons"
           // cut deep fields into quarter-year steps for blinking, so they'd say 6 at R Draconis).
-          'seasons' in plan ? ` · ${livePassText(plan.seasons)}` : '',
+          // The count only: the range already names the first and last months (typography, 15 Nov).
+          'seasons' in plan
+            ? ` · ${copy.look.passes(live?.photos.length ? passCount(live.photos.map((p) => p.mjd)) : plan.seasons)}`
+            : '',
         ),
       ),
     ),

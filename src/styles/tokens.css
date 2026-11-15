@@ -1,11 +1,9 @@
 /* Design tokens. Theme B, "Infrared", is the default (Sumit, 29 Oct): a deep night, ember for
-   what was measured, teal-blue for an honest look, Source Serif 4 and Source Sans 3. Theme A,
+   what was measured, teal-blue for an honest look, Newsreader and Atkinson Hyperlegible. Theme A,
    "Night observatory", stays available under ?theme=observatory. Fonts are bundled (OFL), so
    the viewer looks the same on every device and needs no network. */
 @import '@fontsource-variable/newsreader/opsz.css';
 @import '@fontsource-variable/atkinson-hyperlegible-next';
-@import '@fontsource-variable/source-serif-4/opsz.css';
-@import '@fontsource-variable/source-sans-3';
 
 :root {
   color-scheme: dark;
@@ -41,9 +39,18 @@
   --predicted: var(--sky-predicted);
   --flag: var(--sky-flag);
 
-  /* Type */
-  --serif: 'Source Serif 4 Variable', Georgia, serif;
-  --sans: 'Source Sans 3 Variable', system-ui, sans-serif;
+  /* Type (Sumit, 15 Nov, with Viewer): Newsreader for titles and the hero numbers, Atkinson
+     Hyperlegible Next for everything read or clicked; it keeps 1/l/I and 0/O apart, which
+     matters for coordinates. Both were already bundled (the observatory theme). */
+  --serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Atkinson Hyperlegible Next Variable', 'Avenir Next', system-ui, sans-serif;
+  /* One type scale, six steps (Viewer): meta (dates, sources), labels, body, lead, headings, hero. */
+  --t-meta: 12px;
+  --t-label: 14px;
+  --t-body: 15px;
+  --t-lead: 19px;
+  --t-head: 26px;
+  --t-hero: clamp(40px, 4.4vw, 56px);
 
   /* Motion (see the motion table; every value has a reduced-motion replacement) */
   --dive-ms: 700ms;

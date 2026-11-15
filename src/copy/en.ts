@@ -1160,7 +1160,7 @@ export const copy = {
       spectrum: 'How bright this spot is at each wavelength SPHEREx sees.',
     },
     /** The summary's honest state line for a live look. */
-    lookState: 'Not measured: a look at the photos, not a search or a measurement',
+    lookState: 'Not measured: a look, not a measurement',
     noSpectrum: 'No spectrum for this one yet.',
     /** What a tab's badge says to a screen reader. */
     badge: { photos: (n: string) => `${n} photos`, measured: 'measured' },

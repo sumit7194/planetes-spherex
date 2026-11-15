@@ -141,7 +141,7 @@ canvas.sky.backdrop {
   inset: auto 0 -2px 0;
   margin: 0;
   text-align: center;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--mist);
   min-height: 1.4em;
 }
@@ -157,7 +157,7 @@ canvas.sky.backdrop {
 .this-week-badge {
   display: none;
   color: var(--look);
-  font-size: 12px;
+  font-size: var(--t-meta);
 }
 .card.this-week .this-week-badge {
   display: inline;
@@ -337,7 +337,7 @@ canvas.sky.backdrop {
   display: grid;
   justify-items: center;
   gap: 4px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   line-height: 1.3;
   color: var(--quiet);
   text-align: center;
@@ -380,7 +380,7 @@ canvas.sky.backdrop {
   justify-content: center;
   gap: 18px;
   text-align: center;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--mist);
 }
 
@@ -393,7 +393,7 @@ canvas.sky.backdrop {
   gap: 2px;
   padding: 3px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   z-index: 1;
 }
 /* A quiet indicator of where the camera is, not a row of modes: one glass capsule whose pills
@@ -437,7 +437,7 @@ canvas.sky.backdrop {
   color: var(--starlight);
   border-radius: 16px;
   padding: 5px 14px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
 }
 .sweep.open .sweep-toggle {
   color: var(--quiet);
@@ -546,7 +546,7 @@ canvas.sky.backdrop {
   #app.panel-full .rail .card {
     gap: 5px;
     padding: 4px 5px 4px 3px;
-    font-size: 13px;
+    font-size: var(--t-label);
   }
   #app.panel-full > .band {
     margin-left: 14px;
@@ -560,7 +560,7 @@ canvas.sky.backdrop {
 .words.tabbed .panel-body .actions button,
 .words.tabbed .panel-body .actions a {
   padding: 7px 14px;
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .words.tabbed .looks figure canvas,
 .words.tabbed .looks figure img {
@@ -596,7 +596,7 @@ canvas.sky.backdrop {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--quiet) !important;
   margin: 6px 0 0 !important;
 }
@@ -626,7 +626,7 @@ canvas.sky.backdrop {
   border-radius: 0;
   background: none;
   color: var(--quiet);
-  font: 600 14px var(--sans);
+  font: 600 var(--t-label) var(--sans);
   cursor: pointer;
   margin-bottom: -1px;
 }
@@ -642,7 +642,7 @@ canvas.sky.backdrop {
   outline-offset: -2px;
 }
 .panel-tabs .badge {
-  font: 400 11.5px var(--sans);
+  font: 400 var(--t-meta) var(--sans);
   color: var(--quiet);
 }
 /* A quiet dot on a tab with something new the visitor hasn't opened yet. */
@@ -680,13 +680,13 @@ canvas.sky.backdrop {
 }
 .words .tab-hint {
   max-width: none;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--quiet) !important;
   margin: 0 0 6px !important;
 }
 .words.tabbed .facts {
   margin-top: 0;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .words.tabbed .facts dt {
   padding: 1.5px 16px 1.5px 0;
@@ -717,14 +717,14 @@ canvas.sky.backdrop {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .how-sure-fold .how-sure {
   margin: 6px 0 0;
 }
 .words.tabbed .coin-line {
   margin: 6px 0 8px;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 /* Watch inside a tab: shorter colour bars and a one-line hint, so a playing film still fits. */
 .words.tabbed .windows {
@@ -767,7 +767,7 @@ canvas.sky.backdrop {
   margin: 6px 0 0 !important;
   padding: 4px 4px 4px 10px;
   border-left: 2px solid var(--look);
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--starlight) !important;
   max-width: none;
 }
@@ -778,7 +778,7 @@ canvas.sky.backdrop {
   border: 0;
   background: none;
   color: var(--quiet);
-  font-size: 13px;
+  font-size: var(--t-label);
   cursor: pointer;
 }
 .typed-close:hover {
@@ -795,7 +795,7 @@ canvas.sky.backdrop {
 }
 .words.tabbed .spot-what {
   margin: 0 !important;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   line-height: 1.35;
 }
 .words.tabbed .film-howto {
@@ -803,7 +803,7 @@ canvas.sky.backdrop {
 }
 .words.tabbed .release-line {
   max-width: none;
-  font-size: 12px;
+  font-size: var(--t-meta);
   margin: 6px 0 0;
 }
 
@@ -865,7 +865,7 @@ canvas.sky.backdrop {
     z-index: 3;
   }
   .words.tabbed .panel-summary h2 {
-    font-size: 24px;
+    font-size: var(--t-head);
   }
 }
 @media (max-width: 980px) and (prefers-reduced-motion: reduce) {
@@ -883,13 +883,13 @@ canvas.sky.backdrop {
   margin: 6px 0 14px;
 }
 .words h3 {
-  font: 600 14px var(--sans);
+  font: 600 var(--t-label) var(--sans);
   color: var(--mist);
   margin: 18px 0 8px;
 }
 .words .eyebrow {
   color: var(--mist);
-  font-size: 15px;
+  font-size: var(--t-body);
   margin: 0;
 }
 .words p {
@@ -903,7 +903,7 @@ canvas.sky.backdrop {
   border-radius: 10px;
   background: color-mix(in srgb, var(--panel) 80%, transparent);
   border: 1px solid var(--dusk-line);
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .numbers div {
   display: flex;
@@ -945,7 +945,7 @@ canvas.sky.backdrop {
   cursor: default;
 }
 .hint {
-  font-size: 14px;
+  font-size: var(--t-label);
   color: var(--quiet) !important;
 }
 
@@ -972,7 +972,7 @@ canvas.sky.backdrop {
   gap: 10px;
 }
 .evidence p {
-  font-size: 13.5px;
+  font-size: var(--t-label);
   margin: 10px 0 0;
 }
 .evidence figure,
@@ -983,7 +983,7 @@ canvas.sky.backdrop {
 .evidence figcaption,
 .how-sure figcaption,
 .windows figcaption {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   margin-top: 4px;
 }
@@ -1021,7 +1021,7 @@ canvas.sky.backdrop {
   align-items: center;
   gap: 6px;
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .wobble-swatch {
@@ -1034,7 +1034,7 @@ canvas.sky.backdrop {
   margin-top: 18px;
 }
 .windows figcaption {
-  font: 600 14px var(--sans);
+  font: 600 var(--t-label) var(--sans);
   color: var(--mist);
 }
 .windows ol {
@@ -1044,7 +1044,7 @@ canvas.sky.backdrop {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px 14px;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .windows li {
   display: flex;
@@ -1073,7 +1073,7 @@ canvas.sky.backdrop {
   gap: 18px;
 }
 .strip-label {
-  font: italic 15px var(--serif);
+  font: italic var(--t-body) var(--serif);
   color: var(--quiet);
   white-space: nowrap;
 }
@@ -1113,7 +1113,7 @@ canvas.sky.backdrop {
 .card-text {
   display: grid;
   gap: 0;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--mist);
   min-width: 0;
   /* A long name is cut with "…" (src/ui/fit.ts), never widens the rail. */
@@ -1121,7 +1121,7 @@ canvas.sky.backdrop {
 }
 .card-text strong {
   color: var(--starlight);
-  font-size: 14px;
+  font-size: var(--t-label);
   font-weight: 600;
 }
 /* The status vocabulary: a teal dot for measured, an open ring for not confirmed, a dashed
@@ -1173,7 +1173,7 @@ canvas.sky.backdrop {
   border-radius: 10px;
   background: color-mix(in srgb, var(--panel) 96%, transparent);
   border: 1px solid var(--dusk-line);
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--mist);
   z-index: 5;
 }
@@ -1190,7 +1190,7 @@ canvas.sky.backdrop {
 }
 .ribbon-figure p {
   margin: 0;
-  font-size: 13.5px;
+  font-size: var(--t-label);
 }
 .ribbon-figure svg {
   display: block;
@@ -1201,7 +1201,7 @@ canvas.sky.backdrop {
   position: relative;
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .ribbon-labels .gap {
@@ -1215,7 +1215,7 @@ canvas.sky.backdrop {
   align-items: center;
   flex-wrap: wrap;
   margin-top: 10px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .meet button {
@@ -1321,7 +1321,7 @@ canvas.sky.backdrop {
 /* "What am I seeing?": a quiet disclosure under the hero words. */
 .legend {
   margin-top: 16px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   pointer-events: auto;
 }
@@ -1345,7 +1345,7 @@ canvas.sky.backdrop {
   flex-wrap: wrap;
   gap: 6px 16px;
   margin: 4px 0 16px;
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .words .chip {
   color: var(--mist);
@@ -1360,7 +1360,7 @@ canvas.sky.backdrop {
   padding: 0 6px;
   border-radius: 4px;
   border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
-  font: 600 11px var(--sans);
+  font: 600 var(--t-meta) var(--sans);
   opacity: 0.8;
 }
 /* One question, one tap: the steady-star explanation, and anything like it. */
@@ -1370,14 +1370,14 @@ canvas.sky.backdrop {
 .why summary {
   cursor: pointer;
   color: var(--mist);
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .why p {
   margin-top: 8px;
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .hint.small {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
 }
 
 /* Embedded in another site (?embed=1): the sky, the lens and the words, nothing else. */
@@ -1403,7 +1403,7 @@ canvas.sky.backdrop {
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .field span {
@@ -1429,13 +1429,13 @@ canvas.sky.backdrop {
   align-items: center;
   gap: 8px;
   margin: 6px 0 0;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--mist);
 }
 .flags .n {
   margin-left: auto;
   color: var(--quiet);
-  font-size: 12.5px;
+  font-size: var(--t-meta);
 }
 .flags .flag::before {
   content: '';
@@ -1463,13 +1463,13 @@ canvas.sky.backdrop {
   width: 100%;
   max-width: 440px;
   color: var(--quiet);
-  font: 11px var(--sans);
+  font: var(--t-meta) var(--sans);
 }
 .spectrum text {
   fill: currentColor;
 }
 .spectrum .axis {
-  font-size: 11.5px;
+  font-size: var(--t-meta);
 }
 .spectrum .grid {
   stroke: color-mix(in srgb, var(--dusk-line) 70%, transparent);
@@ -1479,7 +1479,7 @@ canvas.sky.backdrop {
 .actions .quiet-link {
   align-self: center;
   margin-left: 4px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--quiet);
   text-decoration: none;
 }
@@ -1524,7 +1524,7 @@ canvas.sky.backdrop {
   border: 0;
   background: none;
   color: var(--quiet);
-  font-size: 12px;
+  font-size: var(--t-meta);
   text-align: left;
 }
 .coadd-grid button:hover .thumb {
@@ -1555,7 +1555,7 @@ canvas.sky.backdrop {
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 4px 12px;
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .photo-meta dt {
   color: var(--quiet);
@@ -1567,7 +1567,7 @@ canvas.sky.backdrop {
 
 /* The tour's progress: one dot per step, the current one ember. */
 .tour .tour-line.compact {
-  font-size: 18px;
+  font-size: var(--t-lead);
   max-width: 40ch;
   margin: 2px 0 4px;
 }
@@ -1620,7 +1620,7 @@ canvas.sky.backdrop {
   align-items: center;
   gap: 6px 8px;
   margin: 8px 0 4px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .sweep-key i {
@@ -1654,7 +1654,7 @@ canvas.sky.backdrop {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .words .eyebrow {
   flex-wrap: wrap;
@@ -1664,7 +1664,7 @@ canvas.sky.backdrop {
   padding: 2px 9px 2px 7px;
   border-radius: 999px;
   border: 1px solid var(--dusk-line);
-  font-size: 12px;
+  font-size: var(--t-meta);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--mist);
@@ -1681,27 +1681,27 @@ canvas.sky.backdrop {
 }
 .hero-move .about {
   grid-column: 1 / -1;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .hero-move .big {
-  font: 400 clamp(54px, 6vw, 76px) / 0.9 var(--serif);
+  font: 400 var(--t-hero) / 0.9 var(--serif);
   color: var(--starlight);
   font-variant-numeric: lining-nums;
 }
 .hero-move .dir {
   align-self: center;
-  font: 300 34px / 1 var(--sans);
+  font: 300 var(--t-head) / 1 var(--sans);
   color: var(--measured);
 }
 .hero-move .unit {
   display: grid;
-  font-size: 15px;
+  font-size: var(--t-body);
   color: var(--mist);
   padding-bottom: 6px;
 }
 .hero-move .dates {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
@@ -1737,11 +1737,11 @@ canvas.sky.backdrop {
 }
 .nl-px,
 .nl-unit {
-  font: 10.5px var(--sans);
+  font: var(--t-meta) var(--sans);
   fill: var(--quiet);
 }
 .nl-arcsec {
-  font: 10.5px var(--sans);
+  font: var(--t-meta) var(--sans);
   fill: color-mix(in srgb, var(--quiet) 75%, transparent);
 }
 .how-sure .legend {
@@ -1749,7 +1749,7 @@ canvas.sky.backdrop {
   flex-wrap: wrap;
   gap: 4px 16px;
   margin: 2px 0 0;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--mist);
 }
 .how-sure .legend > span {
@@ -1762,7 +1762,7 @@ canvas.sky.backdrop {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   margin: 6px 0 14px;
 }
@@ -1823,7 +1823,7 @@ canvas.sky.backdrop {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   margin: 4px 0 10px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   border-top: 1px solid var(--dusk-line);
 }
 .facts dt,
@@ -1844,7 +1844,7 @@ canvas.sky.backdrop {
 }
 
 .status-line {
-  font-size: 17px;
+  font-size: var(--t-lead);
   color: var(--starlight);
   margin: 2px 0 12px;
 }
@@ -1861,7 +1861,7 @@ canvas.sky.backdrop {
   margin: 0;
 }
 .words .looks figcaption {
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   margin-top: 4px;
 }
@@ -1875,7 +1875,7 @@ canvas.sky.backdrop {
   margin: 0 0 10px;
 }
 .words .pairs-label {
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   margin-right: 2px;
 }
@@ -1889,7 +1889,7 @@ canvas.sky.backdrop {
   background: transparent;
   color: var(--mist);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--t-meta);
   cursor: pointer;
 }
 .words .pairs button.on {
@@ -1902,7 +1902,7 @@ canvas.sky.backdrop {
   height: 7px;
 }
 .words .release-line {
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   margin: 8px 0 0;
 }
@@ -1926,12 +1926,12 @@ canvas.sky.backdrop {
   display: grid;
   margin: 0;
   max-width: 7.5em;
-  font-size: 13px;
+  font-size: var(--t-label);
   line-height: 1.25;
   color: var(--quiet);
 }
 .ribbon-count b {
-  font: 400 28px / 1 var(--serif);
+  font: 400 var(--t-head) / 1 var(--serif);
   color: var(--starlight);
 }
 .ribbon-plot {
@@ -1947,7 +1947,7 @@ canvas.sky.backdrop {
   flex-direction: column;
   justify-content: space-between;
   padding: 2px 0 14px;
-  font-size: 11px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   text-align: right;
 }
@@ -1961,7 +1961,7 @@ canvas.sky.backdrop {
   stroke-width: 2;
 }
 .rb-num {
-  font: 600 11px var(--sans);
+  font: 600 var(--t-meta) var(--sans);
   fill: var(--quiet);
 }
 .rb-num.on {
@@ -1975,7 +1975,7 @@ canvas.sky.backdrop {
   display: grid;
   grid-template-columns: repeat(2, max-content);
   gap: 3px 14px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .mark-key li {
@@ -2028,12 +2028,12 @@ canvas.sky.backdrop {
 .verbs b {
   display: block;
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--t-body);
   color: var(--starlight);
 }
 .verbs small {
   display: block;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .verb-icon {
@@ -2072,7 +2072,7 @@ canvas.sky.backdrop {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 20px;
+  font-size: var(--t-lead);
   color: var(--mist);
 }
 
@@ -2085,18 +2085,18 @@ canvas.sky.backdrop {
   margin: 6px 0 10px;
 }
 .hero-count .big {
-  font: 400 clamp(48px, 5.5vw, 68px) / 0.9 var(--serif);
+  font: 400 var(--t-hero) / 0.9 var(--serif);
   color: var(--starlight);
   font-variant-numeric: lining-nums;
 }
 .hero-count .unit {
   display: grid;
-  font-size: 15px;
+  font-size: var(--t-body);
   color: var(--mist);
   padding-bottom: 4px;
 }
 .hero-count .dates {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
@@ -2110,11 +2110,11 @@ canvas.sky.backdrop {
   align-items: center;
   gap: 10px;
   margin: 0 0 6px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--starlight);
 }
 .fc-label .chip {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--mist);
@@ -2154,7 +2154,7 @@ canvas.sky.backdrop {
   display: flex;
   justify-content: space-between;
   margin: 4px 0 0;
-  font-size: 10.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
@@ -2162,7 +2162,7 @@ canvas.sky.backdrop {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .pips i {
@@ -2182,12 +2182,12 @@ canvas.sky.backdrop {
   text-align: center;
 }
 .look-strip figcaption {
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .field button small {
   display: block;
-  font-size: 10.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
@@ -2223,11 +2223,11 @@ canvas.sky.backdrop {
 }
 .windows .count {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--starlight);
 }
 .windows .range {
-  font-size: 10.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   white-space: nowrap;
 }
@@ -2248,7 +2248,7 @@ canvas.sky.backdrop {
   background: none;
   color: var(--mist);
   font: inherit;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   white-space: nowrap;
 }
 .flag-chip b {
@@ -2344,7 +2344,7 @@ canvas.sky.backdrop {
     max-width: none;
   }
   .ribbon-count b {
-    font-size: 22px;
+    font-size: var(--t-head);
   }
   .ribbon-labels .gap {
     display: none;
@@ -2429,7 +2429,7 @@ span[data-fit='1'] {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--mist);
 }
 .diff-scale i {
@@ -2453,7 +2453,7 @@ span[data-fit='1'] {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--mist);
 }
 .context-bar input[type='range'] {
@@ -2507,7 +2507,7 @@ span[data-fit='1'] {
 }
 .keys-dialog h2 {
   margin: 0 0 12px;
-  font-size: 20px;
+  font-size: var(--t-lead);
 }
 .keys-dialog dl {
   display: grid;
@@ -2521,7 +2521,7 @@ span[data-fit='1'] {
 }
 .keys-dialog kbd {
   font: inherit;
-  font-size: 13px;
+  font-size: var(--t-label);
   padding: 1px 7px;
   border: 1px solid var(--dusk-line);
   border-radius: 6px;
@@ -2535,7 +2535,7 @@ span[data-fit='1'] {
   margin: 0 0 6px;
 }
 .words .home-welcome {
-  font-size: 15px;
+  font-size: var(--t-body);
   color: var(--mist);
   max-width: 34em;
   margin: 0 0 16px;
@@ -2545,7 +2545,7 @@ span[data-fit='1'] {
   width: 100%;
   max-width: 440px;
   padding: 11px 16px 11px 38px;
-  font-size: 17px;
+  font-size: var(--t-lead);
   background-position:
     14px 50%,
     0 0;
@@ -2559,7 +2559,7 @@ span[data-fit='1'] {
 }
 .words .search-echo {
   margin: 6px 0 0 16px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   min-height: 1.3em;
 }
@@ -2568,7 +2568,7 @@ span[data-fit='1'] {
 }
 .words .search-note {
   margin: 6px 0 0 16px;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .home-try {
   display: flex;
@@ -2577,7 +2577,7 @@ span[data-fit='1'] {
   margin: 12px 0 4px;
 }
 .home-try-label {
-  font: italic 14px var(--serif);
+  font: italic var(--t-label) var(--serif);
   color: var(--quiet);
 }
 .examples {
@@ -2593,7 +2593,7 @@ span[data-fit='1'] {
   border-radius: 999px;
   background: color-mix(in srgb, var(--night) 40%, transparent);
   padding: 5px 12px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
   color: var(--starlight);
 }
 .examples .example:hover {
@@ -2603,7 +2603,7 @@ span[data-fit='1'] {
   margin-top: 10px;
 }
 .words .home-quiet {
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
   margin: 2px 0 10px;
 }
@@ -2614,7 +2614,7 @@ span[data-fit='1'] {
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--mist);
 }
 
@@ -2631,7 +2631,7 @@ span[data-fit='1'] {
     'axis axis';
   align-items: center;
   column-gap: 16px;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .sky-band.with-spot {
   --sb-row: 17px;
@@ -2643,7 +2643,7 @@ span[data-fit='1'] {
   grid-area: line;
   margin: 0 0 4px;
   color: var(--mist);
-  font-size: 13px;
+  font-size: var(--t-label);
   min-width: 0;
 }
 .sb-week {
@@ -2664,10 +2664,10 @@ span[data-fit='1'] {
   background: none;
   color: var(--starlight);
   padding: 2px 12px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
 }
 .sb-tests {
-  font-size: 11.5px;
+  font-size: var(--t-meta);
   color: var(--look);
   text-decoration: none;
   align-self: start;
@@ -2680,14 +2680,14 @@ span[data-fit='1'] {
   border: 0;
   background: none;
   color: var(--look);
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   text-decoration: underline;
   text-underline-offset: 3px;
   padding: 2px 4px;
 }
 .sb-close {
   padding: 0 8px;
-  font-size: 16px;
+  font-size: var(--t-body);
   line-height: 20px;
 }
 .sb-grid {
@@ -2719,7 +2719,7 @@ span[data-fit='1'] {
   background: none;
   color: var(--starlight);
   text-align: left;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
 }
 .sb-row:hover,
 .sb-row:focus-visible {
@@ -2730,7 +2730,7 @@ span[data-fit='1'] {
   white-space: nowrap;
 }
 .sb-row .chip {
-  font-size: 11.5px;
+  font-size: var(--t-meta);
   white-space: nowrap;
   color: var(--quiet);
 }
@@ -2741,7 +2741,7 @@ span[data-fit='1'] {
   justify-content: space-between;
   padding: 0 4px;
   color: var(--look);
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   background: color-mix(in srgb, var(--look) 10%, transparent);
   border-radius: 4px;
 }
@@ -2796,7 +2796,7 @@ span[data-fit='1'] {
   position: relative;
   height: 16px;
   color: var(--quiet);
-  font-size: 11px;
+  font-size: var(--t-meta);
 }
 .sb-axis span {
   position: absolute;
@@ -2822,7 +2822,7 @@ span[data-fit='1'] {
    band's rows compressed (names only; the sentence is the caption). */
 @media (max-width: 600px) {
   .words .home-headline {
-    font-size: 24px;
+    font-size: var(--t-head);
     margin-bottom: 10px;
   }
   .home-search .search.glass {
@@ -2949,9 +2949,7 @@ span[data-fit='1'] {
 }
 .combo-group {
   padding: 8px 10px 4px;
-  font: 600 11px var(--sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font: 600 var(--t-meta) var(--sans);
   color: var(--quiet);
 }
 .combo-opt,
@@ -2972,11 +2970,11 @@ span[data-fit='1'] {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 14.5px;
+  font-size: var(--t-label);
   color: var(--sky-starlight);
 }
 .combo-tag {
-  font-size: 11px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   border: 1px solid var(--dusk-line);
   border-radius: 999px;
@@ -2984,17 +2982,17 @@ span[data-fit='1'] {
   white-space: nowrap;
 }
 .combo-meta {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--mist);
 }
 .combo-note {
-  font-size: 13px;
+  font-size: var(--t-label);
   font-style: italic;
   color: var(--mist);
 }
 .combo-footer {
   margin: 6px 10px 4px !important;
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--quiet) !important;
 }
 @media (max-width: 600px) {
@@ -3039,7 +3037,7 @@ span[data-fit='1'] {
   border-radius: 999px;
   background: color-mix(in srgb, var(--sky-night) 80%, transparent);
   color: var(--sky-look);
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 
 /* The flat map on the homepage: the whole sky gets the page, and the column becomes a compact
@@ -3065,13 +3063,13 @@ span[data-fit='1'] {
 }
 #app.home[data-entry='flat'] .words .surprise {
   padding: 6px 14px;
-  font-size: 13.5px;
+  font-size: var(--t-label);
 }
 
 /* "How we tested" under the search: the judges' way in, now the strip lives in Learn. */
 .home-tests {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .home-tests a {
   color: var(--sky-look);
@@ -3083,7 +3081,7 @@ span[data-fit='1'] {
 }
 #app.home[data-entry='flat'] .words .home-tests {
   margin: 6px 0 0;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
 }
 
 /* A star the mouse rests on: a small quiet card beside it (Viewer, 14 Nov). */
@@ -3099,20 +3097,20 @@ span[data-fit='1'] {
   background: color-mix(in srgb, var(--sky-night) 92%, transparent);
   box-shadow: 0 8px 24px rgba(0 0 0 / 0.4);
   color: var(--sky-mist);
-  font-size: 12px;
+  font-size: var(--t-meta);
   line-height: 1.35;
   pointer-events: none;
   animation: star-tip-in 140ms ease-out;
 }
 .star-tip strong {
   color: var(--sky-starlight);
-  font-size: 13.5px;
+  font-size: var(--t-label);
   font-weight: 600;
 }
 .star-tip-hip,
 .star-tip-click {
   color: var(--sky-quiet);
-  font-size: 11px;
+  font-size: var(--t-meta);
 }
 .star-tip-passes {
   color: var(--sky-look);
@@ -3136,7 +3134,7 @@ span[data-fit='1'] {
 }
 .colour-label {
   margin: 0 0 4px;
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .colour-row {
@@ -3151,7 +3149,7 @@ span[data-fit='1'] {
   border-radius: 7px;
   background: color-mix(in srgb, var(--swatch) 22%, transparent);
   color: var(--starlight);
-  font-size: 12px;
+  font-size: var(--t-meta);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition:
@@ -3186,7 +3184,7 @@ span[data-fit='1'] {
 /* "Open this spot in: Aladin Lite · WiseView": one quiet line under the actions. */
 .out-links {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 /* Links are starlight and underlined, as .link-button: blue already means "a live look". */
@@ -3242,13 +3240,13 @@ span[data-fit='1'] {
 }
 .past-path text {
   fill: var(--mist);
-  font: 11px var(--sans);
+  font: var(--t-meta) var(--sans);
 }
 .past-path .pp-label {
   fill: var(--starlight);
 }
 .past-path .pp-small {
-  font-size: 10px;
+  font-size: var(--t-meta);
 }
 .past-path .pp-sphx-label {
   fill: var(--look);
@@ -3261,7 +3259,7 @@ span[data-fit='1'] {
   align-items: center;
   gap: 4px 5px;
   margin: 4px 0;
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--starlight);
 }
 .date-scale span {
@@ -3282,7 +3280,7 @@ span[data-fit='1'] {
   align-items: center;
   gap: 4px 10px;
   margin: 4px 0 10px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--mist);
 }
 .fade-range {
@@ -3314,7 +3312,7 @@ span[data-fit='1'] {
 .spot-check-list {
   margin: 6px 0;
   padding-left: 18px;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--mist);
 }
 .spot-check-card a {
@@ -3342,7 +3340,7 @@ span[data-fit='1'] {
   border-left: 1px solid var(--dusk-line);
   background: transparent;
   color: var(--starlight);
-  font-size: 13px;
+  font-size: var(--t-label);
   cursor: pointer;
 }
 .mode-row button:first-child {
@@ -3367,7 +3365,7 @@ span[data-fit='1'] {
 .facts-foot p {
   max-width: none;
   margin: 0;
-  font-size: 12px;
+  font-size: var(--t-meta);
   line-height: 1.35;
 }
 /* Facts fits at 1280x720 on every page (Viewer's audit): even, smaller gaps between blocks. */
@@ -3417,7 +3415,7 @@ span[data-fit='1'] {
 .actions .shown-count {
   align-self: center;
   margin-left: auto;
-  font-size: 12px;
+  font-size: var(--t-meta);
 }
 .words.tabbed .look-strip {
   margin-bottom: 6px;
@@ -3427,7 +3425,7 @@ span[data-fit='1'] {
 }
 .words.tabbed .tab-live-movers,
 .words.tabbed .panel-body.tab-compare > p.hint:last-child {
-  font-size: 12px;
+  font-size: var(--t-meta);
   line-height: 1.35;
 }
 .words.tabbed .panel-body.tab-facts > .why {
@@ -3455,14 +3453,14 @@ span[data-fit='1'] {
 }
 .colour-shift figcaption {
   margin-top: 2px;
-  font-size: 11.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .cs-key {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .cs-key li {
@@ -3502,7 +3500,7 @@ span[data-fit='1'] {
 }
 .cs-col,
 .cs-row {
-  font-size: 11px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .cs-col {
@@ -3513,7 +3511,7 @@ span[data-fit='1'] {
 }
 .cs-question {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--starlight);
 }
 
@@ -3523,14 +3521,14 @@ span[data-fit='1'] {
 }
 .cs-side .hint {
   margin: 4px 0 0;
-  font-size: 12px;
+  font-size: var(--t-meta);
   line-height: 1.35;
 }
 
 /* "Appearance: Dark · Light" (in "What am I seeing?" and the keys dialog). */
 .scheme-choice {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .scheme-choice button[aria-pressed='true'] {
@@ -3577,7 +3575,7 @@ span[data-fit='1'] {
   border-radius: 4px;
 }
 .cs-ratio-row figcaption {
-  font-size: 11.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .cs-ratio-key {
@@ -3585,7 +3583,7 @@ span[data-fit='1'] {
   align-items: center;
   gap: 6px;
   margin: 4px 0;
-  font-size: 11.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 .cs-ramp {
@@ -3603,7 +3601,7 @@ span[data-fit='1'] {
   align-items: center;
   gap: 4px;
   margin: 0 0 1px;
-  font-size: 11px;
+  font-size: var(--t-meta);
   line-height: 1.3;
 }
 .colour-shift-key > details.why {
@@ -3620,7 +3618,7 @@ span[data-fit='1'] {
   background: repeating-linear-gradient(45deg, #20253a 0 2px, #161a28 2px 5px);
 }
 .colour-shift-key > p.hint {
-  font-size: 12px;
+  font-size: var(--t-meta);
   line-height: 1.35;
 }
 .cs-ratio-row > .cs-ratio-key {
@@ -3681,7 +3679,7 @@ span[data-fit='1'] {
   display: flex;
   gap: 2px;
   border-bottom: 1px solid var(--dusk-line);
-  font: 600 14px var(--sans);
+  font: 600 var(--t-label) var(--sans);
   color: color-mix(in srgb, var(--quiet) 55%, transparent);
 }
 .skel-tabbed .skel-tabs > span {
@@ -3761,7 +3759,7 @@ span[data-fit='1'] {
 }
 .load-count {
   margin: 6px 0 0;
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   font-variant-numeric: tabular-nums;
 }
@@ -3957,4 +3955,17 @@ canvas.sky.backdrop {
   ::view-transition-new(*) {
     animation: none !important;
   }
+}
+
+/* The type scale's body step for what you read in the panel (Viewer: 13 -> 15 px). */
+.words .panel-body,
+.words .panel-summary p:not(.eyebrow) {
+  font-size: var(--t-body);
+}
+/* Numbers as data: lining, tabular figures; an uncertainty reads as part of its value. */
+body {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.unc {
+  color: var(--quiet);
 }

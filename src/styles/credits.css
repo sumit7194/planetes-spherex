@@ -21,9 +21,7 @@
 }
 /* A page to scan, not to read: a table of sources, three short cards, small print. */
 #credits h2 {
-  font: 600 13px var(--sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font: 600 var(--t-label) var(--sans);
   color: var(--quiet);
   margin: 40px 0 12px;
 }
@@ -37,7 +35,7 @@
 .sources {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .sources th,
 .sources td {
@@ -47,9 +45,7 @@
   border-bottom: 1px solid var(--dusk-line);
 }
 .sources thead th {
-  font: 600 12px var(--sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font: 600 var(--t-meta) var(--sans);
   color: var(--quiet);
 }
 .sources tbody th {
@@ -62,7 +58,7 @@
 }
 .sources .terms {
   color: var(--quiet);
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 
 /* Makers: one row each, a role on the left, who · when · what on the right. */
@@ -71,7 +67,7 @@
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0 18px;
   margin: 0;
-  font-size: 14px;
+  font-size: var(--t-label);
 }
 .makers dt,
 .makers dd {
@@ -96,11 +92,11 @@
 .makers .facts {
   flex-basis: 100%;
   color: var(--quiet);
-  font-size: 13px;
+  font-size: var(--t-label);
 }
 .makers details {
   flex-basis: 100%;
-  font-size: 13px;
+  font-size: var(--t-label);
   color: var(--quiet);
 }
 .makers summary {
@@ -113,7 +109,7 @@
 
 /* The archives' own words, small. */
 .acks p {
-  font-size: 12.5px;
+  font-size: var(--t-meta);
   line-height: 1.5;
   color: var(--quiet);
   margin: 0 0 8px;
@@ -127,7 +123,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px 20px;
-  font-size: 12px;
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
