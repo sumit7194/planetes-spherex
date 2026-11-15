@@ -11,6 +11,8 @@ export default tseslint.config(
       'docs',
       'public/data',
       'src-event-v0',
+      // The design lab is git-ignored and dev-only (?lab=); never part of the site.
+      'design-lab',
       'pipeline',
     ],
   },
