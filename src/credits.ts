@@ -78,6 +78,7 @@ root.append(
   h('h2', {}, c.makersHeading),
   makers,
   h('p', { class: 'prior' }, h('a', { href: 'tests.html' }, copy.tests.link)),
+  h('p', { class: 'prior' }, h('a', { href: 'detectors.html' }, copy.detectors.linkShort)),
   h(
     'section',
     { class: 'acks' },

@@ -42,6 +42,7 @@ export default defineConfig({
         tests: resolve(import.meta.dirname, 'tests.html'),
         fieldguide: resolve(import.meta.dirname, 'fieldguide.html'),
         loop: resolve(import.meta.dirname, 'loop.html'),
+        detectors: resolve(import.meta.dirname, 'detectors.html'),
       },
     },
   },

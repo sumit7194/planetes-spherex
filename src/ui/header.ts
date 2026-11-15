@@ -7,9 +7,9 @@ import { copy } from '../copy/en';
 import { h } from './dom';
 import { markSvg } from './mark';
 
-export type SitePage = 'tests' | 'fieldguide' | 'loop' | 'credits';
+export type SitePage = 'tests' | 'fieldguide' | 'loop' | 'credits' | 'detectors';
 
-const LINKS: [SitePage, string][] = [
+const LINKS: [Exclude<SitePage, 'detectors'>, string][] = [
   ['tests', 'tests.html'],
   ['fieldguide', 'fieldguide.html'],
   ['loop', 'loop.html'],

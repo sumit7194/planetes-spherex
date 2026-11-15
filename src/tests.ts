@@ -293,6 +293,7 @@ async function main(): Promise<void> {
     ...(await methodTests()),
     h('h2', {}, t.groups.machinery),
     h('p', { class: 'hint' }, h('a', { href: 'fieldguide.html' }, copy.fieldguide.fromTests)),
+    h('p', { class: 'hint' }, h('a', { href: 'detectors.html' }, copy.detectors.linkShort)),
     ...t.machinery.map((m) => block(m.title, h('p', { class: 'result' }, m.result))),
     h('h2', {}, t.afterTitle),
     h('p', {}, t.afterLede),

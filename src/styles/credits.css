@@ -2,7 +2,7 @@
    (header.css) at the top, then the same content width, gutter, title and intro on every page.
    The tests page's table and the loop page's figure need the full width; text keeps its own
    measure (62ch). */
-:is(#credits, #tests, #fieldguide, #loop) {
+:is(#credits, #tests, #fieldguide, #loop, #detectors) {
   /* 76rem of content plus the header's 28 px gutters: up to that width the content starts
      exactly under the mark; wider screens centre it. */
   max-width: calc(76rem + 56px);
@@ -10,7 +10,7 @@
   padding: 4px 28px 48px;
   box-sizing: border-box;
 }
-:is(#credits, #tests, #fieldguide, #loop) h1 {
+:is(#credits, #tests, #fieldguide, #loop, #detectors) h1 {
   font: 400 clamp(28px, 3.4vw, 38px) / 1.15 var(--serif);
   margin: 14px 0 6px;
 }
