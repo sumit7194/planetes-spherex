@@ -74,6 +74,23 @@ a.home:focus-visible .home-back {
 .site-nav a:hover {
   color: var(--mist);
 }
+.top-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  white-space: nowrap;
+}
+/* "beta" beside Detectors: a quiet outlined tag, not a status colour (ember means measured). */
+.beta {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 999px;
+  font: 600 0.78em / 1.5 var(--sans);
+  color: var(--quiet);
+  vertical-align: 1px;
+}
 
 /* The text pages' header: the same brand row, then links to the other pages. */
 /* On the text pages the way back is the nav's first link, "← The sky" (Viewer), not a chevron. */

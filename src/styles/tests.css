@@ -30,10 +30,49 @@
 
 /* The five: name | seen | measured | limit; the check folded underneath. */
 .test-head,
-.test-row {
+.test-row,
+.test:not(.check) {
   display: grid;
   grid-template-columns: minmax(150px, 1.1fr) 1fr 1.4fr 1.4fr;
   gap: 16px;
+}
+/* A five's row and its notes share the table's columns: the row spans them all, a note sits
+   under "seen" and "measured"; a test we added puts what it does under the first two columns
+   and what came out under the last two (Sumit, 15 Nov: no half-empty page). */
+.test:not(.check) {
+  row-gap: 0;
+}
+.test-row {
+  grid-column: 1 / -1;
+}
+#tests .test .earlier {
+  grid-column: 2 / 4;
+  max-width: none;
+}
+.added-what {
+  grid-column: 1 / 3;
+}
+.added-out {
+  grid-column: 3 / 5;
+}
+.added-what > :last-child,
+.added-out > :last-child {
+  margin-bottom: 0;
+}
+.added-out > :first-child {
+  margin-top: 0;
+}
+#tests .added p {
+  max-width: none;
+}
+/* Checks of our own machinery: short cards across the width. */
+.checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  column-gap: 48px;
+}
+#tests .check p {
+  max-width: none;
 }
 .test-head {
   font: 600 var(--t-meta) var(--sans);
@@ -127,11 +166,14 @@
 .after {
   color: var(--mist);
   font-size: var(--t-label);
-  max-width: 62ch;
   padding-left: 18px;
+  /* A long list: two columns of readable lines rather than one narrow one. */
+  columns: 2 380px;
+  column-gap: 48px;
 }
 .after li {
-  margin: 6px 0;
+  margin: 0 0 8px;
+  break-inside: avoid;
 }
 #tests footer {
   margin-top: 40px;
@@ -147,6 +189,12 @@
   .test-row {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+  .test:not(.check) {
+    display: block;
+  }
+  .added-out {
+    margin-top: 10px;
   }
   .test .cell {
     flex-wrap: wrap;

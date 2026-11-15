@@ -76,6 +76,7 @@ import { loadCoverage, type Coverage } from './data/coverage';
 import { passCount, passStarts, weekCounts, type BandFile } from './app/passes';
 import { skyBand, type SkyBand } from './ui/skyBand';
 import { combobox, type ComboOption } from './ui/combobox';
+import { betaTag } from './ui/header';
 import {
   nearby,
   normalise,
@@ -379,7 +380,12 @@ const header = h(
   h('h1', { class: 'wordmark' }, embedded ? openFullLink() : homeLink),
   dial,
   searchAnchor,
-  h('a', { class: 'credits-link', href: 'credits.html' }, copy.nav.credits),
+  h(
+    'nav',
+    { class: 'top-links', 'aria-label': copy.nav.pagesLabel },
+    h('a', { class: 'credits-link', href: 'detectors.html' }, copy.nav.pages.detectors, betaTag()),
+    h('a', { class: 'credits-link', href: 'credits.html' }, copy.nav.credits),
+  ),
 );
 
 const stage = h(

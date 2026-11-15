@@ -158,8 +158,22 @@ async function json<T>(path: string): Promise<T | null> {
   }
 }
 
-function block(title: string, ...body: (Node | string | null)[]): HTMLElement {
-  return h('article', { class: 'test added' }, h('h3', {}, title), ...body);
+/**
+ * A test we added: what it does on the left, what came out (result, limits, registration) on
+ * the right, so the section uses the page's width as the five's table does (Sumit, 15 Nov).
+ */
+function block(title: string, what: Node, ...out: (Node | string | null)[]): HTMLElement {
+  return h(
+    'article',
+    { class: 'test added' },
+    h('div', { class: 'added-what' }, h('h3', {}, title), what),
+    h('div', { class: 'added-out' }, ...out),
+  );
+}
+
+/** A short check of our own machinery: a card in a grid. */
+function card(title: string, ...body: Node[]): HTMLElement {
+  return h('article', { class: 'test check' }, h('h3', {}, title), ...body);
 }
 
 async function methodTests(): Promise<HTMLElement[]> {
@@ -294,7 +308,11 @@ async function main(): Promise<void> {
     h('h2', {}, t.groups.machinery),
     h('p', { class: 'hint' }, h('a', { href: 'fieldguide.html' }, copy.fieldguide.fromTests)),
     h('p', { class: 'hint' }, h('a', { href: 'detectors.html' }, copy.detectors.linkShort)),
-    ...t.machinery.map((m) => block(m.title, h('p', { class: 'result' }, m.result))),
+    h(
+      'div',
+      { class: 'checks' },
+      ...t.machinery.map((m) => card(m.title, h('p', { class: 'result' }, m.result))),
+    ),
     h('h2', {}, t.afterTitle),
     h('p', {}, t.afterLede),
     h('ul', { class: 'after' }, ...t.after.map((a) => h('li', {}, a))),

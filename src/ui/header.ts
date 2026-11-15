@@ -9,12 +9,18 @@ import { markSvg } from './mark';
 
 export type SitePage = 'tests' | 'fieldguide' | 'loop' | 'credits' | 'detectors';
 
-const LINKS: [Exclude<SitePage, 'detectors'>, string][] = [
+const LINKS: [SitePage, string][] = [
   ['tests', 'tests.html'],
   ['fieldguide', 'fieldguide.html'],
   ['loop', 'loop.html'],
+  ['detectors', 'detectors.html'],
   ['credits', 'credits.html'],
 ];
+
+/** "Detectors" carries a beta tag wherever it's linked (Sumit, 15 Nov: work in progress). */
+export function betaTag(): HTMLElement {
+  return h('span', { class: 'beta', title: copy.nav.betaTitle }, copy.nav.beta);
+}
 
 export function siteHeader(current: SitePage): HTMLElement {
   const home = h(
@@ -52,7 +58,12 @@ export function siteHeader(current: SitePage): HTMLElement {
       // The way back, visible (Viewer): a page reached from a judge's link has no "back".
       h('a', { href: './', class: 'site-sky' }, copy.nav.theSky),
       ...LINKS.map(([id, href]) =>
-        h('a', { href, ...(id === current ? { 'aria-current': 'page' } : {}) }, copy.nav.pages[id]),
+        h(
+          'a',
+          { href, ...(id === current ? { 'aria-current': 'page' } : {}) },
+          copy.nav.pages[id],
+          id === 'detectors' ? betaTag() : null,
+        ),
       ),
     ),
   );

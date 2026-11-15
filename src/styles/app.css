@@ -1297,7 +1297,7 @@ canvas.sky.backdrop {
   }
   /* Row one: the wordmark, then credits on the right; the room dial gets a centred row of its
      own, and search the full-width row under it. */
-  .top .credits-link {
+  .top .top-links {
     margin-left: auto;
   }
   .top .dial {
@@ -1383,7 +1383,7 @@ canvas.sky.backdrop {
 /* Embedded in another site (?embed=1): the sky, the lens and the words, nothing else. */
 [data-embed='1'] .dial,
 [data-embed='1'] .search,
-[data-embed='1'] .credits-link,
+[data-embed='1'] .top-links,
 [data-embed='1'] .band {
   display: none;
 }
@@ -3873,11 +3873,16 @@ span[data-fit='1'] {
   /* With the dial out of the row, the search (when it's in the header) and Credits keep to the
      right, as before. */
   .top > .combo,
-  .top > .credits-link {
+  .top > .top-links {
     margin-left: auto;
   }
-  .top > .combo + .credits-link {
+  .top > .combo + .top-links {
     margin-left: 0;
+  }
+  /* The search gives way before it reaches the centred dial (half the row, less the dial's
+     half, the links and the gaps), so narrow desktops keep all three apart. */
+  .top > .combo .search {
+    width: min(260px, calc(50vw - 300px));
   }
 }
 .top > .dial {
