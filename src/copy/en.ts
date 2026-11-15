@@ -1812,6 +1812,17 @@ export const copy = {
           'Inspired by WiseView and the Backyard Worlds: Planet 9 project, where volunteers discovered new brown dwarfs by blinking WISE images.',
         ],
       },
+      {
+        role: 'The demo video',
+        who: 'Me: screen recordings of this site, with AI-generated audio',
+        when: '15 Nov 2026',
+        facts: [
+          'Narration: AI-generated voice (Google Gemini text-to-speech, voice “Koda”)',
+          'Music: AI-generated (Google Flow Music)',
+          'No AI-generated images or video',
+        ],
+        record: [],
+      },
     ],
     ackHeading: 'Acknowledgements, as the archives ask them to be printed',
     acknowledgements: [

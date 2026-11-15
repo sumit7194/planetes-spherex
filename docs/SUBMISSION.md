@@ -64,7 +64,7 @@ TypeScript, Vite, HTML canvas, three.js, Aladin Lite v3; Python 3 with astropy, 
 
 ## Use of Super Intelligence (AI)
 
-Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. It wrote most of the code and draft text under my direction, and I reviewed it. It also checked my work against IRSA's documentation, astropy and catalogue predictions. The idea, the design choices and the final review are mine. No AI-generated images, video or audio are used. This is stated in the README, PRIOR_WORK.md and on the credits page.
+Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. It wrote most of the code and draft text under my direction, and I reviewed it. It also checked my work against IRSA's documentation, astropy and catalogue predictions. The idea, the design choices and the final review are mine. The demo video's narration is an AI-generated voice (Google Gemini text-to-speech, voice "Koda", chosen by me) and its background music is AI-generated (Google Flow Music); both are acknowledged on the video's end card, in its description and in the file's metadata. No AI-generated images or video are used: the video is screen recordings of the site. This is stated in the README, PRIOR_WORK.md and on the credits page.
 
 ## NASA data
 
