@@ -55,6 +55,7 @@ import {
 import {
   apertureFlux,
   catwiseNear,
+  loadIndexMeta,
   type CatwiseStar,
   readNative,
   gaiaNear,
@@ -1589,6 +1590,16 @@ const combo = combobox(search, {
 const searchBox = combo.el;
 
 /** Opens what the field holds: one of the five, a named star, or a live look at a position. */
+/** When the sky index was last updated after its first build (G3), or null. */
+let indexUpdated: string | null = null;
+void loadIndexMeta()
+  .then((m) => {
+    indexUpdated = m.updated ?? null;
+    if (indexUpdated) render();
+  })
+  .catch(() => undefined);
+const isoToMjd = (iso: string) => Date.parse(iso) / 86_400_000 + 40587;
+
 /** A search is the visitor taking over: it leaves Learn like any other exit (Viewer, 15 Nov). */
 function visitorLeavesLearn(): void {
   if (state.room === 'learn') dispatch({ type: 'setRoom', room: 'play' });
@@ -7581,7 +7592,10 @@ function homeBand(): SkyBand | null {
   const name = t?.name ?? copy.home.spotTitle;
   const starts = t?.mjds ? passStarts(t.mjds) : [];
   const line = !t
-    ? d.survey.line
+    ? // G3: once the photo list is newer than the coverage map, say so (Viewer, 15 Nov).
+      indexUpdated
+      ? `${d.survey.line} ${copy.home.coverageAsOf(dayMonthYear(isoToMjd(indexUpdated)))}`
+      : d.survey.line
     : t.failed
       ? copy.home.spotFailed(name)
       : !t.mjds

@@ -1,11 +1,12 @@
 name: Keep the sky index up to date (new SPHEREx photos)
 
 # G3 (15 Nov 2026), the challenge's "easy to update with the latest data releases".
-# Every day: list NASA's SPHEREx bucket, and if there are photos our sky index doesn't have yet,
-# add them (each record made from the photo's own headers, after re-checking that recipe against
-# 50 records made from IRSA's footprints), run every check, and open a pull request. Nothing goes
-# live until a person merges it (the update goes to a branch with a compare link). A release folder we don't index yet (e.g. a new data release) is
-# reported in the run summary and the pull request, for a person to add.
+# Every day: list NASA's SPHEREx bucket. If there are photos our sky index doesn't have yet, or
+# photos NASA has reprocessed, add or update their records (each made from the photo's own headers,
+# after re-checking that recipe against records made from IRSA's footprints, and after sanity
+# checks on every new record), run every check, and push branch data/sky-index-update with a
+# compare link in the run summary. Nothing goes live until a person merges it. A release folder we
+# don't index yet (e.g. a new data release) is reported at the top of the run summary.
 on:
   schedule:
     - cron: "23 4 * * *"
@@ -23,25 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
-      - name: Re-check the recipe against IRSA's records
+      - name: Re-check the recipe, then add new photos
         working-directory: pipeline
         run: |
           uv sync
-          uv run python update_index.py --check 50
-      - name: Add new photos
-        working-directory: pipeline
-        run: uv run python update_index.py --write
-      - name: Report
+          uv run python update_index.py --check 50 --write
+      - name: Run summary
+        # Always, so a stopped run still says why.
+        if: always()
         run: |
-          {
-            echo "### SPHEREx data check"
-            echo '```json'
-            cat pipeline/update_index_report.json
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/setup-node@v4
+          if [ -f pipeline/update_index_summary.md ]; then
+            cat pipeline/update_index_summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**The data check didn't get far enough to write a report.** See the step log above." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -51,10 +50,12 @@ jobs:
           npm run check
       # This repo doesn't let Actions open pull requests (a repository setting, left to its owner),
       # so the update goes to a branch, with a one-click compare link in the run summary.
+      # --force is safe here: the branch is rebuilt from main every day, so an unmerged earlier
+      # update is a subset of this one.
       - name: Push the update to a branch
         run: |
           if git diff --quiet -- public/data/index/dr1qr3; then
-            echo "No new photos: nothing to push." >> "$GITHUB_STEP_SUMMARY"
+            echo "Nothing to push." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           git config user.name "planetes-bot"
@@ -63,4 +64,4 @@ jobs:
           git add public/data/index/dr1qr3
           git commit -m "Sky index: new SPHEREx photos (update_index.py)"
           git push --force origin data/sky-index-update
-          echo "Review and merge: https://github.com/${GITHUB_REPOSITORY}/compare/main...data/sky-index-update?expand=1" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Review and merge:** https://github.com/${GITHUB_REPOSITORY}/compare/main...data/sky-index-update?expand=1" >> "$GITHUB_STEP_SUMMARY"

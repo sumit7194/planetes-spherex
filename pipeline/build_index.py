@@ -78,8 +78,10 @@ async def list_prefix(s: aiohttp.ClientSession, prefix: str, delimiter: str | No
         token = root.find(NS + "NextContinuationToken").text
 
 
-async def list_all() -> dict:
-    """(obs_id, det) -> folder path 'dr1/level2/<week>/<version>'"""
+async def list_all(newest=None) -> dict:
+    """(obs_id, det) -> folder path 'dr1/level2/<week>/<version>'. When a photo sits in two version
+    folders, `newest(folder)` (a sort key) picks which one is kept; without it the last listed wins,
+    as before (update_index.py passes the processing date; Viewer, 15 Nov)."""
     out = {}
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=16), timeout=aiohttp.ClientTimeout(total=120)) as s:
         weeks = []
@@ -107,7 +109,9 @@ async def list_all() -> dict:
             for k in keys:
                 m = FILE_RE.search(k)
                 if m:
-                    out[(m["obs"], int(m["det"]))] = v.rstrip("/")
+                    k, f = (m["obs"], int(m["det"])), v.rstrip("/")
+                    if newest is None or k not in out or newest(f) > newest(out[k]):
+                        out[k] = f
     print(f"{len(out)} files", file=sys.stderr)
     return out
 

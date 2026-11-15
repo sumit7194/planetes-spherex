@@ -154,6 +154,8 @@ export interface IndexMeta {
   maxHalfDeg: number;
   folders: string[];
   photos: number;
+  /** Set by pipeline/update_index.py when photos were added after the first build (G3). */
+  updated?: string;
 }
 
 export interface LivePhoto {
