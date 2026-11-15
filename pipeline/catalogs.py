@@ -58,6 +58,40 @@ def gaia_dr3(ra: float, dec: float, radius_deg: float, gmax: float = 19.0) -> li
             for r in _tap(q, url=GAIA_TAP)]
 
 
+VIZIER_GAIA = "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv"
+VIZIER_ROW_LIMITS = (50, 200, 500, 1000, 5000, 10000, 50000)
+
+
+def gaia_dr3_vizier(ra: float, dec: float, radius_deg: float, gmax: float = 19.0) -> list[dict]:
+    """The same as gaia_dr3, from VizieR's copy of Gaia DR3 (I/355/gaiadr3, Harvard mirror), for
+    when ESA's archive doesn't answer (N3, 15 Nov; PLAN §8). RA_ICRS/DE_ICRS are Gaia's own epoch
+    2016.0 positions (not VizieR's computed J2000 ones); no row limit; a count equal to a known
+    VizieR limit fails, so a cap can't pass for a real answer (Physics)."""
+    import urllib.parse
+    import urllib.request
+    q = urllib.parse.urlencode({
+        "-source": "I/355/gaiadr3", "-c": f"{ra} {dec:+}", "-c.rd": f"{radius_deg:.6f}",
+        "-out": "Source,RA_ICRS,DE_ICRS,pmRA,pmDE,Plx,Gmag", "-out.max": "unlimited", "Gmag": f"<{gmax}",
+    }, safe="/,<")
+    with urllib.request.urlopen(f"{VIZIER_GAIA}?{q}", timeout=120) as r:
+        text = r.read().decode()
+    lines = [x for x in text.splitlines() if x and not x.startswith("#")]
+    hi = next(i for i, x in enumerate(lines) if x.split("\t")[0].strip() == "Source")
+    head = [x.strip() for x in lines[hi].split("\t")]
+    rows = [x.split("\t") for x in lines[hi + 3:]]
+    rows = [r for r in rows if len(r) == len(head) and r[head.index("RA_ICRS")].strip()]
+    if len(rows) in VIZIER_ROW_LIMITS:
+        raise RuntimeError(f"VizieR returned exactly {len(rows)} rows: a possible cap, not trusted")
+    num = lambda v: float(v) if v.strip() else None  # noqa: E731
+    out = []
+    for r in rows:
+        d = dict(zip(head, r))
+        out.append(dict(cat="Gaia DR3", id=d["Source"].strip(), ra=num(d["RA_ICRS"]), dec=num(d["DE_ICRS"]),
+                        pmra=num(d["pmRA"]) or 0.0, pmdec=num(d["pmDE"]) or 0.0, plx=num(d["Plx"]), epoch=2016.0,
+                        mag=round(num(d["Gmag"]), 2), band="G"))
+    return out
+
+
 def catwise2020(ra: float, dec: float, radius_deg: float, w2max: float = 16.5) -> list[dict]:
     """CatWISE2020 sources within radius (positions at MJD 57170, proper motions in mas/yr)."""
     # No magnitude cut in the query: IRSA answers a plain cone much faster; cut here instead.

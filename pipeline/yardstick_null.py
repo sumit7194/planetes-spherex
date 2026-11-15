@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -53,9 +54,15 @@ def quiet_pixels(field: dict):
         rows = json.loads(path.read_text())
     else:
         half_diag = fs.SIZE * bp.PIX / 2 * np.sqrt(2) / 3600 + 0.002
+        # PLAN §8 (15 Nov): ESA's Gaia archive stopped answering at ~10:33 IST, so the remaining
+        # fields use VizieR's copy of Gaia DR3 (identity-checked on 4 ESA fields); set by
+        # GAIA_SOURCE=vizier and recorded per field, so the ESA/VizieR split can be checked.
+        source = "VizieR I/355 (Harvard)" if os.environ.get("GAIA_SOURCE") == "vizier" else "ESA"
+        query = catalogs.gaia_dr3_vizier if source != "ESA" else catalogs.gaia_dr3
         rows = [dict(ra=r["ra"], dec=r["dec"], pm=float(np.hypot(r["pmra"], r["pmdec"])))
-                for r in catalogs.gaia_dr3(field["ra"], field["dec"], half_diag)]
+                for r in query(field["ra"], field["dec"], half_diag)]
         path.write_text(json.dumps(rows))
+        (OUT / f"{field['field']}_gaia_source.txt").write_text(source + "\n")
     gw = bp.out_grid(field["ra"], field["dec"], fs.SIZE)
     q = [r for r in rows if r["pm"] < 50]
     if not q:
@@ -74,8 +81,10 @@ def run_field(field: dict) -> list[dict]:
     pairs = [(p + "a", p + "b") for p in passes
              if any((p + "a", d) in stacks and (p + "b", d) in stacks for d in range(1, 7))]
     res = sp.search_stacks(stacks, fs.SIZE, lambda _s: quiet, pairs=pairs)
+    src = OUT / f"{field['field']}_gaia_source.txt"
     for r in res:
         r["field"] = field["field"]
+        r["gaiaSource"] = src.read_text().strip() if src.exists() else "ESA"  # every earlier field
         r["nPhotos"] = [sum(v["n"] for (g, _), v in stacks.items() if g == s) for s in r["seasons"]]
         r["detectors"] = len(r["commonShiftRemoved"])
         z = np.load(OUT / f"{field['field']}_halves.npz")
