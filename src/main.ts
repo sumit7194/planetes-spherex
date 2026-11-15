@@ -689,6 +689,7 @@ sky.labels = {
   ridingReal: copy.sky.riding.ridingReal,
   ridingGap: copy.sky.riding.ridingGap,
   sunOn: copy.sky.sunOn,
+  sunWhy: copy.sky.sunWhy,
   scaleAtSpherex: copy.sky.riding.scaleAtSpherex,
   scaleAtEarth: copy.sky.riding.scaleAtEarth,
   earth: copy.sky.riding.earth,
@@ -7743,6 +7744,12 @@ const shortMonth = (mjd: number) => {
 function homeBand(): SkyBand | null {
   const d = bandData;
   if (!d) return null;
+  // A search for one of the five marks its own row rather than adding a second row for it in
+  // another style (Sumit, 15 Nov: "why do ε Indi B entries look different").
+  const typedAt = typed?.at;
+  const typedTarget = typedAt
+    ? WANDERERS.find((w) => separationDeg(typedAt, w.at) < 0.1)?.id
+    : undefined;
   const rows = WANDERERS.map((w) => {
     const frames = d.targets[w.id] ?? [];
     const passes = passCount(frames.map((f) => f[0]));
@@ -7766,6 +7773,7 @@ function homeBand(): SkyBand | null {
       ),
       frames,
       disabled: !w.ready,
+      typed: w.id === typedTarget,
     };
   });
   const t = typed;
@@ -7785,17 +7793,18 @@ function homeBand(): SkyBand | null {
   return skyBand({
     data: d,
     rows,
-    spot: t
-      ? {
-          title: t.name ?? copy.home.spotTitle,
-          short: t.mjds
-            ? copy.home.spotPasses(starts.length)
-            : t.failed
-              ? ''
-              : copy.home.spotLooking,
-          counts: t.mjds ? weekCounts(t.mjds, d.weeks) : null,
-        }
-      : null,
+    spot:
+      t && !typedTarget
+        ? {
+            title: t.name ?? copy.home.spotTitle,
+            short: t.mjds
+              ? copy.home.spotPasses(starts.length)
+              : t.failed
+                ? ''
+                : copy.home.spotLooking,
+            counts: t.mjds ? weekCounts(t.mjds, d.weeks) : null,
+          }
+        : null,
     line,
     week: sweep.open ? sweep.week : null,
     weekText: (k) => {

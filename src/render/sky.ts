@@ -268,6 +268,7 @@ export class SkyView {
     ridingReal: string;
     ridingGap: string;
     sunOn: string;
+    sunWhy: string;
     scaleAtSpherex: string;
     scaleAtEarth: string;
     earth: string;
@@ -288,6 +289,7 @@ export class SkyView {
     ridingReal: '',
     ridingGap: '',
     sunOn: '',
+    sunWhy: '',
     scaleAtSpherex: '',
     scaleAtEarth: '',
     earth: '',
@@ -779,8 +781,10 @@ export class SkyView {
 
   /** The Sun moves to a date (the week on show), or back to today. */
   setDate(date: Date): void {
+    this.#sunGlide = null;
     this.#sun = sunPosition(date);
     this.#mjd = date.getTime() / 86_400_000 + 40587;
+    this.#sunMjd = this.#mjd;
     this.#sat = null;
     this.draw();
   }
@@ -893,6 +897,7 @@ export class SkyView {
         if (k >= 1) this.#flatSpring = null;
       }
       if (this.#last) this.#easeNear(t - this.#last);
+      this.#glideSun(t);
       this.#last = t;
       this.#clock = t;
       this.draw();
@@ -940,13 +945,53 @@ export class SkyView {
     }
   }
 
+  /**
+   * The Sun glides along its yearly path to a new date rather than jumping (Sumit, 15 Nov: "it
+   * keeps drifting"): from the date it shows to the new one, eased, about a second. The first
+   * time it moves far, its label explains why it keeps its distance (#sunWhyUntil).
+   */
+  #sunGlide: { from: number; to: number; t0: number; ms: number } | null = null;
+  #sunMjd: number | null = Date.now() / 86_400_000 + 40587;
+  #sunWhyUntil = 0;
+  #sunWhyShown = false;
+  static #sunAt(mjd: number): SkyPosition {
+    return sunPosition(new Date((mjd - 40587) * 86_400_000));
+  }
+  #glideSun(t: number): void {
+    const g = this.#sunGlide;
+    if (!g) return;
+    const k = Math.min(1, (t - g.t0) / g.ms);
+    const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    this.#sun = SkyView.#sunAt(g.from + (g.to - g.from) * e);
+    if (k >= 1) this.#sunGlide = null;
+  }
+
   /** The moment SPHEREx photographed where the visitor is looking (null: back to the date). */
   setLookDate(mjd: number | null): void {
     if (this.#riding) return;
     this.#lookMjd = mjd;
     if (mjd !== null) {
       this.#mjd = mjd;
-      this.#sun = sunPosition(new Date((mjd - 40587) * 86_400_000));
+      const from = this.#sunMjd;
+      this.#sunMjd = mjd;
+      const far = from !== null && Math.abs(mjd - from) > 10;
+      if (far && this.#spinning) {
+        // Through the dates between: the Sun moves along its path, as it did.
+        const now = performance.now();
+        this.#sunGlide = {
+          from,
+          to: mjd,
+          t0: now,
+          ms: Math.min(1400, 500 + Math.abs(mjd - from) * 4),
+        };
+        if (!this.#sunWhyShown) {
+          this.#sunWhyShown = true;
+          this.#sunWhyUntil = now + 9000;
+        }
+      } else {
+        this.#sunGlide = null;
+        this.#sun = SkyView.#sunAt(mjd);
+      }
     }
     this.#sat = null;
     this.draw();
@@ -1911,6 +1956,8 @@ export class SkyView {
     this.#centre = { ra: p.ra, dec: p.dec };
     // The date and SPHEREx's place follow the ride: Earth's turn, the Sun, the orbit.
     this.#mjd = this.#rideMjd;
+    this.#sunGlide = null;
+
     this.#sun = sunPosition(new Date((this.#rideMjd - 40587) * 86_400_000));
     const look = toVec(this.#centre);
     const at = orbitPoint(this.#rideMjd, nearestU(this.#rideMjd, look));
@@ -2642,7 +2689,8 @@ export class SkyView {
       when !== null
         ? this.labels.sunOn.replace('{date}', this.#rideWhen(when).split(',')[0] ?? '')
         : this.labels.sun;
-    this.#label(text, p, 22 * u, u, undefined, true);
+    const why = when !== null && this.#clock < this.#sunWhyUntil ? this.labels.sunWhy : undefined;
+    this.#label(text, p, 22 * u, u, why, true);
   }
 
   /** Where the edge chips sit this frame, for clicks: a chip turns the view to its light. */

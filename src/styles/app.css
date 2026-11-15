@@ -2738,8 +2738,12 @@ span[data-fit='1'] {
   white-space: nowrap;
   color: var(--quiet);
 }
-.sb-row.this-week .sb-name {
+.sb-row.this-week .sb-name,
+.sb-row.typed .sb-name {
   color: var(--look);
+}
+.sb-row.typed {
+  background: color-mix(in srgb, var(--look) 10%, transparent);
 }
 .sb-spot {
   justify-content: space-between;

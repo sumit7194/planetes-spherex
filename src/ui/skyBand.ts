@@ -20,6 +20,8 @@ export type BandRow = {
   label: string;
   frames: [number, number, number][];
   disabled: boolean;
+  /** The spot searched for is this target: its own row is marked, not repeated as a spot row. */
+  typed?: boolean;
 };
 
 export type BandSpot = {
@@ -101,7 +103,7 @@ export function skyBand(o: SkyBandInput): SkyBand {
       'button',
       {
         type: 'button',
-        class: 'sb-row',
+        class: r.typed ? 'sb-row typed' : 'sb-row',
         'data-id': r.id,
         'aria-label': r.label,
         disabled: r.disabled,
@@ -298,6 +300,11 @@ export function skyBand(o: SkyBandInput): SkyBand {
     for (const row of o.rows) {
       const r = lis[i++];
       if (!r) continue;
+      if (row.typed) {
+        // The searched-for target's row, tinted as its name is (the sky's look colour).
+        ctx.fillStyle = 'rgba(111, 183, 214, 0.1)';
+        ctx.fillRect(0, r.y, W, r.h);
+      }
       for (const [mjd, l] of row.frames) {
         const y = r.y + r.h - 3 - ((Math.log(l) - lo) / span) * (r.h - 6);
         ctx.fillStyle = wavelengthColour(l);
