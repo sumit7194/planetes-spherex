@@ -15,7 +15,7 @@ Planetes is a free web tool that shows how any patch of sky changes in NASA SPHE
 
 ## Link to project demo
 
-⟨YouTube / Drive link to the ≤ 30 s video, public, no login⟩ (or the 7-slide deck below)
+https://youtu.be/E_nwgIvDV3Q (YouTube, unlisted: anyone with the link, no login; 29.7 s, AI narration voice labelled)
 
 ## Link to final project
 
