@@ -160,6 +160,9 @@ export const copy = {
    * the five rows (variant D). Headline: what the visitor can do, not a claim about change.
    */
   home: {
+    /** G3: shown after the survey line once new photos were added to the index. */
+    coverageAsOf: (date: string) =>
+      `(Photo list updated ${date}; this sky map and line as of 13 Nov 2026.)`,
     /** Sumit, 14 Nov: the old two-line instruction felt unwelcoming. A question, then the facts. */
     headline: 'Where would you like to look?',
     welcome:
@@ -1254,6 +1257,8 @@ export const copy = {
     liveAtCatalogue: 'The live tool at its catalogue position',
     notMeasuredSee: 'Not measured (see Limit).',
     earlierLabel: 'An earlier test',
+    /** G4 (15 Nov): the unsaturated-colours attempt (prereg/variables/PLAN.md; Physics' wording). */
+    triedLabel: 'Also tried',
     open: 'Open its page',
     tryLive: 'Try the live tool there',
     seen: {
@@ -1297,6 +1302,8 @@ export const copy = {
         limit:
           'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light. An earlier pre-registered test on the previous release saw the same dimming but couldn’t confirm it (see below).',
         live: 'Opens 335 photos in 3 passes, compared at 1.62 µm. A live look shows the photos; it doesn’t measure brightness.',
+        tried:
+          'We also tried to measure its brightness change from photos where it is not saturated. It is unsaturated only in the bluest detector, and there the six comparison stars of similar brightness changed by about 3% between passes, more than their errors allow, so that route can’t claim a change.',
         earlier:
           'An earlier pre-registered test, on the previous data release (QR2), saw the same dimming (about 42% and 50% in two colour ranges) but could not confirm it: one range’s change was under 5 times its error, and one comparison star changed more than RW Aurigae. The new measurement uses a different check (a steady bright star measured the same way) and passes it.',
       },
@@ -1306,10 +1313,12 @@ export const copy = {
         limit:
           'Its glare reaches the comparison stars in its field, which vary by 34% between passes, so the method can’t be checked here. Re-checked with comparison stars outside its glare: a possible dimming of about 40%. Not confirmed: the same method on steady stars as saturated as R Draconis didn’t stay steady enough (it failed in two colour ranges and couldn’t be tried in the third).',
         live: 'Opens 2,500 photos in 3 passes (a deep field; the look picks a few), compared at 0.82 µm. A live look doesn’t measure brightness.',
+        tried:
+          'We also tried to measure its brightness change from photos where it is not saturated: R Draconis is saturated in every photo.',
       },
     } as Record<
       string,
-      { quote: string; hard: string; limit: string; live: string; earlier?: string }
+      { quote: string; hard: string; limit: string; live: string; earlier?: string; tried?: string }
     >,
     liveNote:
       'Checked by hand on 14 November 2026 at the challenge’s position (WISE 0855) or the catalogue position (the others).',

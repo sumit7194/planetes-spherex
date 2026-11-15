@@ -128,6 +128,7 @@ function fiveRow(id: TargetId, pack: LoadedPack | null): HTMLElement {
         ),
       ),
     ),
+    f.tried ? h('p', { class: 'earlier' }, h('b', {}, `${t.triedLabel}: `), f.tried) : null,
     f.earlier ? h('p', { class: 'earlier' }, h('b', {}, `${t.earlierLabel}: `), f.earlier) : null,
   );
 }
