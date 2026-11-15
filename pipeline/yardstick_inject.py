@@ -51,6 +51,7 @@ import yardstick_null as yn
 from smo.data.calib import release_for_version, spectral_wcs  # noqa: E402  (inject_io set the path)
 from smo.inject.render import SMEAR_STEPS, FrameFake, inject, pixel_solid_angle_sr  # noqa: E402
 from smo.inject.truth import seal  # noqa: E402
+from smo.data.flags import FIT_REJECT, bit_map, mask_for  # noqa: E402
 
 HERE = Path(__file__).parent
 FIELDS = HERE.parent / "prereg" / "slowmover" / "fields_dev.json"
@@ -70,6 +71,17 @@ if EXT not in ("", "E1"):
     raise SystemExit("YARD_EXT must be unset or E1")
 if EXT:
     OUT = HERE / f"yardstick_inject_{EXT.lower()}"
+
+
+# variance_slope (smo.inject.render) bins the upper half of the usable pixels into 12 bins and takes
+# each bin's median: it needs >= 24 usable pixels; 48 gives every bin at least 2 (PLAN §8, 15 Nov).
+MIN_USABLE = 48
+
+
+def usable_pixels(cut) -> int:
+    """Pixels variance_slope would use: unflagged (FIT_REJECT), finite image and variance > 0."""
+    rej, _ = mask_for(cut.flags, bit_map(cut.flags_header), FIT_REJECT)
+    return int((np.isfinite(cut.image) & np.isfinite(cut.variance) & (cut.variance > 0) & ~rej).sum())
 
 
 def seeds(field: str, pass_no: int) -> list[np.random.SeedSequence]:
@@ -251,19 +263,21 @@ def run_field(field: dict) -> None:
             ff, rec = frame_fakes(e, cut, fakes, spectra)
             if ff:
                 rng = np.random.default_rng(np.random.SeedSequence(noise_root.entropy, spawn_key=(i,)))
-                try:
-                    out, _ = inject(cut, ff, rng)
-                except (IndexError, ValueError) as ex:
-                    # No usable (unflagged, finite) pixels to measure the variance slope from: the
-                    # photo can't carry a fake, and its rejected pixels are blank in the stack anyway.
-                    # Left un-injected and recorded (PLAN §8, 15 Nov).
-                    not_injected.append(dict(obs=e.get("obs_id"), det=e.get("det"), why=repr(ex)[:120]))
+                n_ok = usable_pixels(cut)
+                if n_ok < MIN_USABLE:
+                    # Too few usable pixels for variance_slope (PLAN §8, 15 Nov, Physics): this photo
+                    # gets no fakes and is recorded. Any error inside inject() itself stops the run.
+                    not_injected.append(dict(obs=e.get("obs_id"), det=e.get("det"), usable_pixels=n_ok))
                     injected.append(e)
                     continue
+                out, _ = inject(cut, ff, rng)
                 injected.append(dict(e, img=out.image))
                 per_photo.extend(rec)
             else:
                 injected.append(e)
+        if not_injected and len({(x["obs"], x["det"]) for x in not_injected}) > 0.01 * len(exps_ok):
+            raise RuntimeError(f"{name} pass {p}: {len(not_injected)} of {len(exps_ok)} photos skipped "
+                               f"(> 1%, Physics' stop rule); look before going on")
         truth = dict(field=name, pass_no=p, t_ref=t_ref, w2_system=W2_SYSTEM, fakes=fakes, per_photo=per_photo, not_injected=not_injected,
                      seeds=[int(seeds(name, p)[0].entropy)])
         sha = seal(fdir / f"truth_p{p}.json", truth)

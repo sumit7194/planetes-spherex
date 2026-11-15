@@ -50,6 +50,25 @@ def seg_dist(p, a, b) -> float:
     return float(np.linalg.norm(p - (a + t * ab)))
 
 
+def angle_deg(e1: float, n1: float, e2: float, n2: float) -> float:
+    """The angle between two (east, north) shifts, in degrees, 0-180."""
+    d = math.degrees(math.atan2(e1, n1) - math.atan2(e2, n2))
+    return abs((d + 180) % 360 - 180)
+
+
+def matches(c: dict, pa: np.ndarray, pb: np.ndarray, true_e: float, true_n: float) -> bool:
+    """§5: above T, within 1.5 px of the true track, size within 30% and direction within 30°."""
+    if c["significance"] <= T:
+        return False
+    if seg_dist(np.array([c["x"], c["y"]], float), pa, pb) > 1.5:
+        return False
+    me, mn = c["shiftEastNorth"]
+    true_mag = math.hypot(true_e, true_n)
+    if true_mag == 0 or abs(math.hypot(me, mn) / true_mag - 1) > 0.30:
+        return False
+    return angle_deg(me, mn, true_e, true_n) <= 30
+
+
 def pass_mjd(stacks: np.lib.npyio.NpzFile, g: str) -> float | None:
     v = [float(stacks[k][0]) for k in stacks.files if k.startswith(f"{g}_D") and k.endswith("_mjd")]
     return float(np.mean(v)) if v else None
@@ -82,21 +101,8 @@ def score_field(fdir: Path) -> list[dict]:
                 true_e = ((ra_b - ra_a + 540) % 360 - 180) * cosd * 3600
                 true_n = (de_b - de_a) * 3600
                 true_mag = math.hypot(true_e, true_n)
-                found, hit = False, None
-                for c in pair["candidates"]:
-                    if c["significance"] <= T:
-                        continue
-                    if seg_dist(np.array([c["x"], c["y"]]), pa, pb) > 1.5:
-                        continue
-                    me, mn = c["shiftEastNorth"]
-                    mag = math.hypot(me, mn)
-                    if true_mag == 0 or abs(mag / true_mag - 1) > 0.30:
-                        continue
-                    dang = abs((math.degrees(math.atan2(me, mn) - math.atan2(true_e, true_n) * 180 / math.pi) + 180) % 360 - 180)
-                    if dang > 30:
-                        continue
-                    found, hit = True, c
-                    break
+                hit = next((c for c in pair["candidates"] if matches(c, pa, pb, true_e, true_n)), None)
+                found = hit is not None
                 rows.append(dict(field=run["field"], pass_no=p, pair=f"{a}-{b}", kind=kind, placement=f["placement"],
                                  w2=f["w2"], pm=f["pm_mas"] / 1000, family=f["family"], found=found,
                                  detectors=hit["detectors"] if hit else None,
