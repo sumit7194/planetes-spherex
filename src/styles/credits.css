@@ -61,6 +61,11 @@
   font-size: var(--t-label);
 }
 
+/* Who made it, and where the code is: one line over the makers. */
+.byline {
+  margin: 0 0 14px;
+  color: var(--mist);
+}
 /* Makers: one row each, a role on the left, who · when · what on the right. */
 .makers {
   display: grid;

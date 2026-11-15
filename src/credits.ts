@@ -76,6 +76,7 @@ root.append(
   h('p', { class: 'lede' }, c.lede),
   table,
   h('h2', {}, c.makersHeading),
+  h('p', { class: 'byline' }, c.byline, ' ', h('a', { href: c.repo.href }, c.repo.text)),
   makers,
   h('p', { class: 'prior' }, h('a', { href: 'tests.html' }, copy.tests.link)),
   h('p', { class: 'prior' }, h('a', { href: 'detectors.html' }, copy.detectors.linkShort)),

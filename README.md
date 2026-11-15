@@ -60,4 +60,4 @@ uv run python build_index.py --footprints footprints.csv
 
 > This publication makes use of data products from the Spectro-Photometer for the History of the Universe, Epoch of Reionization and Ices Explorer (SPHEREx), which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration.
 
-**AI use:** built with substantial help from Claude (Anthropic), which wrote most of the code and draft text under the team's direction and review. The idea, the design choices and the final review are the team's. No AI-generated images, audio or video are used.
+**AI use:** built with substantial help from Claude (Anthropic), which wrote most of the code and draft text under my direction, and I reviewed it. The idea, the design choices and the final review are mine. No AI-generated images, audio or video are used.

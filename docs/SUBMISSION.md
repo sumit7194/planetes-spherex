@@ -64,7 +64,7 @@ TypeScript, Vite, HTML canvas, three.js, Aladin Lite v3; Python 3 with astropy, 
 
 ## Use of Super Intelligence (AI)
 
-Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. It wrote most of the code and draft text under the team's direction and review. It also checked our work against IRSA's documentation, astropy and catalogue predictions. The idea, the design choices and the final review are the team's. No AI-generated images, video or audio are used. This is stated in the README, PRIOR_WORK.md and on the credits page.
+Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. It wrote most of the code and draft text under my direction, and I reviewed it. It also checked my work against IRSA's documentation, astropy and catalogue predictions. The idea, the design choices and the final review are mine. No AI-generated images, video or audio are used. This is stated in the README, PRIOR_WORK.md and on the credits page.
 
 ## NASA data
 
@@ -83,7 +83,7 @@ Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. I
 - Literature: Luhman & Esplin 2016 (WISE 0855 proper motion); Kirkpatrick et al. 2021 (WISE 0855 parallax).
 - Inspiration: WiseView (byw.tools) and Backyard Worlds: Planet 9.
 - Software: astropy, NumPy, SciPy, aiohttp, Vite, TypeScript, three.js; Newsreader and Atkinson Hyperlegible Next fonts (SIL OFL). The star catalogues and Earth imagery are listed on the credits page.
-- Prior work: the team's own pre-event projects, declared in PRIOR_WORK.md and on the Detectors page.
+- Prior work: my own pre-event projects, declared in PRIOR_WORK.md and on the Detectors page.
 - CSA resources (NEOSSat, CADC) were considered. CADC's search didn't answer during the event, so they are not used.
 
 ---

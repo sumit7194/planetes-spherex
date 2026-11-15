@@ -1776,11 +1776,18 @@ export const copy = {
       },
     ],
     makersHeading: 'Made by',
+    /** Who made it, in my own words (Sumit, 15 Nov: first person, with the author and the code). */
+    byline:
+      'Sumit (team Planetes, Gorakhpur, India), for NASA Space Apps 2026. All the code is open:',
+    repo: {
+      text: 'github.com/sumit7194/planetes-spherex',
+      href: 'https://github.com/sumit7194/planetes-spherex',
+    },
     recordLabel: 'How it was made',
     makers: [
       {
         role: 'Measurements and data packs',
-        who: "This project's own pipeline (pipeline/ in the repository)",
+        who: 'My own pipeline (pipeline/ in the repository)',
         when: '14–15 Nov 2026, during the event',
         facts: [
           'SPHEREx DR1 + QR3, read during the event',
@@ -1788,21 +1795,21 @@ export const copy = {
           'astropy · NumPy · SciPy',
         ],
         record: [
-          "For each target, the pipeline searches IRSA for every SPHEREx photo of it, reads only the part of each file around the target, and resamples it onto one north-up grid. Each photo's own wavelength table gives the colour it saw at the target. Photos are grouped into passes (gaps over 60 days) and combined per pass and per detector (a median), leaving out pixels the SPHEREx pipeline flagged as saturated or as artefacts; the OUTLIER flag is kept on purpose, because real moving objects trip it.",
-          "A move is measured by fitting each pass's picture (only the wings when the centre is saturated), together with nearby Gaia stars held fixed, then subtracting the shift the steady stars share. A pair of passes gets a number only if at least two detectors give a fit and 90% of the steady stars agree to within 0.2 pixels; otherwise it is shown as not reliable, without a number.",
+          "For each target, my pipeline searches IRSA for every SPHEREx photo of it, reads only the part of each file around the target, and resamples it onto one north-up grid. Each photo's own wavelength table gives the colour it saw at the target. Photos are grouped into passes (gaps over 60 days) and combined per pass and per detector (a median), leaving out pixels the SPHEREx pipeline flagged as saturated or as artefacts; the OUTLIER flag is kept on purpose, because real moving objects trip it.",
+          "I measure a move by fitting each pass's picture (only the wings when the centre is saturated), together with nearby Gaia stars held fixed, then subtracting the shift the steady stars share. A pair of passes gets a number only if at least two detectors give a fit and 90% of the steady stars agree to within 0.2 pixels; otherwise it is shown as not reliable, without a number.",
         ],
       },
       {
         role: 'The viewer',
-        who: 'Team Planetes, with AI assistance (Claude, by Anthropic)',
+        who: 'Me, with AI assistance (Claude, by Anthropic)',
         when: 'Practised from 29 Oct; this entry from 14 Nov 2026',
         facts: [
           'No number on screen without its measurement',
           'TypeScript · Vite · HTML canvas · three.js',
         ],
         record: [
-          "The idea is Sumit's. Before the event he did a private practice run to find what looks good and what works; the interface grew from it. Claude wrote most of the code and text under the team's direction and review.",
-          'Inspired by WiseView and the Backyard Worlds: Planet 9 project, where volunteers found brown dwarfs by blinking WISE images.',
+          'The idea is mine. Before the event I did a private practice run to find what looks good and what works; this interface grew from it. Claude wrote most of the code and text under my direction, and I reviewed it.',
+          'Inspired by WiseView and the Backyard Worlds: Planet 9 project, where volunteers discovered new brown dwarfs by blinking WISE images.',
         ],
       },
     ],

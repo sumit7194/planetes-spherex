@@ -14,7 +14,7 @@ The project idea is Sumit's own. Before the event he ran a private practice run 
 
 ## What still carries over
 
-On 14 November (about 13:20 IST) the team brought the practice viewer's front end into this repository, at the practice commit `7243b8e`, as the starting point for the interface. Much of it has since been rewritten, but parts are still close to the practice version:
+On 14 November (about 13:20 IST) I brought the practice viewer's front end into this repository, at the practice commit `7243b8e`, as the starting point for the interface. Much of it has since been rewritten, but parts are still close to the practice version:
 
 | Carried over | Where | Today |
 |---|---|---|
@@ -50,12 +50,12 @@ All the data on screen, and every number, comes from this project's own pipeline
   - **"Why a far planet loops":**
     - Makemake and Haumea found in SPHEREx photos on their parallax loops, in all three visits, within 1″ of the predicted place;
     - Eris reported honestly as not confirmed.
-- **The tests page**, a log of what was tried and what was dropped, and the review of each item by the team's Physics and Viewer sessions.
+- **The tests page**, a log of what was tried and what was dropped, and the review of each item by my Physics and Viewer sessions.
 
 The full history is in the git log, from 14 November onward.
 
 ## AI use
 
-This project was built with substantial help from Claude (Anthropic), an AI assistant. Claude wrote most of the code and draft text under the team's direction and review. Several Claude sessions worked as reviewers with set roles: Physics checked every scientific rule and number before it was shown, and Viewer checked the design.
+This project was built with substantial help from Claude (Anthropic), an AI assistant. Claude wrote most of the code and draft text under my direction, and I reviewed it. Several Claude sessions worked as reviewers with set roles: Physics checked every scientific rule and number before it was shown, and Viewer checked the design.
 
-The project idea, its design choices and the final review are the team's. Data handling and the numbers shown were checked against IRSA's documentation, catalogue predictions and independent measurements. No AI-generated images, audio or video are used.
+The project idea, its design choices and the final review are mine. Data handling and the numbers shown were checked against IRSA's documentation, catalogue predictions and independent measurements. No AI-generated images, audio or video are used.
