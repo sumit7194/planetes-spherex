@@ -41,6 +41,7 @@ export default defineConfig({
         credits: resolve(import.meta.dirname, 'credits.html'),
         tests: resolve(import.meta.dirname, 'tests.html'),
         fieldguide: resolve(import.meta.dirname, 'fieldguide.html'),
+        loop: resolve(import.meta.dirname, 'loop.html'),
       },
     },
   },

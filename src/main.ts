@@ -8026,6 +8026,8 @@ function writeUrl(): void {
 }
 
 const q = new URLSearchParams(location.search);
+// N6's distance dial was folded into "Why a far planet loops" (Sumit, 15 Nov): old links land on its model.
+if (q.get('demo') === 'dial') location.replace('./loop.html?view=model');
 const wantedEntry = q.get('entry');
 // ?entry=globe (old links) now means stepping out to Earth and the orbit from Look around.
 const entry = wantedEntry === 'flat' ? 'flat' : 'inside';

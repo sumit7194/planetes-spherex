@@ -199,6 +199,14 @@ async function methodTests(): Promise<HTMLElement[]> {
     t.yardstick.title,
     h('p', {}, t.yardstick.what),
     h('p', { class: 'reg' }, t.yardstick.status),
+    // The reach's other end (Viewer, 15 Nov): a far planet shifts far more than this search pairs.
+    h(
+      'p',
+      { class: 'hint' },
+      copy.loop.fromTests,
+      ' ',
+      h('a', { href: 'loop.html' }, copy.loop.linkShort),
+    ),
   );
   yard.id = 'yardstick'; // the live look's "Sensitivity here" row links here (N4)
   out.push(yard);

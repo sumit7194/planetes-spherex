@@ -1241,6 +1241,65 @@ export const copy = {
     stretch:
       'Every panel uses the lens’s stretch rule (asinh from the 5th percentile to the brightest pixel), shared by the panels of one card and set from the pixels the card isn’t about, so the flagged pixels can show as white. Hatched: masked by other flags. Red outline: the flag the card is about.',
   },
+  /** "Why a far planet loops" (loop.html): Makemake measured, and a distance model (15 Nov). */
+  loop: {
+    back: 'Planetes',
+    title: 'Why a far planet loops',
+    lede: 'A nearby star drifts across the sky in a nearly straight line. A body far out in our own solar system loops, because we watch it from a moving Earth. That loop is what a Planet X search looks for.',
+    views: 'View',
+    measured: 'Measured',
+    model: 'Model',
+    pillMeasured: 'Measured · SPHEREx photos',
+    pillModel: 'Model · not SPHEREx data',
+    // Physics' approved text (prereg/parallaxloop/PLAN.md §10, 15 Nov).
+    found:
+      'SPHEREx found Makemake where its orbit and Earth’s motion put it, in all three visits (May 2025, Dec 2025, May 2026), within about 1″ (a sixth of a pixel) of the predicted place, and found nothing at the control spots beside it or where it would be without Earth’s motion.',
+    shift: (par: string, ratio: string) =>
+      `Earth’s motion shifts it about ${par}″ (~1°) from where it would be seen from the Sun. The nearest star, Proxima Centauri, shifts at most 0.77″, so Makemake’s shift is ~${ratio}× larger.`,
+    planetX: (x: string) => `A Planet X at 500 AU would shift up to ~${x}″ (model).`,
+    keyPath: 'predicted path, as seen from SPHEREx (JPL Horizons)',
+    keySun: 'where it would be seen from the Sun',
+    keyVisit: 'SPHEREx’s measured place, one stack per visit',
+    keyPhoto: 'single photos bright enough to place (S/N ≥ 10)',
+    thumbs: 'Stacked to follow Makemake: it stays sharp, stars streak away.',
+    howHead: 'How we measured it',
+    readoutHead: 'Measured minus predicted',
+    readoutRow: (date: string, e: string, n: string, err: string, photos: number, det: number) =>
+      `${date}: ${e}″ east, ${n}″ north (± ${err}″), ${photos} photos, detector ${det}`,
+    method:
+      'How: each visit’s photos are shifted to follow Makemake’s predicted place and stacked (the median), so Makemake builds up while stars smear out. Rules were registered before any photo was read.',
+    weakness:
+      'Known weakness: a median stack whose photos are bunched in time can keep a nearby star; such stacks were excluded by the control rule.',
+    rules: 'The registered rules',
+    loadFailed: 'The measurement couldn’t be loaded just now.',
+    modelLine:
+      'A model: an imaginary object on a circular orbit, to show the shape. Not a measurement.',
+    distance: 'Distance',
+    detentBarnard: 'Barnard’s Star, 1.83 pc',
+    detentMakemake: 'Makemake, 52.6 AU',
+    detentPlanetX: 'Planet X ~500 AU (hypothetical)',
+    detentNeptune: 'Neptune, 30 AU',
+    seeIt: 'measured: see it',
+    fromSun: (x: string) => `Up to ${x} from where it would be seen from the Sun`,
+    betweenPasses: (x: string) => `Up to ${x} between two SPHEREx passes six months apart`,
+    // The reach measured for our between-pass search (prereg/slowmover/PLAN.md §8, Physics): it
+    // needs about 5–40″ depending on the field, and can follow at most ~25″.
+    tooSmall:
+      'Too small for our between-pass search to measure: it needs about 5–40″, depending on the field',
+    workable: 'Within what our between-pass search can measure in quieter fields (about 5–25″)',
+    tooBig:
+      'Too big for our between-pass search to follow: it pairs shifts of at most ~25″. Finding it needs a different search',
+    starDrift:
+      'A real nearby star also drifts in a straight line; Barnard’s Star drifts 10.4″ a year, far more than this wobble.',
+    loopVs: (x: string) => `Loop width ${x}`,
+    zoomed: 'The view zooms to fit the path; the scale bar says how big it is.',
+    valueText: (d: string, shift: string) => `${d}: shifts up to ${shift} between passes`,
+    alt: (offset: string) =>
+      `Makemake’s path loops across the sky over 18 months. SPHEREx’s three measured places sit within ${offset}″ of the predicted path, about 1° from where it would be seen from the Sun.`,
+    linkShort: 'Why a far planet loops →',
+    fromTests:
+      'Between passes our search follows shifts of up to ~25″. A Planet X near 500 AU would usually shift by hundreds of arcseconds, so it needs a different search:',
+  },
   tests: {
     title: 'How we tested',
     back: 'Planetes',

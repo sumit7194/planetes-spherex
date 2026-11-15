@@ -1,0 +1,242 @@
+/* "Why a far planet loops": the figure left (~62%), a text column right; stacked below 1000 px.
+   Ember = measured, lilac = predicted or model, mist dashed = seen from the Sun (Viewer, 15 Nov). */
+#loop {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 24px 24px 32px;
+}
+#loop .credits-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--starlight);
+  font: 600 17px var(--serif);
+  text-decoration: none;
+}
+#loop h1 {
+  font: 400 clamp(26px, 3.4vw, 36px) / 1.15 var(--serif);
+  margin: 14px 0 4px;
+}
+#loop .lede {
+  max-width: 60rem;
+  margin: 0 0 12px;
+}
+#loop h2 {
+  font: 600 12px var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin: 12px 0 4px;
+}
+.lp-seg {
+  display: inline-flex;
+  border: 1px solid var(--dusk-line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.lp-seg button {
+  font: 600 14px var(--sans);
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--mist);
+  border: 0;
+  cursor: pointer;
+}
+.lp-seg button[aria-checked='true'] {
+  background: var(--dusk);
+  color: var(--starlight);
+  box-shadow: inset 0 -2px 0 var(--starlight);
+}
+.lp-view {
+  display: grid;
+  grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .lp-view {
+    grid-template-columns: 1fr;
+  }
+}
+.lp-fig {
+  margin: 0;
+  background: var(--sky-night);
+  border: 1px solid var(--dusk-line);
+  border-radius: 10px;
+}
+.loop-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 262px);
+}
+.lp-side {
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.lp-side p {
+  margin: 0 0 8px;
+}
+.lp-side .hint {
+  color: var(--quiet);
+  font-size: 13px;
+}
+.lp-pill {
+  display: inline-block;
+  font: 600 11px var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+.lp-pill.measured {
+  color: var(--sky-night);
+  background: var(--measured);
+}
+.lp-pill.model {
+  color: var(--sky-night);
+  background: var(--predicted);
+}
+.lp-readout,
+.lp-key {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.lp-key li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sw {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  flex: none;
+}
+.sw-path {
+  border-top: 2px solid var(--sky-predicted);
+}
+.sw-sun {
+  border-top: 2px dashed var(--sky-mist);
+}
+.sw-visit,
+.sw-photo {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sky-measured);
+  margin: 0 6px;
+}
+.sw-photo {
+  width: 5px;
+  height: 5px;
+  margin: 0 8.5px;
+}
+/* The figure is the night sky in every scheme. */
+.lp-path,
+.lp-model {
+  fill: none;
+  stroke: var(--sky-predicted);
+  stroke-width: 2;
+}
+.lp-sun {
+  fill: none;
+  stroke: var(--sky-mist);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+  opacity: 0.8;
+}
+.lp-par {
+  stroke: var(--sky-mist);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.7;
+}
+.lp-sunpt {
+  fill: none;
+  stroke: var(--sky-mist);
+  stroke-width: 1.5;
+}
+.lp-tick {
+  fill: var(--sky-predicted);
+}
+.lp-month,
+.lp-label,
+.lp-scale-t,
+.lp-compass {
+  fill: var(--sky-mist);
+  font: 12px var(--sans);
+}
+.lp-label {
+  fill: var(--sky-starlight);
+  font-weight: 600;
+}
+.lp-visit {
+  fill: var(--sky-measured);
+  stroke: var(--sky-night);
+  stroke-width: 2;
+}
+.lp-photo {
+  fill: var(--sky-measured);
+  opacity: 0.85;
+}
+.lp-pass {
+  fill: var(--sky-night);
+  stroke: var(--sky-predicted);
+  stroke-width: 2;
+}
+.lp-leader {
+  stroke: var(--sky-quiet);
+  stroke-width: 1;
+}
+.lp-thumb {
+  image-rendering: pixelated;
+}
+.lp-scale {
+  stroke: var(--sky-starlight);
+  stroke-width: 2;
+}
+.lp-dlabel {
+  display: block;
+  font: 600 13px var(--sans);
+  margin-top: 6px;
+}
+#lp-dist {
+  width: 100%;
+}
+.lp-detents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 4px 0 10px;
+  font-size: 12.5px;
+}
+.lp-detent {
+  font: inherit;
+  background: transparent;
+  color: var(--starlight);
+  border: 1px solid var(--dusk-line);
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+.lp-see {
+  color: var(--measured);
+}
+.lp-big {
+  font: 400 24px var(--serif);
+}
+.lp-thumb-frame {
+  fill: none;
+  stroke: var(--sky-measured);
+  stroke-width: 1;
+}
+.lp-how summary {
+  cursor: pointer;
+  font: 600 13px var(--sans);
+  color: var(--mist);
+  margin: 4px 0;
+}
