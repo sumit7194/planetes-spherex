@@ -3,7 +3,7 @@
 #loop {
   max-width: 76rem;
   margin: 0 auto;
-  padding: 24px 24px 32px;
+  padding: 14px 24px 16px;
 }
 #loop .credits-back {
   display: inline-flex;
@@ -15,11 +15,11 @@
 }
 #loop h1 {
   font: 400 clamp(26px, 3.4vw, 36px) / 1.15 var(--serif);
-  margin: 14px 0 4px;
+  margin: 10px 0 4px;
 }
 #loop .lede {
   max-width: 60rem;
-  margin: 0 0 12px;
+  margin: 0 0 8px;
 }
 #loop h2 {
   font: 600 12px var(--sans);
@@ -73,7 +73,7 @@
 }
 .lp-side {
   font-size: 14.5px;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 .lp-side p {
   margin: 0 0 8px;

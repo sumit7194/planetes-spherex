@@ -1256,6 +1256,9 @@ export const copy = {
       'SPHEREx found Makemake where its orbit and Earth’s motion put it, in all three visits (May 2025, Dec 2025, May 2026), within about 1″ (a sixth of a pixel) of the predicted place, and found nothing at the control spots beside it or where it would be without Earth’s motion.',
     shift: (par: string, ratio: string) =>
       `Earth’s motion shifts it about ${par}″ (~1°) from where it would be seen from the Sun. The nearest star, Proxima Centauri, shifts at most 0.77″, so Makemake’s shift is ~${ratio}× larger.`,
+    // Physics, 15 Nov: the second check and the stretch goal, the miss included.
+    others:
+      'Haumea, checked the same way, was also found in all three visits, within 0.5″ of the predicted place. Eris, fainter (V 18.6) and twice as far (96 AU), passed in only 1 of 3 visits, so by our rule it is not confirmed. In that visit it sat within 1″ of the predicted place.',
     planetX: (x: string) => `A Planet X at 500 AU would shift up to ~${x}″ (model).`,
     keyPath: 'predicted path, as seen from SPHEREx (JPL Horizons)',
     keySun: 'where it would be seen from the Sun',

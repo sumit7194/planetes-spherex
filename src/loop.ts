@@ -290,6 +290,7 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
       ' ',
       t.planetX(String(Math.round(ARCSEC_PER_AU / 500 / 10) * 10)),
     ),
+    h('p', { class: 'hint' }, t.others),
     h('h2', {}, t.readoutHead),
     h('ul', { class: 'lp-readout' }, ...rows),
     key,
