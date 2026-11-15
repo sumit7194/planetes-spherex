@@ -1206,7 +1206,12 @@ export const copy = {
       waitingDone: '…or press Start exploring.',
     },
   },
-  nav: { backToSky: 'Back to the sky', home: 'Planetes: back to the start', credits: 'Credits' },
+  nav: {
+    tagline: 'the wanderers in SPHEREx’s sky',
+    backToSky: 'Back to the sky',
+    home: 'Planetes: back to the start',
+    credits: 'Credits',
+  },
   /** Long text: the button under a clamped line or two (src/ui/fit.ts). */
   fit: { more: 'More', less: 'Less' },
   /** The appearance switch: the page only; the sky and the photos stay night in both. */

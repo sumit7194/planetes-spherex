@@ -364,6 +364,8 @@ const homeLink = h(
   h('span', { class: 'home-back', 'aria-hidden': 'true' }, '‹'),
   markSvg(),
   h('span', { class: 'home-name' }, 'Planetes'),
+  // The line under the name (Sumit, 15 Nov; Viewer's wording): explains the Greek, claims nothing.
+  h('span', { class: 'home-tagline' }, copy.nav.tagline),
 );
 // No aria-live over the whole column: every tab switch would re-announce it. Status lines
 // carry role="status" themselves.

@@ -3881,3 +3881,17 @@ span[data-fit='1'] {
     transition: none;
   }
 }
+
+/* The tagline beside the name: quiet, on the name's baseline; hidden where the header is tight. */
+.home-tagline {
+  align-self: flex-end;
+  margin: 0 0 3px 2px;
+  font: 13px var(--sans);
+  color: var(--quiet);
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .home-tagline {
+    display: none;
+  }
+}
