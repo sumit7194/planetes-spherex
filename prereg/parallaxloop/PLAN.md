@@ -36,7 +36,7 @@ Coverage (from the Horizons ephemeris and our index, no pixels; 15 Nov 15:55 IST
 - Interpolated to each photo's **MJD-AVG** (read from the photo's own header) with a cubic spline in RA
   (unwrapped) and Dec.
 - Geocentre → SPHEREx: the header's X_SC/Y_SC/Z_SC is subtracted from distance × direction. This is
-  ≤ 0.02″ at 50 AU but applied anyway.
+  about 0.19″ at 50 AU (SPHEREx is ~7,070 km from Earth's centre; corrected 15 Nov, Viewer), applied.
 
 ## 4. Stack
 
@@ -109,3 +109,6 @@ Forced S/N at each photo's predicted position. A per-photo centroid is plotted o
    - the model slider runs from Barnard's Star to Makemake.
 
 ## 10. Log of changes (dated, before results)
+
+- **15 Nov 2026, 16:11 IST:** the geocentre → SPHEREx offset in §3 was first written as ≤ 0.02″ (from the orbit's ~700 km altitude). It is ~0.19″ at 50 AU, because SPHEREx is ~7,070 km from Earth's centre (Viewer). The correction was always applied, so only the stated size changes.
+- **15 Nov 2026, 16:11 IST, Sumit's decision:** the distance slider in the new Learn chapter replaces N6's distance dial, and the hidden ?demo=dial page is retired, so there's one control.
