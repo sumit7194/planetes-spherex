@@ -4,11 +4,9 @@
   height: 28px;
   overflow: visible;
 }
-.mark-ring {
-  fill: none;
-  stroke: var(--mist);
-  stroke-opacity: 0.5;
-  stroke-width: 1.5;
+/* The ring's bands carry their own wavelength colours (mark.ts); only the width is set here. */
+.mark-ring .mark-band {
+  stroke-width: 2.6;
 }
 .mark-trail {
   fill: none;
