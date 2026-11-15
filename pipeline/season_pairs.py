@@ -120,7 +120,7 @@ def search(slug: str):
     return search_stacks(stacks, n, lambda season: quiet_gaia(slug, n, season))
 
 
-def search_stacks(stacks: dict, n: int, quiet_for, pairs=None):
+def search_stacks(stacks: dict, n: int, quiet_for, pairs=None, keep_all: bool = False):
     """The search on any one-detector stacks {(season, det): {img, mjd, sat}}: the packs' seasons,
     or the yardstick's helper-read fields (field_stacks.py). quiet_for(season) gives the grid
     pixels of Gaia stars moving < 50 mas/yr; pairs limits which season pairs are compared (the
@@ -202,7 +202,7 @@ def search_stacks(stacks: dict, n: int, quiet_for, pairs=None):
         target = next((k for k, r in enumerate(cands) if r["fromCentrePx"] < 3), None)
         out.append(dict(seasons=[a, b], years=round(dt, 2), sources=len(srcs), glareVetoed=vetoed,
                         notSearchedFraction=round(not_searched, 3), commonShiftRemoved=removed, measured=len(mean),
-                        steadyScatterPx=round(float(sig), 3), candidates=cands[:8],
+                        steadyScatterPx=round(float(sig), 3), candidates=cands if keep_all else cands[:8],
                         targetRank=None if target is None else target + 1, nCandidates=len(cands),
                         consistentSignificance=sorted(consistent_sig, reverse=True)[:20]))
     return out

@@ -90,6 +90,13 @@ def stack_field(field: dict, mode: str) -> dict:
     ra, dec = field["ra"], field["dec"]
     rows = search_rows(ra, dec)
     exps = asyncio.run(read_all(rows, ra, dec))
+    return stack_exps(field, rows, exps, mode)
+
+
+def stack_exps(field: dict, rows: list, exps: list, mode: str) -> dict:
+    """The stacking step on photos already read (split out on 15 Nov so the fake-mover injection
+    runs this same code on injected photos; behaviour unchanged)."""
+    ra, dec = field["ra"], field["dec"]
     gw = bp.out_grid(ra, dec, SIZE)
     labels = groups_of(rows, mode)
     per: dict[tuple[str, int], list] = {}
