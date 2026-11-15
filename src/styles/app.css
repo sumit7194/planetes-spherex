@@ -3903,6 +3903,54 @@ span[data-fit='1'] {
   animation-duration: 340ms;
   animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+/* The sky is live: one image slides from its old place to its new, never two cross-fading
+   (both were on screen 96 px apart, every label doubled: Viewer). */
+::view-transition-old(room-view),
+::view-transition-old(room-sky) {
+  display: none;
+}
+::view-transition-new(room-view),
+::view-transition-new(room-sky) {
+  animation: none;
+}
+/* The full-screen sky behind the homepage re-aims when the layout changes: it's live too, so
+   it's shown as it is, never as two cross-fading pictures. */
+canvas.sky.backdrop {
+  view-transition-name: room-sky;
+}
+/* Named, so the header stays above the sky's layer while the switch runs. */
+#app > .top {
+  view-transition-name: room-header;
+}
+/* The column's two texts are unrelated: the old fades out, then the new fades in, never both. */
+::view-transition-old(room-words) {
+  animation: 120ms ease-in both room-fade-out;
+}
+::view-transition-new(room-words) {
+  animation: 200ms ease-out 100ms both room-fade-in;
+}
+@keyframes room-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes room-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+/* On the homepage the Look around / Flat map switch is pinned under the brand, the same place in
+   Play and Learn (Sumit: it "doesn't stay"), and named so it never double-exposes. */
+@media (min-width: 981px) {
+  #app[data-place='sky'] .entry-switch {
+    position: fixed;
+    left: 28px;
+    top: 76px;
+  }
+}
+.entry-switch {
+  view-transition-name: room-entry;
+}
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),
