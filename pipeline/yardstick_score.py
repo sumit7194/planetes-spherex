@@ -33,6 +33,8 @@ from smo.inject.truth import unseal  # noqa: E402
 T = yi.T_FROZEN
 W2_BINS = [(12 + i, 13 + i) for i in range(6)]
 PM_BINS = [(0.3, 1.0), (1.0, 3.0), (3.0, 10.0)]
+# E1 (YARD_EXT=E1, PLAN §8 15 Nov 14:34 IST): binned by the true shift between the two passes (″).
+SHIFT_BINS = [(5, 10), (10, 20), (20, 40), (40, 80), (80, 160)]
 
 
 def cp(k: int, n: int) -> tuple[float, float]:
@@ -142,6 +144,29 @@ def main() -> None:
                     table.append(dict(kind=kind, placement=pl, w2=f"{lo}-{hi}", pm=f"{plo}-{phi}", n=n, found=k,
                                       completeness=round(k / n, 3) if n else None,
                                       ci95=[round(ci[0], 3), round(ci[1], 3)] if n else None))
+    if yi.EXT:
+        table = []
+        for pl in ("isolated", "anywhere"):
+            for lo, hi in W2_BINS:
+                for slo, shi in SHIFT_BINS:
+                    sel = [r for r in rows if r["placement"] == pl and lo <= r["w2"] < hi and slo <= r["true_shift_arcsec"] < shi]
+                    k, n = sum(r["found"] for r in sel), len(sel)
+                    ci = cp(k, n) if n else None
+                    table.append(dict(placement=pl, w2=f"{lo}-{hi}", shift_arcsec=f"{slo}-{shi}", n=n, found=k,
+                                      completeness=round(k / n, 3) if n else None,
+                                      ci95=[round(ci[0], 3), round(ci[1], 3)] if n else None))
+        by_shift = []
+        for slo, shi in SHIFT_BINS:
+            sel = [r for r in rows if r["placement"] == "isolated" and slo <= r["true_shift_arcsec"] < shi]
+            k, n = sum(r["found"] for r in sel), len(sel)
+            by_shift.append(dict(shift_arcsec=f"{slo}-{shi}", n=n, found=k, ci95=[round(x, 3) for x in cp(k, n)] if n else None))
+        found = [r for r in rows if r["found"]]
+        out = dict(ext=yi.EXT, T=T, fakes_pair_rows=len(rows), found=len(found), isolated_by_shift_all_w2=by_shift,
+                   detector_split={"2": sum(1 for r in found if r["detectors"] == 2),
+                                   ">=3": sum(1 for r in found if (r["detectors"] or 0) >= 3)}, table=table)
+        Path(a.out).write_text(json.dumps(out, indent=1))
+        print(json.dumps({k: v for k, v in out.items() if k != "table"}, indent=1))
+        return
     head = [r for r in rows if r["kind"] == "12-month" and r["placement"] == "isolated" and 1.0 <= r["pm"] < 3.0]
     w50 = logistic_w50(np.array([r["w2"] for r in head]), np.array([r["found"] for r in head]))
     fields = sorted({r["field"] for r in head})

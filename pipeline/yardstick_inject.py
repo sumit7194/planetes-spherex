@@ -63,10 +63,18 @@ MAS = math.pi / 180 / 3600 / 1000
 # The W2 zero-point convention (Physics, 15 Nov): "wise" or "calspec". Must be set before a run.
 W2_SYSTEM = os.environ.get("W2_SYSTEM", "")
 WISE_OVER_CALSPEC = 171.787 / 167.34  # F_ν(4.6028 µm) of WISE's Vega vs CALSPEC stis_012
+# Post-registration extension E1 (PLAN §8, 15 Nov 14:34 IST; exploratory): YARD_EXT=E1 gives fakes
+# moving linearly at 10-100″/yr with no parallax, its own seeds and output folder. Unset = §3.
+EXT = os.environ.get("YARD_EXT", "")
+if EXT not in ("", "E1"):
+    raise SystemExit("YARD_EXT must be unset or E1")
+if EXT:
+    OUT = HERE / f"yardstick_inject_{EXT.lower()}"
 
 
 def seeds(field: str, pass_no: int) -> list[np.random.SeedSequence]:
-    h = int.from_bytes(hashlib.sha256(f"{field}|{pass_no}".encode()).digest()[:8], "little")
+    key = f"{EXT}|{field}|{pass_no}" if EXT else f"{field}|{pass_no}"
+    h = int.from_bytes(hashlib.sha256(key.encode()).digest()[:8], "little")
     return np.random.SeedSequence(h).spawn(3)  # draw, photometry, noise
 
 
@@ -117,13 +125,19 @@ def draw_fakes(field: dict, pass_no: int, t_ref: float, srcs: list, blobs: list,
         else:
             raise RuntimeError(f"{field['field']} pass {pass_no}: no room for fake {k}")
         ra, dec = gw.all_pix2world(x, y, 0)
-        pm = 10 ** rng.uniform(math.log10(300), math.log10(10000))  # mas/yr, 0.3-10″/yr
-        ang = rng.uniform(0, 2 * math.pi)
-        while True:
-            vt = 30 * math.exp(0.5 * rng.standard_normal())
-            if 5 <= vt <= 200:
-                break
-        plx_mas = (pm / 1000) / (4.74 * vt) * 1000
+        if EXT == "E1":
+            pm = 10 ** rng.uniform(4, 5)  # mas/yr, 10-100″/yr
+            ang = rng.uniform(0, 2 * math.pi)
+            vt = None
+            plx_mas = 1e-6  # ~1e9 AU: no parallax (E1 tests the shift between passes only)
+        else:
+            pm = 10 ** rng.uniform(math.log10(300), math.log10(10000))  # mas/yr, 0.3-10″/yr
+            ang = rng.uniform(0, 2 * math.pi)
+            while True:
+                vt = 30 * math.exp(0.5 * rng.standard_normal())
+                if 5 <= vt <= 200:
+                    break
+            plx_mas = (pm / 1000) / (4.74 * vt) * 1000
         family = (("bd900", "bd500")[(k // 2) % 2]) if k % 2 == 0 else "bb4000"
         fakes.append(dict(fake_id=k, placement="isolated" if isolated else "anywhere", gx=float(x), gy=float(y),
                           ra=float(ra), dec=float(dec), t_ref=t_ref, pm_mas=pm, pa_deg=math.degrees(ang),

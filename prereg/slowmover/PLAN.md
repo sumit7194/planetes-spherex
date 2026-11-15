@@ -142,3 +142,20 @@ How faint, and how slow, a mover can the season-pair search find, at a fixed fal
 - **15 Nov 2026, 14:18 IST — Physics' decision on check 2:** (a). Check 2 is inconclusive, not failed: the gap is smooth and depends on Teff, as different model versions would give, whereas a units bug would give a near-constant ~0.3 mag. Go ahead with W2_SYSTEM=wise, on two conditions:
   - **(1) Band-average check (the path that feeds the fakes): passes.** A ν⁻² spectrum went through fake_phot.band_fnu_jy over [CWAVE ± CBAND/2] from spectral_wcs (the release the run uses, cal-swcs-v5 = smo "qr3"). It was checked at 6 pixels on each of D1–D6 (36 in all, CWAVE 0.750–4.990 µm). The band average equals ν⁻² at the band centre within **0.0075%** (limit 1%).
   - **(2)** Wherever the limit is quoted (N4, the tests page), add: "in W2 on WISE's system; the fakes' brightness in SPHEREx's colours comes from Sonora brown-dwarf models, which differ between model versions by up to ~0.1 mag at 3–5 µm."
+- **15 Nov 2026, 14:34 IST — Post-registration extension E1 (EXPLORATORY; chosen after the Y-01 plumbing test showed the registered range sits below T; registered here before running; Physics agreed).**
+  - **Why:** at T = 11.19 a candidate needs a shift of 11.19 × the field's steady scale. Across the N3 fields' 10–90% scale (0.098–0.590 px) that is **6.7–40.6″** (median 0.283 px → 19.5″). The registered fakes (0.3–10″/yr) shift at most ~10″ between passes. A ~0% registered table is therefore about nearby brown dwarfs (Physics: WISE 0855, ~8″/yr, is below the reach). It says nothing about a distant planet, whose shift between passes is dominated by Earth's parallax: about 2 × 206265″/d[AU], or ~800″ at 500 AU, ~400″ at 1000 AU, ~200″ at 2000 AU.
+  - **The largest shift season_pairs can pair (read from the code):**
+    - Sources come from the median of all passes' stacks (5σ peaks).
+    - Each source is fitted in each pass inside a 7×7 box centred on its median position, with the centre bounded to ±2 px.
+    - So a shift is measurable only within ±2 px (12.3″) of the median position: **at most ~4 px ≈ 25″ between two passes**.
+    - A mover that shifts more than about a PSF width between passes also fades from the median, so it isn't found as a source at all.
+    - The field is 64 px (394″) across.
+    - **The search's window is far below ~200″, so by Physics' rule the Planet X reach limit is stated as: shifts above ~25″ between passes can't be measured by this search (a planet at ≤ 2000 AU shifts ≥ 200″).**
+  - **E1 spec:**
+    - Same code, T, 40 development fields, W2 grid (U(12, 18)), families, placements (4 isolated + 2 anywhere), 5 passes × 6 fakes.
+    - Fakes move linearly at R″/yr, with R log-uniform 10–100″/yr and no parallax (distance set very large). So 12-month pairs see 10–100″ and 6-month pairs 5–50″, spanning well past the ~25″ code limit, so the fall-off is measured, not assumed.
+    - Seeds come from sha256("E1|field|pass").
+    - Output goes to pipeline/yardstick_inject_e1.
+    - Scored like §5, but binned by **true shift between the two passes** (5–10, 10–20, 20–40, 40–80, 80–160″) × W2, with Clopper-Pearson intervals. No headline W2_50 is defined in advance.
+    - **Limit stated up front:** a real distant planet also moves several ″/day within a pass (parallax rate). E1's movers are nearly still within a pass, so E1 tests only the shift between passes.
+  - **Wording rule (Physics):** if the registered table is ~0, the N4 and tests-page text says the search needs ≳20″ (6–40″ across fields) and that the registered fake brown dwarfs were not recovered. Planet X is not described as "below the reach". Any Planet X sentence uses Physics' wording: "a distant planet's yearly parallax shift (hundreds of arcsec) is above this floor, but we haven't tested the search on shifts that large", updated with E1 and with the code limit above.

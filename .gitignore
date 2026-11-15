@@ -15,3 +15,4 @@ pipeline/yardstick_stacks_pre_edge_14nov/
 pipeline/update_index_report.json
 pipeline/update_index_summary.md
 pipeline/yardstick_inject/
+pipeline/yardstick_inject_e1/
