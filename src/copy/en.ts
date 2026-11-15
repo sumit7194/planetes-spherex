@@ -789,6 +789,9 @@ export const copy = {
     move: 'Move',
     brightness: 'Brightness',
     spectrum: 'Spectrum',
+    /** N4: how faint a mover a look could have caught; not measured until the fake movers run. */
+    sensitivityNotYet: 'limit not measured yet',
+    sensitivityWhy: 'How we tested',
     spectrumMeasured: 'measured · see Spectrum',
     spectrumTooBright: 'too bright: saturated',
     spectrumBlended: 'too faint beside a brighter star',
@@ -1338,7 +1341,7 @@ export const copy = {
       title: 'How faint and slow a mover can that search find?',
       what: 'Fake slow movers planted in 40 other fields, with false alarms counted on 200 more; the plan, the fields and the scores were fixed before any photo is read.',
       status:
-        'Registered before any photo is read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). Not run yet.',
+        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): the search’s threshold is 11.19, where about 5 false candidates are expected among 550 field-pairs. The fake movers, which say how faint and slow a mover it finds, haven’t been run yet, so there is no limit yet.',
     },
     twins: {
       title: 'Finding stars with the same colours',

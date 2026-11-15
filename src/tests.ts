@@ -195,13 +195,13 @@ async function methodTests(): Promise<HTMLElement[]> {
       ),
     );
   }
-  out.push(
-    block(
-      t.yardstick.title,
-      h('p', {}, t.yardstick.what),
-      h('p', { class: 'reg' }, t.yardstick.status),
-    ),
+  const yard = block(
+    t.yardstick.title,
+    h('p', {}, t.yardstick.what),
+    h('p', { class: 'reg' }, t.yardstick.status),
   );
+  yard.id = 'yardstick'; // the live look's "Sensitivity here" row links here (N4)
+  out.push(yard);
   if (tw1) {
     const v2 = tw2?.euclid4;
     out.push(

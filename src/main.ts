@@ -6028,7 +6028,15 @@ function lookWords(): HTMLElement[] {
           h(
             'dl',
             { class: 'facts' },
-            ...factRow('look', copy.facts.move, copy.facts.dash.look),
+            // N4 (Physics): no sensitivity limit is said until the registered fake-mover run
+            // gives one; folded into this row so the panel keeps its height (fit at 1280×720).
+            ...factRow(
+              'look',
+              copy.facts.move,
+              `${copy.facts.dash.look}; ${copy.facts.sensitivityNotYet} (`,
+              h('a', { href: 'tests.html#yardstick' }, copy.facts.sensitivityWhy),
+              ')',
+            ),
             ...factRow('unmeasured', copy.facts.predicted, copy.facts.dash.none),
             ...factRow('unmeasured', copy.facts.steady, copy.facts.dash.none),
             ...factRow('unmeasured', copy.facts.brightness, copy.facts.dash.none),
