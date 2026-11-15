@@ -1310,8 +1310,8 @@ export const copy = {
           'It sorts the moving-object search’s candidates into likely real movers and likely junk.',
         status: 'Built · its locked test has not run',
         test: [
-          'No test numbers yet: only development data exists, and the locked test on unseen sky hasn’t run.',
-          'A re-ranker for the existing detector’s candidates. It finds nothing new. The numbers come from development data; the locked test on unseen sky has not run, so its value is not proven.',
+          'No test numbers yet: only development data exists.',
+          'A re-ranker for the existing detector’s candidates. It finds nothing new. The locked test on unseen sky has not run, so its value is not proven.',
         ],
         notShown: 'How well it works on sky it hasn’t seen: that is the locked test, not yet run.',
         built:
@@ -1359,12 +1359,15 @@ export const copy = {
       lede: 'Every chart below is drawn in your browser from the published result files in research/v4/results, as they are. Each file’s sha256 is computed here and compared with PROVENANCE.md; a chart is drawn only if they match.',
       matches: 'matches PROVENANCE.md',
       differs: 'doesn’t match PROVENANCE.md: not drawn',
-      source: (file: string, sha: string) => `Source: research/v4/results/${file} · sha256 ${sha}`,
-      trimmed:
-        'trimmed copy; original sha256 2e58bc61f87fdd8823952514ab904db7ed9d45ada6f1e22208919ad6dd3c64d0',
+      source: (file: string, sha: string) => `Source: research/v4/results/${file} · sha256 ${sha}…`,
+      sourceTrimmed: (file: string, sha: string) =>
+        `Source: research/v4/results/${file}, a trimmed copy · its sha256 ${sha}…`,
+      trimmed: 'the original’s sha256 is 2e58bc61f87f…',
+      fullHash: 'Full sha256',
       loadFailed: 'The result files couldn’t be loaded just now.',
       a: 'Completeness of planted fake asteroids by brightness (AB magnitude in the visit’s short-wavelength detector), at the primary threshold of 0.1 false alarms per deg² per visit. Bars: 95% intervals per bin. Line: the registered fit. Half are found at 17.07 (68% 17.04–17.10); the curve levels off at 73%.',
-      primary: 'Primary threshold (0.1 false alarms per deg² per visit)',
+      primary: (m50: string) =>
+        `Primary threshold (0.1 false alarms per deg² per visit): m50 ${m50}`,
       secondary: (m50: string) =>
         `Secondary threshold (1 false alarm per deg² per visit): m50 ${m50}`,
       axisMag: 'AB magnitude (fainter →)',
@@ -1378,6 +1381,15 @@ export const copy = {
       pooled: 'Pooled (reported only; the per-patch rule decides)',
       d: 'Realism check: are planted fakes found like real known asteroids? The difference in the magnitude where half are found (fakes − known), with its 90% interval; the registered test passes if the interval lies inside ±0.2 mag (shaded).',
       dReported: 'reported, not the registered test',
+      titles: {
+        a: 'A · Found, by brightness',
+        b: 'B · Found, by speed and by nearby bright stars',
+        c: 'C · False alarms per test patch',
+        d: 'D · Realism: fakes against real known asteroids',
+        e: 'E · Known asteroids re-found',
+      },
+      bCaption:
+        'All planted brightnesses together, so these sit below A’s 73% plateau. Bars: share found, with its 95% interval; n is the number of fakes.',
       e: 'Known asteroids re-found in the three test patches (catalogued objects; no positions).',
       eNote:
         'Most known asteroids in these visits are far fainter than the detector reaches, so this is not a recovery rate; the realism check (D) is the like-for-like test.',

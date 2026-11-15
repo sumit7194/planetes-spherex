@@ -19,6 +19,16 @@ function s(tag: string, attrs: Record<string, string | number> = {}, ...kids: (N
   return el;
 }
 
+/** Chart text in real px whatever the chart's width (Viewer): --k = viewBox width / drawn width. */
+function trueText(svg: SVGElement, vbW: number): void {
+  const set = () => {
+    const w = svg.getBoundingClientRect().width;
+    if (w > 0) svg.style.setProperty('--k', String(vbW / w));
+  };
+  new ResizeObserver(set).observe(svg);
+  requestAnimationFrame(set);
+}
+
 async function sha256(buf: ArrayBuffer): Promise<string> {
   const d = await crypto.subtle.digest('SHA-256', buf);
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -49,13 +59,14 @@ async function load(file: string, prov: string): Promise<Loaded> {
 }
 
 function sourceLine(file: string, l: Loaded, trimmed = false): HTMLElement {
+  const short = l.sha.slice(0, 12);
   return h(
     'p',
-    { class: `dx-source ${l.ok ? 'ok' : 'bad'}` },
-    t.source(file, l.sha),
-    ' · ',
+    { class: `dx-source ${l.ok ? 'ok' : 'bad'}`, title: `${t.fullHash}: ${l.sha}` },
+    trimmed ? t.sourceTrimmed(file, short) : t.source(file, short),
+    ', ',
     l.ok ? t.matches : t.differs,
-    trimmed ? ` · ${t.trimmed}` : '',
+    trimmed ? `; ${t.trimmed}` : '',
   );
 }
 
@@ -91,6 +102,7 @@ function chartA(res: Record<string, Record<string, unknown>>): HTMLElement {
     role: 'img',
     'aria-label': t.a,
   });
+  trueText(svg, W);
   const holder = h('div', {});
   const draw = (key: 'primary_far0.1' | 'secondary_far1.0') => {
     const part = res[key] as { bins: Bin[]; all: Fit };
@@ -161,23 +173,43 @@ function chartA(res: Record<string, Record<string, unknown>>): HTMLElement {
       svg.append(g);
     }
   };
+  const pri = res['primary_far0.1'] as { all: Fit };
   const sec = res['secondary_far1.0'] as { all: Fit };
   const opts = [
-    ['primary_far0.1', t.primary],
+    ['primary_far0.1', t.primary(fmt(pri.all.m50))],
     ['secondary_far1.0', t.secondary(fmt(sec.all.m50))],
   ] as const;
   const seg = h('div', { class: 'dx-seg', role: 'radiogroup', 'aria-label': 'Threshold' });
-  const btns = opts.map(([k, label]) => {
+  // One tab stop: the checked radio is focusable; arrows move and select (Viewer).
+  const btns: HTMLButtonElement[] = [];
+  const pick = (i: number, focus: boolean) => {
+    btns.forEach((x, j) => {
+      x.setAttribute('aria-checked', String(j === i));
+      x.tabIndex = j === i ? 0 : -1;
+    });
+    if (focus) btns[i]?.focus();
+    const k = opts[i]?.[0];
+    if (k) draw(k);
+  };
+  opts.forEach(([, label], i) => {
     const b = h(
       'button',
-      { type: 'button', role: 'radio', 'aria-checked': String(k === 'primary_far0.1') },
+      {
+        type: 'button',
+        role: 'radio',
+        'aria-checked': String(i === 0),
+        tabindex: i === 0 ? 0 : -1,
+      },
       label,
     ) as HTMLButtonElement;
-    b.addEventListener('click', () => {
-      for (const x of btns) x.setAttribute('aria-checked', String(x === b));
-      draw(k);
+    b.addEventListener('click', () => pick(i, false));
+    b.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) {
+        e.preventDefault();
+        pick((i + 1) % opts.length, true);
+      }
     });
-    return b;
+    btns.push(b);
   });
   seg.append(...btns);
   draw('primary_far0.1');
@@ -206,6 +238,7 @@ function chartB(groups: Group[], title: string, unit: string): HTMLElement {
     role: 'img',
     'aria-label': title,
   });
+  trueText(svg, W);
   const y = (c: number) => T + (1 - c / 0.5) * (H - T - B); // 0–50%
   for (const c of [0, 0.25, 0.5]) {
     svg.append(s('line', { x1: L, x2: W - 8, y1: y(c), y2: y(c), class: 'dx-grid' }));
@@ -272,6 +305,7 @@ function chartC(per: Record<string, Far>): HTMLElement {
     role: 'img',
     'aria-label': t.c,
   });
+  trueText(svg, W);
   for (const v of [0, 0.2, 0.4, 0.6, 0.8]) {
     svg.append(s('line', { x1: x(v), x2: x(v), y1: 6, y2: H - 30, class: 'dx-grid' }));
     svg.append(
@@ -342,9 +376,16 @@ function chartD(r: Record<string, unknown>): HTMLElement {
     [`D pool (from T6): ${t.dReported}`, r['d_pool_quoted_from_t6'] as Realism, 'reported'],
     [`D + V pooled: ${t.dReported}`, r['dv_pooled_v4_recovery_reported'] as Realism, 'reported'],
   ];
+  // Short row labels (they stay legible at phone width); each row's full name is on hover.
+  const short = (label: string, kind: string) =>
+    kind === 'primary'
+      ? 'Primary (registered)'
+      : kind === 'reported'
+        ? `${label.split(':')[0]} †`
+        : label.replace(/^sensitivity: /, '');
   const W = 760;
   const rowH = 26;
-  const L = 330;
+  const L = 210;
   const R = 20;
   const H = rows.length * rowH + 40;
   const lim = 0.3;
@@ -355,6 +396,7 @@ function chartD(r: Record<string, unknown>): HTMLElement {
     role: 'img',
     'aria-label': t.d,
   });
+  trueText(svg, W);
   svg.append(
     s('rect', { x: x(-0.2), y: 4, width: x(0.2) - x(-0.2), height: H - 34, class: 'dx-band' }),
   );
@@ -379,13 +421,17 @@ function chartD(r: Record<string, unknown>): HTMLElement {
         {},
         `${label}: Δ ${fmt(v.dm, 3)} mag (90% ${fmt(v.ci90[0], 3)} to ${fmt(v.ci90[1], 3)}); ${v.n_fake} fakes, ${v.n_known} known`,
       ),
-      s('text', { x: L - 10, y: cy + 4, class: 'dx-tick', 'text-anchor': 'end' }, label),
+      s(
+        'text',
+        { x: L - 10, y: cy + 4, class: 'dx-tick', 'text-anchor': 'end' },
+        short(label, kind),
+      ),
       s('line', { x1: x(v.ci90[0]), x2: x(v.ci90[1]), y1: cy, y2: cy, class: 'dx-ci' }),
       s('circle', { cx: x(v.dm), cy, r: kind === 'primary' ? 5 : 3.5, class: 'dx-pt' }),
     );
     svg.append(g);
   });
-  return h('div', {}, svg);
+  return h('div', {}, svg, h('p', { class: 'dx-note' }, `† ${t.dReported}.`));
 }
 
 // ---------- E: known asteroids re-found ----------
@@ -454,7 +500,7 @@ export async function v4Explorer(): Promise<HTMLElement> {
         'figure',
         { class: 'dx-block' },
         h('h3', {}, label),
-        h('figcaption', {}, caption),
+        caption ? h('figcaption', {}, caption) : null,
         ok ? body() : h('p', { class: 'dx-bad' }, t.differs),
         src,
       );
@@ -465,10 +511,10 @@ export async function v4Explorer(): Promise<HTMLElement> {
       by_gaia_g16_distance_px: Group[];
     };
     section.append(
-      block('A', t.a, () => chartA(r), resSrc(), res.ok),
+      block(t.titles.a, t.a, () => chartA(r), resSrc(), res.ok),
       block(
-        'B',
-        '',
+        t.titles.b,
+        t.bCaption,
         () =>
           h(
             'div',
@@ -480,21 +526,21 @@ export async function v4Explorer(): Promise<HTMLElement> {
         res.ok,
       ),
       block(
-        'C',
+        t.titles.c,
         t.c,
         () => chartC(r['per_patch_far'] as unknown as Record<string, Far>),
         resSrc(),
         res.ok,
       ),
       block(
-        'D',
+        t.titles.d,
         t.d,
         () => chartD(realism.data),
         sourceLine('realism_v_pool.json', realism),
         realism.ok,
       ),
       block(
-        'E',
+        t.titles.e,
         t.e,
         () =>
           tableE(
