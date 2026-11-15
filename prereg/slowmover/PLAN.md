@@ -121,3 +121,21 @@ How faint, and how slow, a mover can the season-pair search find, at a fixed fal
   - Same stacking path: field_stacks.stack_field is split into reading and stacking (stack_exps), so injected photos use exactly the N3 code. Re-stacking YN-001 now reproduces its saved N3 stacks exactly (28 arrays, max difference 0; the same 13 edge drops).
   - season_pairs.search_stacks gains keep_all (default off; N3 unchanged): the injection run scores every candidate, not the first 8 shown.
   - The CWAVE/CBAND map is smo.data.calib.spectral_wcs with release_for_version (7.x → cal-swcs-v5-2026-191, as registered).
+- **15 Nov 2026, 14:17 IST — W2 zero point and the two independent checks (Physics' decision (b), before any photo is read for injection).**
+  - **W2 on WISE's own system:** Vega (stis_012) scaled ×1.0266 in W2, so a ν⁻² spectrum at W2 = 0 gives 171.787 Jy at 4.6028 µm (yardstick_inject.py, W2_SYSTEM=wise).
+  - **Check 1 (W1, same method):** RSR-W1.txt (IRSA, per photon; sha256 6ade5b074dc7652e08c4de7767969126b7e48fdf4b6295bbf7f44e22d33ec1e9). A ν⁻² spectrum at W1 = 0 gives 300.75 Jy at 3.3526 µm, against WISE's 309.540 Jy, so the factor is **1.0292**. That differs from W2's 1.0265 by 0.27% (Physics' limit is 2%). **Passes.**
+  - **Check 2 (W1−W2 against the Sonora team's tables, log g 5.0, plain stis_012, photon-weighted):**
+    - C/O 0.5 spectra (sp_t…g1000nc_m+0.0_co0.5) against mag_table_m+0.0_co0.5:
+      - 500 K: ours 3.324, table 3.282 (+0.042)
+      - 700 K: 2.772 vs 2.708 (+0.064)
+      - 900 K: 2.438 vs 2.353 (+0.085)
+      - 1200 K: 1.911 vs 1.817 (+0.094)
+    - The registered C/O 1 spectra against mag_table+0.0: 900 K +0.109; 500 K +0.067.
+    - Only 1 of 6 is within 0.05 mag. Energy weighting is worse, and integrating on the model's own grid changes colours by ≤ 0.03.
+    - The tables' headers name pre-release model runs ("jun17_cloudless+0.0", "mar18_cloudless+0.0_co0.5"), not the released spectra, and their README uses the Bohlin & Gilliland 2004 Vega. The Vega difference can't explain this, because the W1/W2 factors differ by only 0.003 mag. So the comparison is between different model versions, and check 2 is **inconclusive, not passed**. Sent to Physics for a decision. The full run waits for it.
+  - **Unit test on WISE's system:** a ν⁻² spectrum at W2 = 15 gives 171.799 µJy at 4.6028 µm, against 171.787 (0.007%). test_fake_phot.py now applies the factor and holds to 0.2%.
+  - **Family colours** (F_ν relative to 4.6 µm, each averaged over a λ/40 band as the injection does per photo):
+    - bd900: 1.1 µm 0.244, 2.2 µm 0.070
+    - bd500: 1.1 µm 0.028, 2.2 µm 0.0017
+    - bb4000: 1.1 µm 3.43, 2.2 µm 2.62
+    - Single points on the model's fine grid are misleading (bd900 at 2.2 µm is 0.003 at a point), so they aren't used.

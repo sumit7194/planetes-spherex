@@ -110,10 +110,13 @@ def band_fnu_jy(lam: np.ndarray, fnu_jy: np.ndarray, cwave_um: float, cband_um: 
 
 
 def family_colours() -> dict:
-    """For the log (Physics): each family's F_ν at 1.1, 2.2 and 4.6 µm for W2 = 15."""
+    """For the log (Physics): each family's F_ν at 1.1, 2.2 and 4.6 µm relative to 4.6 µm, each
+    averaged over a SPHEREx-like band (λ/40 wide, as the injection does per photo). A single point
+    on the model's fine grid can sit in a deep line (bd900 at 2.2 µm: 0.003 at a point, 0.070
+    averaged), so points are not used."""
     out = {}
     for fam in ("bd900", "bd500", "bb4000"):
         lam, f = shape(fam)
-        s = scale_to_w2(lam, f, 15.0)
-        out[fam] = {f"{w} um": float(np.interp(w, lam, f * s)) for w in (1.1, 2.2, 4.6)}
+        ref = band_fnu_jy(lam, f, 4.6, 4.6 / 40)
+        out[fam] = {f"{w} um": band_fnu_jy(lam, f, w, w / 40) / ref for w in (1.1, 2.2, 4.6)}
     return out
