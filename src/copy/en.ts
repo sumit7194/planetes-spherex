@@ -1268,8 +1268,13 @@ export const copy = {
    */
   detectors: {
     title: 'Detectors in progress',
+    disclosureLead: 'Work in progress, not results. None has found anything new.',
     disclosure:
-      'Work in progress, not results. These detectors come from our own research. Most were built in October–November 2026, before this event (declared as prior work); the season-pair search was built during it. None has found anything new. Each section says what was tested, how, with what result, and what is not proven. Nothing flagged by these detectors is a discovery: flagged sources are mostly artefacts, variable stars or known objects, and we have not done the independent checks that would tell. Built with AI assistants (declared).',
+      'These detectors come from our own research. One of the four, the moving-object detector (v4), was built in October–November 2026, before this event (declared as prior work); the re-ranker built on it, spectral twins and the season-pair search were built during the event. Each section says what was tested, how, with what result, and what is not proven. Nothing flagged by these detectors is a discovery: flagged sources are mostly artefacts, variable stars or known objects, and we have not done the independent checks that would tell. Built with AI assistants (declared).',
+    /** One scannable line: the four statuses, in the cards' own words (Viewer). */
+    summary:
+      'Moving objects (v4): tested, passed · Re-ranker: built, not yet tested · Spectral twins: passed a small test, harder test found a problem · Season pairs: false alarms calibrated, reach being measured',
+    reproduce: 'Reproduce it',
     fields: {
       looks: 'What it looks for',
       status: 'Status',
@@ -1281,33 +1286,35 @@ export const copy = {
     cards: [
       {
         id: 'v4',
-        title: 'Fast movers within one visit (v4)',
+        title: 'Moving objects within one visit (v4)',
         looks:
           'Sources that move 0.25–3 pixels between photos taken 129 s apart within one SPHEREx visit: main-belt asteroids.',
         status: 'Tested · passed its pre-registered test',
         test: [
-          'Registered plan V_LOOK_1, scored on 6 Nov 2026 on held-out sky (patches V-1 to V-3). Fake asteroids planted in real photos: half were found down to magnitude 17.07 (68% range 17.04–17.10); at most 73% were found even when bright.',
-          'Thresholds were set on noise-only data, so false alarms come to 0.1 per square degree per visit.',
+          'Registered test V_LOOK_1, scored on 6 Nov 2026 on held-out sky (patches V-1 to V-3). Fake asteroids planted in real photos: half were found down to AB magnitude 17.07, measured in the visit’s short-wavelength detector (68% range 17.04–17.10); completeness levels off at 73%, so even bright fakes are not all found.',
+          'Thresholds were set on noise-only data for 0.1 false alarms per square degree per visit; all three test patches stayed within the registered bound.',
           'Realism check (14 Nov): fakes and real known asteroids are recovered alike (difference −0.005 mag, 90% range −0.075 to +0.050; the bar was ±0.2).',
           'Known asteroids re-found: 28, 13 and 10 in the three test patches.',
         ],
         notShown:
-          'No number for faster movers (near-Earth asteroids). Fewer are found within 2 px of bright stars (0.16 against about 0.25). Unexplained detections exist and have not been vetted; we don’t show them.',
+          'No number for faster movers (near-Earth asteroids). Overall completeness is lower within 2 px (12″) of stars brighter than Gaia G 16: 0.16 (95% 0.12–0.22), against 0.23–0.26 further out. Unexplained detections exist and have not been vetted; we don’t show them.',
         built:
-          'Before this event, in our research project (October–November 2026): declared as prior work.',
-        plan: 'Registered plan V_LOOK_1, in our research repository (not public).',
+          'October–November 2026, before this event, in our research project: declared as prior work.',
+        plan: 'Registered test V_LOOK_1, scored 6 Nov 2026; realism check 14 Nov 2026 (our research repository, not public).',
       },
       {
         id: 'ranker',
-        title: 'A re-ranker for the fast-mover candidates (R-1)',
+        title: 'A re-ranker for the moving-object candidates (R-1)',
         looks:
-          'It sorts the fast-mover search’s candidates into likely real movers and likely junk.',
+          'It sorts the moving-object search’s candidates into likely real movers and likely junk.',
         status: 'Built · its locked test has not run',
         test: [
+          'No test numbers yet: only development data exists, and the locked test on unseen sky hasn’t run.',
           'A re-ranker for the existing detector’s candidates. It finds nothing new. The numbers come from development data; the locked test on unseen sky has not run, so its value is not proven.',
         ],
         notShown: 'How well it works on sky it hasn’t seen: that is the locked test, not yet run.',
-        built: 'Before this event, in our research project: declared as prior work.',
+        built:
+          '14 Nov 2026, during this event, on top of the research project’s moving-object detector (v4) and its records, which are prior work.',
         plan: 'Registered claims, in our research repository (not public).',
       },
       {
@@ -1317,16 +1324,18 @@ export const copy = {
           'Stars whose SPHEREx spectra have the same shape, matched without a model of what the star is.',
         status: 'v1 passed a small test; harder tests found a problem',
         test: [
-          'Version 1 (36 isolated Gaia stars, G < 16, in the five challenge fields; 24-colour spectrum shapes, compared by principal components and cosine) passed its pre-set rule: a star’s twin differed from it in Gaia colour (BP−RP) by 0.09 mag (median), against 0.36 for random pairs (rule: ratio below 0.5); and the main shape component tracked colour (Spearman −0.85; rule: at least 0.5).',
+          'Version 1 (36 isolated Gaia stars, G < 16, in the five challenge fields; 24-colour spectrum shapes, compared by principal components and cosine) passed its pre-set rule: a star’s twin differed from it in Gaia colour (BP−RP) by 0.09 mag (median), against 0.36 for random pairs (rule: ratio below 0.5); and the main shape component tracked colour (Spearman −0.85; rule: |ρ| at least 0.5).',
           'Version 2’s harder tests: 56–61% of twins came from the star’s own field, against 28% expected.',
           'Shape matching passed its first pre-set test, but a harder test found the shapes also carry which field and which part of the detector a star fell on. Twins are partly instrument effects, not a classification. A cleaner test is planned and not run.',
         ],
         notShown:
           'That twins are the same kind of star. Version 3 (about 10,000 stars from 50+ fields, with instrument corrections first) is planned, not run.',
-        built: 'During this event (14 Nov 2026).',
+        built: '14 Nov 2026, during this event.',
         plan: 'pipeline/spectral_twins.py',
         planHref:
           'https://github.com/sumit7194/planetes-spherex/blob/main/pipeline/spectral_twins.py',
+        reproduce:
+          'From the repository: cd pipeline && uv run python spectral_twins.py (version 1, prints its result against the rule) and uv run python spectral_twins.py --v2 (the harder tests). Input: the five public packs in public/data; it asks ESA’s Gaia archive for each star’s colour (and IRSA, for --v2), so both must be answering.',
       },
       {
         id: 'season',
@@ -1337,7 +1346,7 @@ export const copy = {
           'Its false-alarm calibration, its reach measured with fake movers, and its limits are on the How we tested page, so the numbers live in one place.',
         ],
         notShown: 'See How we tested.',
-        built: 'During this event (14–15 Nov 2026).',
+        built: '14–15 Nov 2026, during this event.',
         plan: 'How we tested: the yardstick',
         planHref: 'tests.html#yardstick',
       },

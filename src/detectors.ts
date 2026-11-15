@@ -45,12 +45,21 @@ function card(c: Card): HTMLElement {
       h('dd', {}, c.built),
       h('dt', {}, f.plan),
       h('dd', {}, href ? h('a', { href }, c.plan) : c.plan),
+      ...('reproduce' in c
+        ? [h('dt', {}, t.reproduce), h('dd', {}, h('code', {}, c.reproduce))]
+        : []),
     ),
   );
 }
 
 root.append(
   h('h1', {}, t.title),
-  h('p', { class: 'dt-disclosure', role: 'note' }, t.disclosure),
+  h(
+    'div',
+    { class: 'dt-disclosure', role: 'note' },
+    h('p', { class: 'dt-lead' }, t.disclosureLead),
+    h('p', {}, t.disclosure),
+  ),
+  h('p', { class: 'dt-summary' }, t.summary),
   h('div', { class: 'dt-grid' }, ...t.cards.map(card)),
 );

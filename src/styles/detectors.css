@@ -68,3 +68,28 @@
 .dt-card a {
   color: var(--look);
 }
+.dt-disclosure p {
+  margin: 0 0 6px;
+}
+.dt-lead {
+  font-weight: 700;
+  font-size: 16px;
+}
+/* All four statuses at a glance, in the pills' words (Viewer). */
+.dt-summary {
+  max-width: none;
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  color: var(--mist);
+}
+.dt-grid {
+  align-items: start;
+}
+.dt-card code {
+  font:
+    12.5px / 1.5 ui-monospace,
+    Menlo,
+    monospace;
+  color: var(--starlight);
+  white-space: normal;
+}
