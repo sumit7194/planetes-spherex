@@ -40,6 +40,8 @@ function devLab(): void {
   link.href = `/design-lab/${name}.css`;
   document.head.append(link);
   document.documentElement.dataset['lab'] = name;
+  // A lab variant may also draw (e.g. the real sky): design-lab/<name>.js, if it exists.
+  if (name.startsWith('realsky')) void import(/* @vite-ignore */ `/design-lab/${name}.js`);
 }
 
 export function watchScheme(): void {
