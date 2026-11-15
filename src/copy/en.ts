@@ -1370,12 +1370,12 @@ export const copy = {
       {
         title: 'Known asteroids, where SPHEREx saw them',
         result:
-          'SkyBoT predicts where asteroids are as seen from Earth’s centre; SPHEREx is about 7,000 km from it. We move each prediction to SPHEREx’s own position, taken from each photo’s header. 644 Cosima’s corrected place agrees with an independent prediction (kete) to 0.14″. In a real photo, 1214 Richilde shows 0.24″ (0.04 pixel) from its corrected place, against 1.03″ without the correction. No near-Earth asteroid is in the five’s photos, so the shift there stays under a pixel.',
+          'SkyBoT predicts where asteroids are as seen from Earth’s centre; SPHEREx is about 7,000 km from it. We move each prediction to SPHEREx’s own position, taken from each photo’s header. 644 Cosima’s corrected place agrees with an independent prediction (kete) to 0.14″. In a real photo, 1214 Richilde shows 0.24″ (0.04 pixel) from its corrected place, against 1.03″ without the correction. In the five’s photos the shift stays under a pixel; it is largest for near-Earth asteroids, and none is in those photos.',
       },
       {
         title: 'Keeping up with new photos',
         result:
-          'Every day, a check lists NASA’s SPHEREx bucket and adds any new photo to our sky index, making its record from the photo’s own headers. That recipe is re-checked each run against records made from IRSA’s footprints: 100 of 100 match (centres within 0.05″, times and flags equal). Nothing goes live until a person merges it.',
+          'Every day, a check lists NASA’s SPHEREx bucket and proposes any new photo for our sky index, making its record from the photo’s own headers. That recipe is re-checked on each run against records made from IRSA’s footprints; in the run of 15 Nov 2026, 100 of 100 matched (centres within 0.05″, times and flags equal). Nothing goes live until a person merges it. It does not yet rebuild the home page’s coverage map or survey line.',
       },
     ],
     afterTitle: 'Choices made after seeing these fields',
