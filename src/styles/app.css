@@ -3679,3 +3679,186 @@ span[data-fit='1'] {
 .listen-row .hint {
   margin: 0;
 }
+
+/* ---------- loading: placeholders, a progress line, one fade, the lens scan (Sumit, 15 Nov) ----------
+   Subtle on purpose: the shapes of what is coming, a slow soft shimmer, nothing that jumps. */
+.skel {
+  display: inline-block;
+  min-width: 2ch;
+  border-radius: 6px;
+  color: transparent !important;
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.04) 0%,
+    rgb(255 255 255 / 0.1) 50%,
+    rgb(255 255 255 / 0.04) 100%
+  );
+  background-size: 220% 100%;
+  animation: skel-shimmer 2.2s ease-in-out infinite;
+  user-select: none;
+}
+@keyframes skel-shimmer {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+.skel.big {
+  line-height: 0.9;
+}
+.skel-row .skel-pill {
+  display: block;
+  min-height: 30px;
+  border-radius: 7px;
+}
+.skel-tabbed .skel-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid var(--dusk-line);
+  font-size: 14px;
+  color: color-mix(in srgb, var(--quiet) 55%, transparent);
+}
+.skel-tabbed .skel-body {
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+}
+.skel-line {
+  display: block;
+  height: 12px;
+  width: 85%;
+}
+.skel-line.short {
+  width: 55%;
+}
+.skel-thumbs,
+.skel-actions {
+  display: flex;
+  gap: 8px;
+}
+.skel-thumb {
+  width: 56px;
+  height: 56px;
+}
+.skel-actions .skel-pill {
+  width: 84px;
+  height: 30px;
+  border-radius: 99px;
+}
+.skel-ribbon .skel-block {
+  display: block;
+  width: 100%;
+  height: 60px;
+  margin-top: 14px;
+}
+.skel-ribbon {
+  flex: 1;
+  min-width: 200px;
+}
+
+.probing {
+  margin: 4px 0 10px;
+}
+.load-bar {
+  position: relative;
+  height: 2px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--look) 16%, transparent);
+}
+.load-bar i {
+  display: block;
+  height: 100%;
+  background: var(--look);
+  transition: width 260ms ease-out;
+}
+/* Before the count is known: a short light gliding along the line. */
+.load-bar.indeterminate i {
+  width: 30% !important;
+  animation: load-glide 1.6s ease-in-out infinite;
+}
+@keyframes load-glide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+.load-count {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Loading ends: the column fades in once (placeholders → content), with no movement. */
+.words.arrive > * {
+  animation: words-arrive 280ms ease-out both;
+}
+@keyframes words-arrive {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The lens while its photos are found: a faint arc sweeping round, like SPHEREx's scan ring. */
+.lens-scan {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 290deg,
+    color-mix(in srgb, var(--look) 5%, transparent) 330deg,
+    color-mix(in srgb, var(--look) 14%, transparent) 360deg
+  );
+  -webkit-mask: radial-gradient(closest-side, #000 98%, transparent 100%);
+  mask: radial-gradient(closest-side, #000 98%, transparent 100%);
+  animation: lens-scan 6s linear infinite;
+}
+.lens-scan[hidden] {
+  display: none;
+}
+@keyframes lens-scan {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel,
+  .load-bar.indeterminate i,
+  .lens-scan,
+  .words.arrive > * {
+    animation: none;
+  }
+  .lens-scan {
+    background: radial-gradient(
+      circle,
+      transparent 0 60%,
+      color-mix(in srgb, var(--look) 8%, transparent) 70%,
+      transparent 71%
+    );
+  }
+}
+
+/* A link straight to a page: hidden until that page is laid out, then a short fade (main.ts). */
+#app {
+  transition: opacity 220ms ease-out;
+}
+#app.booting {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  #app {
+    transition: none;
+  }
+}

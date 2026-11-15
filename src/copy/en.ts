@@ -633,6 +633,10 @@ export const copy = {
       again: (n: number) => `Play the ${n} photos again`,
     },
     finding: 'Finding SPHEREx photos of this spot.',
+    /** The loading line under the progress bar (Sumit, 15 Nov: hints, not a ticking sentence). */
+    findingShort: 'Finding SPHEREx photos of this spot',
+    probingShort: (done: number, total: number, of: number) =>
+      `${of.toLocaleString('en-GB')} photos found · checking colours, ${done} of ${total}`,
     probing: (done: number, total: number, of: number) =>
       `Found ${of.toLocaleString('en-GB')} photos. Checking which colour ${total} of them saw here, for a fair comparison: ${done} done.`,
     deep: "This spot is in one of SPHEREx's deep fields, photographed far more often than the rest of the sky; the look picks a few.",

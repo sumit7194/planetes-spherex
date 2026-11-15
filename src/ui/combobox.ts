@@ -137,6 +137,7 @@ export function combobox(
           li.addEventListener('mousedown', (e) => e.preventDefault());
           li.addEventListener('click', () => {
             active = i;
+            picked();
             on.choose(o);
           });
           // Resting the mouse here makes it the active option (only real movement counts).
@@ -176,6 +177,16 @@ export function combobox(
     pop.hidden = true;
     input.setAttribute('aria-expanded', 'false');
   }
+  /** A choice was made: the list closes, and stays closed while the page rebuilds and hands
+   * focus back to the field (it stayed open over the page, Sumit, 15 Nov). */
+  let pickedAt = -Infinity;
+  function picked(): void {
+    pickedAt = performance.now();
+    close();
+    // Focus leaves the field, so the page's rebuilds don't hand it back and reopen the list;
+    // the page then lands focus on what opened (its heading).
+    input.blur();
+  }
 
   function move(step: number): void {
     const ids = options.map((o, i) => (o.note ? -1 : i)).filter((i) => i >= 0);
@@ -190,23 +201,26 @@ export function combobox(
   }
 
   input.addEventListener('input', () => {
+    pickedAt = -Infinity;
     active = -1;
     on.query(input.value);
     open();
   });
   input.addEventListener('focus', () => {
     on.query(input.value);
-    open();
+    if (performance.now() - pickedAt > 2000) open();
   });
   input.addEventListener('blur', () => close());
   input.addEventListener('keydown', (e) => {
     if (e.isComposing) return;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      pickedAt = -Infinity;
       e.preventDefault();
       if (pop.hidden) open();
       move(e.key === 'ArrowDown' ? 1 : -1);
     } else if (e.key === 'Enter') {
       e.preventDefault();
+      picked();
       on.choose(current());
     } else if (e.key === 'Escape') {
       if (!pop.hidden) {

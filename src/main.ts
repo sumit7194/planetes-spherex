@@ -308,6 +308,9 @@ app.dataset['place'] = state.place.kind;
 
 const skyCanvas = h('canvas', { class: 'sky', width: 1120, height: 1120, 'aria-label': 'Sky map' });
 const lensCanvas = h('canvas', { class: 'lens', width: 720, height: 720, 'aria-label': 'Lens' });
+/** While a look's photos are found and read: a faint arc sweeping the empty lens, like SPHEREx's
+ * own scan ring (Sumit, 15 Nov: subtle loading hints). Placed over the lens in render(). */
+const lensScan = h('div', { class: 'lens-scan', 'aria-hidden': 'true', hidden: true });
 const locatorCanvas = h('canvas', {
   class: 'locator',
   width: 360,
@@ -387,6 +390,7 @@ const stage = h(
     focusRing,
     focusCaption,
     lensCanvas,
+    lensScan,
     locatorCanvas,
     trueScaleFig,
     moon,
@@ -1600,6 +1604,8 @@ const combo = combobox(search, {
     }
     if (!opt || opt.note) return;
     combo.close();
+    // The field gave up focus (so its list stays shut): land it on what opens, for keyboards.
+    focusLandingUntil = performance.now() + 15000;
     visitorLeavesLearn();
     // Not inside the keydown: opening a look moves the field from the homepage column to the
     // header, and moving a focused field mid-event loses keys and autofill (Viewer, 14 Nov).
@@ -2552,8 +2558,13 @@ async function openLook(
         if (live !== look) return;
         look.probe = { done, total, of };
         const line = words.querySelector('.probing');
-        if (line) line.textContent = copy.look.probing(done, total, of);
-        else render();
+        const bar = line?.querySelector<HTMLElement>('.load-bar i');
+        const count = line?.querySelector('.load-count');
+        if (bar && count && !look.choosingColour) {
+          bar.parentElement?.classList.remove('indeterminate');
+          bar.style.width = `${Math.round((100 * done) / Math.max(1, total))}%`;
+          count.textContent = copy.look.probingShort(done, total, of);
+        } else render();
       });
       plan = found.plan;
       look.photos = found.photos;
@@ -5381,6 +5392,23 @@ function showWords(): Node[] {
     out.push(
       h('h2', {}, ready ? copy.show.movedDir(w.name, show.direction) : copy.show.expectation),
     );
+    // Until the pack is in, the headline's place is held (it arrived seconds later and pushed
+    // the tabs down: Sumit, 15 Nov).
+    if (!ready)
+      out.push(
+        h(
+          'div',
+          { class: 'hero-move skel-hero', 'aria-hidden': 'true' },
+          h('span', { class: 'about' }, '\u00a0'),
+          skel('big skel-num', '00″'),
+          h(
+            'span',
+            { class: 'unit' },
+            skel('', 'arcseconds north'),
+            skel('dates', 'Aug 2025 → Aug 2026'),
+          ),
+        ),
+      );
     if (ready) {
       // One number with its unit, then the line that backs it up.
       out.push(
@@ -5900,6 +5928,63 @@ function claim(text: string, pack: string, keys: string[], kind = 'value'): HTML
   return h('span', { 'data-claim': `${pack}/${keys.join('+')}`, 'data-claim-kind': kind }, text);
 }
 
+/* ---------- loading placeholders (Sumit, 15 Nov) ----------
+   While a page loads, its column keeps the shape it will have when ready: faint placeholders where
+   the number, the colour row and the tabs will be, so nothing jumps when the data lands. */
+const skel = (cls = '', text = '\u00a0') =>
+  h('span', { class: `skel ${cls}`.trim(), 'aria-hidden': 'true' }, text);
+
+function skelColourRow(): HTMLElement {
+  return h(
+    'div',
+    { class: 'colour-row skel-row', 'aria-hidden': 'true' },
+    ...RANGES.map(() => skel('skel-pill')),
+  );
+}
+
+function skelTabbed(): HTMLElement {
+  const t = copy.panel.tabs;
+  return h(
+    'div',
+    { class: 'panel-tabbed skel-tabbed', 'aria-hidden': 'true' },
+    h(
+      'div',
+      { class: 'skel-tabs' },
+      ...[t.compare, t.watch, t.facts, t.spectrum].map((x) => h('span', {}, x)),
+    ),
+    h(
+      'div',
+      { class: 'skel-body' },
+      skel('skel-line'),
+      h('div', { class: 'skel-thumbs' }, skel('skel-thumb'), skel('skel-thumb')),
+      h('div', { class: 'skel-actions' }, skel('skel-pill'), skel('skel-pill'), skel('skel-pill')),
+      skel('skel-line short'),
+    ),
+  );
+}
+
+/** A thin progress line and one quiet line of words, in place of a ticking sentence. */
+function loadProgress(
+  p: { done: number; total: number; of: number } | null | undefined,
+  choosing: boolean,
+): HTMLElement {
+  const pct = p ? Math.round((100 * p.done) / Math.max(1, p.total)) : 0;
+  return h(
+    'div',
+    { class: 'probing', role: 'status' },
+    h('div', { class: `load-bar${p ? '' : ' indeterminate'}` }, h('i', { style: `width:${pct}%` })),
+    h(
+      'p',
+      { class: 'load-count' },
+      choosing
+        ? copy.look.colour.choosing
+        : p
+          ? copy.look.probingShort(p.done, p.total, p.of)
+          : copy.look.findingShort,
+    ),
+  );
+}
+
 /** The words beside a live look: what was found, what is shown, and what it isn't. */
 function lookWords(): HTMLElement[] {
   const place = state.place;
@@ -5923,15 +6008,30 @@ function lookWords(): HTMLElement[] {
       : null,
   ];
   if (place.kind === 'finding' || !plan) {
-    const p = live?.probe;
-    out.push(h('h2', {}, copy.look.finding));
-    if (live?.choosingColour)
-      out.push(h('p', { class: 'hint', role: 'status' }, copy.look.colour.choosing));
-    if (p)
-      out.push(
-        h('p', { class: 'hint probing', role: 'status' }, copy.look.probing(p.done, p.total, p.of)),
-      );
-    return out.filter((x): x is HTMLElement => x !== null);
+    // The ready page's shape, in placeholders: the count, the dates, the colour row, the tabs.
+    out.push(
+      h(
+        'div',
+        { class: 'hero-count loading', role: 'heading', 'aria-level': '2' },
+        skel('big skel-num', '000'),
+        h(
+          'span',
+          { class: 'unit' },
+          h('span', {}, copy.look.findingShort),
+          skel('dates', 'May 2025 → May 2026'),
+        ),
+      ),
+      loadProgress(live?.probe, !!live?.choosingColour),
+      skelColourRow(),
+    );
+    return [
+      h(
+        'div',
+        { class: 'panel-summary', 'aria-busy': 'true' },
+        ...out.filter((x): x is HTMLElement => x !== null),
+      ),
+      skelTabbed(),
+    ];
   }
   if (plan.kind === 'none') {
     out.push(h('h2', {}, copy.look.noPhotos));
@@ -6085,6 +6185,15 @@ function lookWords(): HTMLElement[] {
       ]);
     }
   }
+  if (place.kind === 'filling')
+    return [
+      h(
+        'div',
+        { class: 'panel-summary', 'aria-busy': 'true' },
+        ...out.filter((x): x is HTMLElement => x !== null),
+      ),
+      skelTabbed(),
+    ];
   return out.filter((x): x is HTMLElement => x !== null);
 }
 
@@ -7548,7 +7657,16 @@ function drawBand(): void {
             copy.ribbon.checked(plan.total),
           )
         : null;
-    band.replaceChildren(dock(dots, markKey('look')), caseRail());
+    // Still finding: a placeholder the ribbon's size, so the band doesn't grow when it lands.
+    const waiting =
+      !dots && (place.kind === 'finding' || place.kind === 'filling')
+        ? h(
+            'div',
+            { class: 'ribbon-figure skel-ribbon', 'aria-hidden': 'true' },
+            skel('skel-block'),
+          )
+        : null;
+    band.replaceChildren(dock(dots ?? waiting, markKey('look')), caseRail());
     return;
   }
   // One dock everywhere: the photos as dots, then the same five cards as on the sky.
@@ -7931,6 +8049,25 @@ function tourEntry(e: Entry): void {
   goEntry(e);
 }
 
+/** The place whose column was last drawn as placeholders (null when it was ready). */
+let wordsLoadingFor: string | null = null;
+
+/** The faint scan arc over the lens while a look's photos are found and read. */
+function placeLensScan(): void {
+  const k = state.place.kind;
+  const on = (k === 'finding' || k === 'filling') && !live?.landed.length;
+  lensScan.hidden = !on;
+  if (!on) return;
+  // From the lens's box on screen, relative to the view (the canvas is scaled by CSS).
+  const v = lensScan.parentElement?.getBoundingClientRect();
+  const r = lensCanvas.getBoundingClientRect();
+  if (!v || !r.width) return;
+  lensScan.style.left = `${r.left - v.left}px`;
+  lensScan.style.top = `${r.top - v.top}px`;
+  lensScan.style.width = `${r.width}px`;
+  lensScan.style.height = `${r.height}px`;
+}
+
 function render(): void {
   // Leaving Learn by any route (Play, the logo, a target, the back button), not only Play's
   // button: its brighter coverage, the sweep, riding and the step out all end (Sumit, 15 Nov:
@@ -7967,7 +8104,24 @@ function render(): void {
   const landingFree = !active || active === document.body || !!active.dataset['landing'];
   // A catalogue chip keeps the keyboard through the rebuild its own press causes (Viewer).
   const chipHadFocus = active?.dataset['chip'] ?? null;
+  const wasLoading = wordsLoadingFor;
   words.replaceChildren(...renderWords());
+  // Loading ends: the column fades in once instead of snapping (never on every rebuild).
+  const nowLoading = !!words.querySelector('[aria-busy="true"].panel-summary, .skel-hero');
+  const placeId = JSON.stringify(
+    'target' in state.place
+      ? state.place.target
+      : 'at' in state.place
+        ? state.place.at
+        : state.place.kind,
+  );
+  wordsLoadingFor = nowLoading ? placeId : null;
+  if (wasLoading === placeId && !nowLoading) {
+    words.classList.remove('arrive');
+    void words.offsetWidth;
+    words.classList.add('arrive');
+  }
+  placeLensScan();
   // N7: after the tour ends into a spot, focus lands on where the visitor arrived (the look's
   // summary, or a page's heading), and stays there as the column is rebuilt (Viewer).
   // For a short while (the look's column is rebuilt as its photos arrive, sometimes with no
@@ -8013,6 +8167,14 @@ function render(): void {
   } else delete words.dataset['sheet'];
   // Tabbed pages give the words column the full height: the band sits under the lens only.
   app.classList.toggle('panel-full', tabbed);
+  // Shown once the page has its final shape (the tabbed column), not the half-built first pass.
+  if (
+    state.place.kind !== 'sky' &&
+    app.classList.contains('booting') &&
+    app.classList.contains('panel-full')
+  )
+    // The tabbed layout settles a frame or two later: reveal just after it.
+    setTimeout(() => app.classList.remove('booting'), 120);
   markMore();
   requestAnimationFrame(refocus);
   renderBand();
@@ -8063,6 +8225,12 @@ const wantedEntry = q.get('entry');
 // ?entry=globe (old links) now means stepping out to Earth and the orbit from Look around.
 const entry = wantedEntry === 'flat' ? 'flat' : 'inside';
 dispatch({ type: 'setEntry', entry });
+// A link straight to a page: the app stays hidden until that page is laid out, then fades in,
+// instead of drawing the homepage first and re-laying out (Sumit, 15 Nov). Never longer than 1.5 s.
+if (q.get('target') || q.get('at')) {
+  app.classList.add('booting');
+  setTimeout(() => app.classList.remove('booting'), 1500);
+}
 render();
 placeSky(entry);
 locator.setEntry('flat');
