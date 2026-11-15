@@ -33,3 +33,8 @@
 
 ## 7. Log
 - 15 Nov 2026, 07:11 IST: registered. Nothing measured.
+- 15 Nov 2026, 07:13 IST: §1's fallback applies: measure.py has no ePSF masked-fraction correction, so any FIT_REJECT pixel in a star's 3×3 rejects it in that photo.
+- 15 Nov 2026, 07:13 IST: **flags-only inventory and the steady-star step (no target ratio computed).**
+  - **R Draconis:** saturated (or a rejected pixel in the core) in every cached photo of every detector (91/88/91/88/88/91 photos). By §6, R Dra ends here: "saturated in every photo here".
+  - **RW Aurigae:** clean in 18 photos, all in D1; D2–D6 saturated in every photo. D1 has 4 wavelength-matched pairs between passes 1→2 (≥ 3), and 2 each for 1→3 and 2→3 ("fewer than 3 pairs").
+  - **D1, 1→2 steady stars:** only **2** Gaia stars in the cached cutouts (~6′) meet §3 (peak within ×3 of the target's 54.6 MJy/sr). §3 needs 5, so: "fewer than 5 steady stars". Asked Physics whether wider cutouts of the same 8 photos may be read (a scope change, decided before any target ratio).
