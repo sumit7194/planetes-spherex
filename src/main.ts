@@ -6927,6 +6927,8 @@ async function moversOn(
   observers?: (Observer | null | undefined)[],
   signal?: AbortSignal,
 ): Promise<MoverMark[][] | 'failed'> {
+  // Keyed by date: safe because one exposure has one time and one position. Never pass stacked
+  // or mean-date frames through this (they have no single position; Viewer, 15 Nov).
   const at = new Map(mjds.map((m, i) => [m, observers?.[i] ?? null] as const));
   const { byMjd, failed } = await knownMoversAt(
     centre,
