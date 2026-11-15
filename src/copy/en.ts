@@ -1272,6 +1272,8 @@ export const copy = {
     keyPhoto: 'single photos (S/N ≥ 10)',
     thumbs:
       'Each square is one visit’s photos stacked to follow Makemake (between the ticks): it stays sharp while the stars smear away.',
+    figThumbs:
+      'Squares: each visit stacked to follow Makemake (ticks), so it stays sharp and stars smear.',
     howHead: 'How we measured it',
     readoutHead: 'Measured minus predicted',
     readoutRow: (date: string, e: string, n: string, err: string, photos: number, det: number) =>

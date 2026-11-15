@@ -228,6 +228,8 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
     }
   }
   const thumbs = await Promise.all(det.map(thumbUrl));
+  const drawn: [number, number][] = [...earth, ...sun].map(box.map);
+  const placed: [number, number][] = [];
   det.forEach((v, i) => {
     const [x, y] = box.map(P(...v.measured));
     if (v.fromSun) {
@@ -237,12 +239,31 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
     }
     svg.append(s('circle', { cx: x, cy: y, r: 6, class: 'lp-visit' }));
     // The thumbnail sits outward from the figure's centre, away from the path, with a leader line.
-    const dx = x - W / 2;
-    const dy = y - H / 2;
-    const dn = Math.hypot(dx, dy) || 1;
+    // Try outward directions (then turned ±25°, ±50°, ±75°, further out) until the square covers
+    // no part of the drawn paths or another square (Viewer).
     const T = 88;
-    const cxT = Math.min(Math.max(x + (dx / dn) * 125, T / 2 + 4), W - T / 2 - 4);
-    const cyT = Math.min(Math.max(y + (dy / dn) * 125, T / 2 + 18), H - T / 2 - 40);
+    const base = Math.atan2(y - H / 2, x - W / 2);
+    let cxT = x;
+    let cyT = y;
+    search: for (const dist of [125, 150, 175]) {
+      for (const turn of [0, -25, 25, -50, 50, -75, 75]) {
+        const a = base + (turn * Math.PI) / 180;
+        const cx = Math.min(Math.max(x + Math.cos(a) * dist, T / 2 + 4), W - T / 2 - 4);
+        const cy = Math.min(Math.max(y + Math.sin(a) * dist, T / 2 + 18), H - T / 2 - 40);
+        const inside = ([px, py]: [number, number]) =>
+          Math.abs(px - cx) < T / 2 + 6 && Math.abs(py - cy) < T / 2 + 6;
+        cxT = cx;
+        cyT = cy;
+        if (!drawn.some(inside) && !placed.some(inside)) break search;
+      }
+    }
+    placed.push(
+      [cxT, cyT],
+      [cxT - T / 2, cyT - T / 2],
+      [cxT + T / 2, cyT + T / 2],
+      [cxT - T / 2, cyT + T / 2],
+      [cxT + T / 2, cyT - T / 2],
+    );
     const url = thumbs[i];
     if (url) {
       svg.append(s('line', { x1: x, y1: y, x2: cxT, y2: cyT, class: 'lp-leader' }));
@@ -277,6 +298,7 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
   svg.append(
     s('line', { x1: 20, y1: H - 24, x2: 20 + sb.len, y2: H - 24, class: 'lp-scale' }),
     s('text', { x: 20, y: H - 32, class: 'lp-scale-t' }, sb.label),
+    s('text', { x: W / 2, y: H - 12, class: 'lp-scale-t', 'text-anchor': 'middle' }, t.figThumbs),
     s('text', { x: W - 20, y: H - 20, class: 'lp-compass', 'text-anchor': 'end' }, 'N ↑  E ←'),
   );
 
