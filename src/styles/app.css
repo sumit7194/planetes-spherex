@@ -138,6 +138,11 @@
   position: relative;
   z-index: 1;
 }
+/* The header holds the search dropdown: it must sit above the panels below it, or their text
+   shows through the open list (seen by Sumit, 15 Nov). Under the star tip (40). */
+#app > .top {
+  z-index: 25;
+}
 canvas.sky-fade {
   position: fixed;
   inset: 0;
