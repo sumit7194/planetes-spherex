@@ -6,16 +6,18 @@
  */
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/header.css';
 import './styles/credits.css';
 import './styles/mark.css';
 import './styles/loop.css';
 import { copy } from './copy/en';
 import { h } from './ui/dom';
-import { markSvg } from './ui/mark';
+import { siteHeader } from './ui/header';
 import { watchScheme } from './ui/scheme';
 import { sharedStretch, toGrey } from './render/stretch';
 
 watchScheme();
+document.body.prepend(siteHeader('loop'));
 
 const t = copy.loop;
 const root = document.getElementById('loop') as HTMLElement;
@@ -580,13 +582,6 @@ function modelView(doc: LoopDoc | null): HTMLElement {
 
 // ---------- page ----------
 async function main(): Promise<void> {
-  const back = h('a', { class: 'credits-back home', href: './' }, markSvg(), h('span', {}, t.back));
-  back.addEventListener('click', (e) => {
-    if (document.referrer && new URL(document.referrer).origin === location.origin) {
-      e.preventDefault();
-      history.back();
-    }
-  });
   let doc: LoopDoc | null = null;
   try {
     const r = await fetch(`${BASE}makemake.json`);
@@ -642,13 +637,7 @@ async function main(): Promise<void> {
       void show('measured', true);
     }
   });
-  const head = h(
-    'div',
-    { class: 'lp-head' },
-    back,
-    h('a', { href: './', class: 'lp-backsky' }, t.backSky),
-  );
-  root.append(head, h('h1', {}, t.title), h('p', { class: 'lede' }, t.lede), seg, holder);
+  root.append(h('h1', {}, t.title), h('p', { class: 'lede' }, t.lede), seg, holder);
   await show(want);
 }
 

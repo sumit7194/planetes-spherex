@@ -19,54 +19,10 @@
   background: var(--night);
 }
 
-/* ---------- header ---------- */
+/* ---------- header (the shared brand row is in header.css) ---------- */
 
-.top {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 16px 28px 8px;
-}
-.wordmark {
-  margin: 0;
-  font: inherit;
-}
-/* The wordmark is the home link: the mark, the name, and a chevron that appears in a show. */
-.home {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--starlight);
-  text-decoration: none;
-  border-radius: 10px;
-  padding: 2px 6px 2px 0;
-}
-.home-name {
-  font: 600 21px / 1 var(--serif);
-  letter-spacing: 0.02em;
-}
-.home-back {
-  display: none;
-  font: 400 22px / 1 var(--sans);
-  color: var(--quiet);
-  margin-right: -3px;
-  transition: transform 0.15s;
-}
-:not([data-place='sky']) > .top .home-back {
+:not([data-place='sky']) > .top a.home .home-back {
   display: inline;
-}
-.home:hover .home-back,
-.home:focus-visible .home-back {
-  color: var(--starlight);
-  transform: translateX(-2px);
-}
-.credits-link {
-  color: var(--quiet);
-  font-size: 13px;
-  text-decoration: none;
-}
-.credits-link:hover {
-  color: var(--mist);
 }
 .dial {
   display: inline-flex;
@@ -540,6 +496,10 @@ canvas.sky.backdrop {
   }
   #app.panel-full > .top {
     grid-column: 1 / -1;
+    /* The grid below is centred, so its full span starts a few pixels in; the header still runs
+       from the window's left edge, so the mark sits at the same place on every page (Sumit). */
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
   }
   #app.panel-full > .stage {
     display: contents;
@@ -3897,19 +3857,5 @@ span[data-fit='1'] {
 @media (prefers-reduced-motion: reduce) {
   #app {
     transition: none;
-  }
-}
-
-/* The tagline beside the name: quiet, on the name's baseline; hidden where the header is tight. */
-.home-tagline {
-  align-self: flex-end;
-  margin: 0 0 3px 2px;
-  font: 13px var(--sans);
-  color: var(--quiet);
-  white-space: nowrap;
-}
-@media (max-width: 1100px) {
-  .home-tagline {
-    display: none;
   }
 }

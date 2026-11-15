@@ -1208,6 +1208,14 @@ export const copy = {
   },
   nav: {
     tagline: 'the wanderers in SPHEREx’s sky',
+    /** The text pages' header links (src/ui/header.ts). */
+    pagesLabel: 'Pages',
+    pages: {
+      tests: 'How we tested',
+      fieldguide: 'What fools you',
+      loop: 'Why a far planet loops',
+      credits: 'Credits',
+    },
     backToSky: 'Back to the sky',
     home: 'Planetes: back to the start',
     credits: 'Credits',
@@ -1255,7 +1263,6 @@ export const copy = {
   /** "Why a far planet loops" (loop.html): Makemake measured, and a distance model (15 Nov). */
   loop: {
     back: 'Planetes',
-    backSky: '← Back to the sky',
     title: 'Why a far planet loops',
     lede: 'A nearby star drifts across the sky in a nearly straight line. A body far out in our own solar system loops, because we watch it from a moving Earth. That loop is what a Planet X search looks for.',
     views: 'View',

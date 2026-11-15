@@ -1,27 +1,10 @@
 /* "What fools you": two cards per row on wide screens, one below 1100 px (Viewer). */
-#fieldguide {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 32px 24px 48px;
-}
-#fieldguide h1 {
-  font: 400 clamp(30px, 4vw, 42px) / 1.15 var(--serif);
-  margin: 36px 0 6px;
-}
 #fieldguide h2 {
   font: 600 13px var(--sans);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--quiet);
   margin: 36px 0 12px;
-}
-#fieldguide .credits-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--starlight);
-  font: 600 17px var(--serif);
-  text-decoration: none;
 }
 .fg-grid {
   display: grid;

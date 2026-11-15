@@ -1,26 +1,14 @@
 /* "Why a far planet loops": the figure left (~62%), a text column right; stacked below 1000 px.
-   Ember = measured, lilac = predicted or model, mist dashed = seen from the Sun (Viewer, 15 Nov). */
+   Its frame, title and header are the shared ones (credits.css, header.css); the intro sits
+   tighter so the page fits 1280x720. */
 #loop {
-  max-width: 76rem;
-  margin: 0 auto;
-  padding: 14px 24px 16px;
-}
-#loop .credits-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--starlight);
-  font: 600 17px var(--serif);
-  text-decoration: none;
-}
-#loop h1 {
-  font: 400 clamp(26px, 3.4vw, 36px) / 1.15 var(--serif);
-  margin: 10px 0 4px;
+  padding-bottom: 12px;
 }
 #loop .lede {
   max-width: 60rem;
-  margin: 0 0 8px;
+  margin-bottom: 8px;
 }
+/* Ember = measured, lilac = predicted or model, mist dashed = seen from the Sun (Viewer, 15 Nov). */
 #loop h2 {
   font: 600 12px var(--sans);
   letter-spacing: 0.08em;
@@ -69,7 +57,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: calc(100vh - 262px);
+  max-height: calc(100vh - 292px);
 }
 .lp-side {
   font-size: 13.75px;
@@ -239,15 +227,6 @@
   font: 600 13px var(--sans);
   color: var(--mist);
   margin: 4px 0;
-}
-.lp-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.lp-backsky {
-  color: var(--mist);
-  font: 600 14px var(--sans);
 }
 .lp-arrow path {
   fill: var(--sky-predicted);

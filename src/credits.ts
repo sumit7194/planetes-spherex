@@ -5,14 +5,16 @@
  */
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/header.css';
 import './styles/credits.css';
 import './styles/mark.css';
 import { copy } from './copy/en';
 import { h } from './ui/dom';
-import { markSvg } from './ui/mark';
+import { siteHeader } from './ui/header';
 import { watchScheme } from './ui/scheme';
 
 watchScheme();
+document.body.prepend(siteHeader('credits'));
 
 const c = copy.credits;
 const root = document.getElementById('credits') as HTMLElement;
@@ -70,7 +72,6 @@ const makers = h(
 );
 
 root.append(
-  h('a', { class: 'credits-back home', href: './' }, markSvg(), h('span', {}, c.back)),
   h('h1', {}, c.title),
   h('p', { class: 'lede' }, c.lede),
   table,

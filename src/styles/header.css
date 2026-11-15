@@ -1,0 +1,93 @@
+/* The header every page shares (Sumit, 15 Nov: the name and icon kept moving between pages).
+   One brand row, always at the same place and size: the mark (28 px) and the name (21 px) at the
+   left gutter (28 px), the tagline beside them; a back chevron sits in the gutter, never pushing
+   the mark. The app adds its Play/Learn dial and search (app.css); the text pages add their links. */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 28px 8px;
+  /* The app's row is as tall as its Play/Learn dial; every header keeps that height, so the
+     mark sits at the same height on every page. */
+  box-sizing: border-box;
+  min-height: 63px;
+}
+.wordmark {
+  margin: 0;
+  font: inherit;
+}
+a.home {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--starlight);
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 2px 6px 2px 0;
+}
+a.home .mark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+.home-name {
+  font: 600 21px / 1 var(--serif);
+  letter-spacing: 0.02em;
+}
+/* In the gutter, left of the mark: showing it never moves the mark. */
+.home-back {
+  display: none;
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  margin-right: 4px;
+  font: 400 22px / 1 var(--sans);
+  color: var(--quiet);
+  transform: translateY(-55%);
+  transition: transform 0.15s;
+}
+a.home:hover .home-back,
+a.home:focus-visible .home-back {
+  color: var(--starlight);
+  transform: translate(-2px, -55%);
+}
+.home-tagline {
+  align-self: flex-end;
+  margin: 0 0 3px 2px;
+  font: 13px var(--sans);
+  color: var(--quiet);
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .home-tagline {
+    display: none;
+  }
+}
+.credits-link,
+.site-nav a {
+  color: var(--quiet);
+  font-size: 13px;
+  text-decoration: none;
+}
+.credits-link:hover,
+.site-nav a:hover {
+  color: var(--mist);
+}
+
+/* The text pages' header: the same brand row, then links to the other pages. */
+.site-top a.home .home-back {
+  display: inline;
+}
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-left: auto;
+}
+.site-nav a[aria-current='page'] {
+  color: var(--starlight);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--starlight) 35%, transparent);
+  text-underline-offset: 5px;
+}

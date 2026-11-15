@@ -7,17 +7,19 @@
  */
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/header.css';
 import './styles/credits.css';
 import './styles/tests.css';
 import './styles/fieldguide.css';
 import './styles/mark.css';
 import { copy } from './copy/en';
 import { h } from './ui/dom';
-import { markSvg } from './ui/mark';
+import { siteHeader } from './ui/header';
 import { watchScheme } from './ui/scheme';
 import { sharedStretch, toGrey } from './render/stretch';
 
 watchScheme();
+document.body.prepend(siteHeader('fieldguide'));
 
 const t = copy.fieldguide;
 const root = document.getElementById('fieldguide') as HTMLElement;
@@ -218,15 +220,7 @@ function cardShell(card: Card): HTMLElement {
 }
 
 async function main(): Promise<void> {
-  const back = h('a', { class: 'credits-back home', href: './' }, markSvg(), h('span', {}, t.back));
-  // Back to where the visitor came from, when that's this site (Viewer).
-  back.addEventListener('click', (e) => {
-    if (document.referrer && new URL(document.referrer).origin === location.origin) {
-      e.preventDefault();
-      history.back();
-    }
-  });
-  root.append(back, h('h1', {}, t.title), h('p', { class: 'lede' }, t.lede));
+  root.append(h('h1', {}, t.title), h('p', { class: 'lede' }, t.lede));
   let cards: Card[] = [];
   try {
     const r = await fetch(`${BASE}cards.json`);

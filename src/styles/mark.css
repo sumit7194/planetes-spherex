@@ -29,14 +29,14 @@
 }
 /* Hover: a blink comparator. Hard cuts between the two looks, under 2 Hz, never a fade. */
 @media (prefers-reduced-motion: no-preference) {
-  .home:hover .mark-then,
-  .home:focus-visible .mark-then {
+  a.home:hover .mark-then,
+  a.home:focus-visible .mark-then {
     animation: blink-then 1.2s steps(1) infinite;
   }
-  .home:hover .mark-now,
-  .home:hover .mark-glow,
-  .home:focus-visible .mark-now,
-  .home:focus-visible .mark-glow {
+  a.home:hover .mark-now,
+  a.home:hover .mark-glow,
+  a.home:focus-visible .mark-now,
+  a.home:focus-visible .mark-glow {
     animation: blink-now 1.2s steps(1) infinite;
   }
 }

@@ -7,12 +7,13 @@
  */
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/header.css';
 import './styles/credits.css';
 import './styles/tests.css';
 import './styles/mark.css';
 import { copy } from './copy/en';
 import { h } from './ui/dom';
-import { markSvg } from './ui/mark';
+import { siteHeader } from './ui/header';
 import { watchScheme } from './ui/scheme';
 import { loadPack, type LoadedPack } from './data/pack/load';
 import { predictionLabel, showFor } from './app/shows';
@@ -21,6 +22,7 @@ import { monthYear } from './ui/numbers';
 import type { TargetId } from './data/pack/types';
 
 watchScheme();
+document.body.prepend(siteHeader('tests'));
 
 const t = copy.tests;
 const root = document.getElementById('tests') as HTMLElement;
@@ -268,7 +270,6 @@ async function main(): Promise<void> {
     }),
   );
   root.replaceChildren(
-    h('a', { class: 'credits-back home', href: './' }, markSvg(), h('span', {}, t.back)),
     h('h1', {}, t.title),
     h('p', { class: 'lede' }, t.lede),
     h(
