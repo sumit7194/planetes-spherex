@@ -324,7 +324,8 @@ const VIZIER_HOSTS: [string, string][] = [
 
 /**
  * VizieR's copy: the same columns (Name, RAPMdeg/DEPMdeg at MJD 57170, pmRA/pmDE in arcsec/yr,
- * W1/W2mproPM). VizieR's cone is on the catalogue's main position, so it asks 2″ wider and
+ * W1/W2mproPM). VizieR's cone is on the catalogue's main position, so it asks 5″ wider (a fast mover's
+ * two positions can differ by more than 2″; Viewer) and
  * keeps sources whose motion-epoch position is within r, as IRSA's query does.
  */
 async function catwiseVizier(
@@ -336,7 +337,7 @@ async function catwiseVizier(
   const q = new URLSearchParams({
     '-source': 'II/365/catwise',
     '-c': `${ra} ${dec >= 0 ? '+' : ''}${dec}`,
-    '-c.rs': String(r + 2),
+    '-c.rs': String(r + 5),
     '-out': 'Name,RAPMdeg,DEPMdeg,pmRA,pmDE,W1mproPM,W2mproPM',
     '-out.max': 'unlimited',
   });

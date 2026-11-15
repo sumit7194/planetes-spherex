@@ -103,6 +103,11 @@ def offsets(gw: WCS, ra: float, dec: float) -> tuple[float, float]:
     return round(-(float(x) - c) * bp.PIX, 2), round((float(y) - c) * bp.PIX, 2)
 
 
+def _today() -> str:
+    import datetime as dt
+    return dt.datetime.now(dt.timezone.utc).date().isoformat()
+
+
 def write_overlay(slug, t, frames, gaia, catwise, gw, size):
     seasons = sorted({f["season"] for f in frames})
     mean_mjd = {str(s): float(np.mean([f["mjd"] for f in frames if f["season"] == s])) for s in seasons}
@@ -134,6 +139,9 @@ def write_overlay(slug, t, frames, gaia, catwise, gw, size):
                grid=dict(centre=dict(ra=t["ra"], dec=t["dec"]), orientation="north-up-east-left", pixelScaleArcsec=bp.PIX, size=size),
                season_mean_mjd=mean_mjd, at_season_columns=["ra_deg", "dec_deg", "east_arcsec", "north_arcsec"],
                gaia_dr3=g, catwise2020=c,
+               # When each catalogue was asked (live; the builder keeps no catalogue cache) and its
+               # cut, so the app can say it (Viewer, 15 Nov).
+               fetched=dict(gaia_dr3=_today(), catwise2020=_today(), catwise_cut="W2 < 17.0"),
                credit=dict(gaia="Gaia DR3 (ESA/Gaia/DPAC), via the ESA Gaia archive.",
                            catwise="CatWISE2020 (Marocco et al. 2021), via IRSA."),
                notes="Positions moved by proper motion only (no parallax) to each pass's mean photo time. Made during the event.")

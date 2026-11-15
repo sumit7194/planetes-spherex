@@ -25,6 +25,13 @@ function copyPhrase(r: number): string {
         : `about ${Math.round((r - 1) * 100)}% brighter`;
 }
 
+/** "2026-11-14" → "14 Nov 2026". */
+const dayFromIso = (iso: string): string => {
+  const [y, m, d] = iso.split('-').map(Number);
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return y && m && d ? `${d} ${mon[m - 1] ?? ''} ${y}` : iso;
+};
+
 export const copy = {
   sky: {
     invitation: 'SPHEREx photographed the whole sky, at least twice.',
@@ -1067,7 +1074,8 @@ export const copy = {
     asteroidsName: 'Known asteroids (SkyBoT)',
     catwiseName: 'CatWISE2020 (IRSA, or VizieR when IRSA is down)',
     /** G1: when neither archive answers, one of the five uses its saved rows. */
-    catwiseSaved: "CatWISE2020 (our saved copy for this target: IRSA's answer of 14 Nov 2026)",
+    catwiseSaved: (date: string | null, cut: string | null) =>
+      `CatWISE2020 (our saved copy for this target: IRSA's answer${date ? ` of ${dayFromIso(date)}` : ''}${cut ? `, sources brighter than ${cut.replace(/\s*<\s*/, ' = ').replace(/\.0\b/, '')}` : ''})`,
     catwiseVia: (archive: string) => `CatWISE2020 (via ${archive}, as IRSA didn't answer)`,
     flagsName: 'Flags in each photo (needs the cloud helper)',
     fieldGuide: 'What fools you: real examples of artefacts and blends →',

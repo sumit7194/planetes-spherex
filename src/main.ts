@@ -3494,6 +3494,8 @@ interface SpotCheckResult {
   asteroidsFromSpherex: boolean;
   /** Where CatWISE came from: an archive's name, 'saved' (the target's overlay file), or null. */
   catwiseFrom: string | null;
+  /** For the saved copy: when it was fetched and its magnitude cut, from the file itself. */
+  catwiseSaved?: { date: string | null; cut: string | null };
   /** Known stars within R, nearest first, each at its closest over the two looks (Viewer 1b). */
   matches: SpotMatch[];
   /** Each flag name's count among the photos that show the spot (information). */
@@ -3751,8 +3753,15 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     let cw = got?.stars ?? null;
     result.catwiseFrom = got ? got.archive : null;
     if (!cw && ctx.target) {
-      cw = savedCatwise(await loadOverlay(ctx.target.wanderer.id), at, 150);
-      if (cw) result.catwiseFrom = 'saved';
+      const file = await loadOverlay(ctx.target.wanderer.id);
+      cw = savedCatwise(file, at, 150);
+      if (cw) {
+        result.catwiseFrom = 'saved';
+        result.catwiseSaved = {
+          date: file?.fetched?.catwise2020 ?? null,
+          cut: file?.fetched?.catwise_cut ?? null,
+        };
+      }
     }
     if (stale()) return;
     result.checked.catwise = cw ? 'done' : 'failed';
@@ -4056,7 +4065,7 @@ function spotCard(): HTMLElement | null {
       () =>
         t.checkStars(
           r.catwiseFrom === 'saved'
-            ? t.catwiseSaved
+            ? t.catwiseSaved(r.catwiseSaved?.date ?? null, r.catwiseSaved?.cut ?? null)
             : r.catwiseFrom && r.catwiseFrom !== 'IRSA'
               ? t.catwiseVia(r.catwiseFrom)
               : 'CatWISE2020',
@@ -6068,6 +6077,7 @@ type OverlaySource = {
   /** CatWISE rows also carry these (pipeline/planetes_pack.py write_overlay). */
   source_name?: string;
   W1?: number | null;
+  W2?: number | null;
   pmra_arcsec_yr?: number | null;
   pmdec_arcsec_yr?: number | null;
 };
@@ -6075,6 +6085,8 @@ type OverlayFile = {
   gaia_dr3?: OverlaySource[];
   catwise2020?: OverlaySource[];
   season_mean_mjd?: Record<string, number>;
+  /** When each catalogue was asked (YYYY-MM-DD) and CatWISE's cut (planetes_pack.write_overlay). */
+  fetched?: { gaia_dr3?: string; catwise2020?: string; catwise_cut?: string };
 };
 
 /** Loads a wanderer's overlay file once (null if missing); the cache below fills as it lands. */
@@ -6137,7 +6149,7 @@ function savedCatwise(
       pmra,
       pmdec,
       w1: r.W1 ?? null,
-      w2: null,
+      w2: r.W2 ?? null,
     });
   }
   return out;
