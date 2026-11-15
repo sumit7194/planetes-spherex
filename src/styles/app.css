@@ -177,6 +177,7 @@ canvas.sky.backdrop {
   pointer-events: none;
 }
 [data-place='sky'] .entry-switch,
+[data-place='sky'] .whole-sky-hint,
 [data-place='sky'] .words :is(button, input, a, .combo-pop) {
   pointer-events: auto;
 }
@@ -1201,8 +1202,13 @@ canvas.sky.backdrop {
   position: relative;
   display: flex;
   justify-content: space-between;
-  font-size: var(--t-label);
+  /* Axis ends, so the meta step (as the colour bar's ends); never touching (Viewer, 15 Nov). */
+  gap: 10px;
+  font-size: var(--t-meta);
   color: var(--quiet);
+}
+.ribbon-labels > :last-child:not(.gap) {
+  text-align: right;
 }
 .ribbon-labels .gap {
   position: absolute;
@@ -3947,6 +3953,12 @@ canvas.sky.backdrop {
     position: fixed;
     left: 28px;
     top: 76px;
+  }
+  /* Its whole-sky offer stays under it (it was placed against the view, so it floated off). */
+  #app[data-place='sky'] .whole-sky-hint {
+    position: fixed;
+    left: 28px;
+    top: 116px;
   }
 }
 .entry-switch {
