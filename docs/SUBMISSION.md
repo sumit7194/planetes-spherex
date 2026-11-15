@@ -90,20 +90,21 @@ Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. I
 
 ## Demo: 30-second video (screen recording + English subtitles)
 
-Made: `design-lab/demo/planetes_demo.mp4` (29.7 s, 1280×720, captions burned in, no audio; git-ignored, upload it). Re-make with `record.mjs` then `edit.py` in that folder.
+Made: `design-lab/demo/planetes_demo.mp4` (29.4 s, 1280×720, captions burned in, no audio; git-ignored, upload it). Re-make with `record.mjs` then `edit.py` in that folder.
 
 | t | On screen | Caption |
 |---|---|---|
 | 0:00 | Title card: Planetes, the wanderers in SPHEREx's sky; NASA Space Apps Challenge 2026 · Planet X and SPHEREx · team Planetes | — |
 | 0:02 | The sky map | "SPHEREx photographs the whole sky every six months, in 102 colours." |
-| 0:05 | Barnard's Star: the lens blinks between passes | "Pick a spot: Planetes blinks its photos, pass after pass." |
-| 0:09 | The 10″ hero | "Barnard's Star moved 10″ north in a year, matching Gaia's prediction." |
-| 0:12 | The difference view: a dark-and-bright pair | "Subtract two passes, and what moved lights up." |
-| 0:15 | Epsilon Indi B's spectrum | "Each photo sees a different colour, so it builds spectra on the fly." |
-| 0:18 | Typing 150.1 2.2, then the live look | "Any spot in the sky, read straight from NASA's archive." |
-| 0:22 | "Why a far planet loops" (the model) | "Why a far Planet X would loop in the sky…" |
-| 0:25 | The "How we tested" page | "…and, plainly, what we measured and what we couldn't." |
-| 0:27 | End card: "Go find a wanderer.", the URL, the data sources | — |
+| 0:04 | Barnard's Star: the lens blinks between passes | "Pick a spot: Planetes blinks its photos, pass after pass." |
+| 0:08 | The 10″ hero | "Barnard's Star moved 10″ north in a year, matching Gaia's prediction." |
+| 0:10 | The difference view, zoomed on the lens | "Subtract two passes, and what moved shows as a bright-and-dark pair." |
+| 0:13 | Epsilon Indi B's spectrum | "Each photo sees a different colour, so it builds spectra on the fly." |
+| 0:16 | Typing 150.1 2.2, then the live look | "Any spot in the sky, read straight from NASA's archive." |
+| 0:20 | "Why a far planet loops": Makemake, measured | "SPHEREx caught the dwarf planet Makemake at its predicted place, all three visits." |
+| 0:22 | The model at Planet X's ~500 AU | "A far Planet X would loop too, shifting hundreds of arcseconds between passes." |
+| 0:24 | The "How we tested" page, first row | "And it says plainly what was measured, and what couldn't be." |
+| 0:27 | End card: "Go find a wanderer.", the URL, the data sources (incl. NASA JPL Horizons) | — |
 
 ## Demo: 7-slide fallback deck
 
