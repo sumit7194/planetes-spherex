@@ -7,6 +7,7 @@
 
 const SVG = `
 <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+  <circle class="mark-disc" cx="16" cy="16" r="15.6" />
   <g class="mark-ring" fill="none">
   <path class="mark-band" d="M16.00 3.70A12.3 12.3 0 0 1 18.26 3.91" stroke="#f7f4c8" />
   <path class="mark-band" d="M18.14 3.89A12.3 12.3 0 0 1 20.33 4.49" stroke="#f2f3c2" />

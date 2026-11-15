@@ -58,3 +58,15 @@
     opacity: 1;
   }
 }
+
+/* The night disc behind the ring, as on the favicon: only on the light page, where the cream
+   (0.75 µm) end of the ring would vanish into the paper (Viewer). Dark pages need no disc. */
+.mark-disc {
+  fill: none;
+}
+:root[data-ui='light'] .mark-disc {
+  fill: var(--sky-night);
+}
+:root[data-ui='light'] .mark-then {
+  fill: var(--sky-starlight);
+}
