@@ -323,7 +323,9 @@ canvas.sky.backdrop {
   outline-offset: 2px;
 }
 :is([data-place='finding'], [data-place='filling'], [data-place='look']) .view .lens {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--look) 70%, transparent);
+  /* A look's rim: the same meaning (the legend's "a look, not a search"), at half the strength, so
+     it reads as an outline rather than decoration (Sumit, 15 Nov). */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--look) 35%, transparent);
   outline: none;
 }
 
@@ -3820,6 +3822,11 @@ span[data-fit='1'] {
 /* The lens while its photos are found: a faint arc sweeping round, like SPHEREx's scan ring. */
 .lens-scan {
   position: absolute;
+  /* The lens's own box: the view is square off the sky and the lens is 90% of it, centred. */
+  left: 5%;
+  top: 5%;
+  width: 90%;
+  height: 90%;
   border-radius: 50%;
   pointer-events: none;
   /* A short arc (~40°) travelling round the lens rim, like a progress ring: "photos loading",
@@ -3839,7 +3846,18 @@ span[data-fit='1'] {
     transparent 100%
   );
   mask: radial-gradient(closest-side, transparent 96%, #000 97%, #000 99.5%, transparent 100%);
-  animation: lens-scan 6s linear infinite;
+  /* It appears only once the lens has finished scaling in (the dive, --dive-ms). */
+  animation:
+    lens-scan-in 300ms ease-out var(--dive-ms) both,
+    lens-scan 6s linear var(--dive-ms) infinite;
+}
+@keyframes lens-scan-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .lens-scan[hidden] {
   display: none;

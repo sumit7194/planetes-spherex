@@ -8060,14 +8060,8 @@ function placeLensScan(): void {
   const on = (k === 'finding' || k === 'filling') && !live?.landed.length;
   lensScan.hidden = !on;
   if (!on) return;
-  // From the lens's box on screen, relative to the view (the canvas is scaled by CSS).
-  const v = lensScan.parentElement?.getBoundingClientRect();
-  const r = lensCanvas.getBoundingClientRect();
-  if (!v || !r.width) return;
-  lensScan.style.left = `${r.left - v.left}px`;
-  lensScan.style.top = `${r.top - v.top}px`;
-  lensScan.style.width = `${r.width}px`;
-  lensScan.style.height = `${r.height}px`;
+  // Placed by CSS on the lens's own box (5% inset, 90% wide), never measured mid-dive (Sumit:
+  // the arc sat off-centre for a moment while the lens was still scaling in).
 }
 
 function render(): void {
