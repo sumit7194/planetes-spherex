@@ -6352,7 +6352,9 @@ function liveCatalogueChips(look: NonNullable<typeof live>): HTMLElement {
         title: failed ? o.notReachableTitle(tried) : hint,
         'aria-pressed': String(overlayOn[kind] && !failed),
         'aria-busy': String(c?.state === 'loading'),
-        disabled: failed,
+        // Not `disabled`: a disabled button drops keyboard focus. Pressing it tries again (Viewer).
+        'aria-disabled': String(failed),
+        'data-chip': kind,
       },
       h('span', { class: `mk cat-${kind}`, 'aria-hidden': 'true' }),
       failed
@@ -6364,18 +6366,27 @@ function liveCatalogueChips(look: NonNullable<typeof live>): HTMLElement {
             : label,
     );
     b.addEventListener('click', () => {
-      overlayOn = { ...overlayOn, [kind]: !overlayOn[kind] };
+      if (c?.state === 'failed') {
+        // A retry: back through "…" to an answer or "not reachable now" again.
+        c.state = 'idle';
+        overlayOn = { ...overlayOn, [kind]: true };
+      } else overlayOn = { ...overlayOn, [kind]: !overlayOn[kind] };
       if (overlayOn[kind]) fetchLiveCatalogue(look, kind);
       applyLiveCatalogue(look);
       render();
     });
     return b;
   };
+  const shown = (['gaia', 'catwise'] as const).some(
+    (k) => overlayOn[k] && look.catalogues?.[k].state === 'done',
+  );
   return h(
     'span',
     { class: 'chip-row' },
     chip('gaia', o.gaiaShort, o.gaiaHint, o.gaiaArchive),
     chip('catwise', o.catwiseShort, o.catwiseHint, o.catwiseArchives),
+    // The title's "not SPHEREx", made visible while marks are drawn (touch has no titles; Viewer).
+    shown ? h('span', { class: 'hint small' }, o.otherTelescopes) : null,
   );
 }
 
@@ -7901,12 +7912,18 @@ function render(): void {
   const colourHadFocus = !!(document.activeElement as HTMLElement | null)?.closest?.('.colour-row');
   const active = document.activeElement as HTMLElement | null;
   const landingFree = !active || active === document.body || !!active.dataset['landing'];
+  // A catalogue chip keeps the keyboard through the rebuild its own press causes (Viewer).
+  const chipHadFocus = active?.dataset['chip'] ?? null;
   words.replaceChildren(...renderWords());
   // N7: after the tour ends into a spot, focus lands on where the visitor arrived (the look's
   // summary, or a page's heading), and stays there as the column is rebuilt (Viewer).
   // For a short while (the look's column is rebuilt as its photos arrive, sometimes with no
   // heading), it's re-applied whenever focus is on nothing or on the landing itself, never taken
   // from something the visitor chose.
+  if (chipHadFocus)
+    words
+      .querySelector<HTMLElement>(`[data-chip="${chipHadFocus}"]`)
+      ?.focus({ preventScroll: true });
   if (performance.now() < focusLandingUntil && state.place.kind !== 'sky' && landingFree) {
     const t = words.querySelector<HTMLElement>('.panel-summary, h2');
     if (t) {
