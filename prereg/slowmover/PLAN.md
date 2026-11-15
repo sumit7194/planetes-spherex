@@ -139,3 +139,6 @@ How faint, and how slow, a mover can the season-pair search find, at a fixed fal
     - bd500: 1.1 µm 0.028, 2.2 µm 0.0017
     - bb4000: 1.1 µm 3.43, 2.2 µm 2.62
     - Single points on the model's fine grid are misleading (bd900 at 2.2 µm is 0.003 at a point), so they aren't used.
+- **15 Nov 2026, 14:18 IST — Physics' decision on check 2:** (a). Check 2 is inconclusive, not failed: the gap is smooth and depends on Teff, as different model versions would give, whereas a units bug would give a near-constant ~0.3 mag. Go ahead with W2_SYSTEM=wise, on two conditions:
+  - **(1) Band-average check (the path that feeds the fakes): passes.** A ν⁻² spectrum went through fake_phot.band_fnu_jy over [CWAVE ± CBAND/2] from spectral_wcs (the release the run uses, cal-swcs-v5 = smo "qr3"). It was checked at 6 pixels on each of D1–D6 (36 in all, CWAVE 0.750–4.990 µm). The band average equals ν⁻² at the band centre within **0.0075%** (limit 1%).
+  - **(2)** Wherever the limit is quoted (N4, the tests page), add: "in W2 on WISE's system; the fakes' brightness in SPHEREx's colours comes from Sonora brown-dwarf models, which differ between model versions by up to ~0.1 mag at 3–5 µm."
