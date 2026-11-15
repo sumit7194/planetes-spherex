@@ -6,7 +6,7 @@
  */
 import { separationDeg, type SkyPosition } from '../data/coords';
 
-export type EntryKind = 'test' | 'surprise' | 'star' | 'constellation';
+export type EntryKind = 'test' | 'surprise' | 'star' | 'constellation' | 'page';
 
 export interface Entry {
   /** Stable id: one per object, shared by its aliases. */
@@ -76,6 +76,7 @@ export function normalise(s: string): string {
 
 const KIND_WEIGHT: Record<EntryKind, number> = {
   test: 60,
+  page: 50,
   surprise: 40,
   star: 20,
   constellation: 10,

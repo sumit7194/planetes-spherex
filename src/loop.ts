@@ -7,6 +7,7 @@
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/credits.css';
+import './styles/mark.css';
 import './styles/loop.css';
 import { copy } from './copy/en';
 import { h } from './ui/dom';
@@ -82,12 +83,11 @@ function projector(ra0: number, dec0: number) {
   };
 }
 
-/** A friendly size: 0.47″, 12″, 6.8′, 1.0°. */
+/** A friendly size, in ″ below 1° and ° above (no arcminutes, Viewer): 0.47″, 12″, 825″, 1.1°. */
 export function fmtAngle(arcsec: number): string {
   const a = Math.abs(arcsec);
   if (a >= 3600) return `${(arcsec / 3600).toFixed(a >= 36000 ? 0 : 1)}°`;
-  if (a >= 60) return `${(arcsec / 60).toFixed(a >= 600 ? 0 : 1)}′`;
-  if (a >= 10) return `${Math.round(arcsec)}″`;
+  if (a >= 10) return `${Math.round(arcsec).toLocaleString('en')}″`;
   if (a >= 1) return `${arcsec.toFixed(1)}″`;
   return `${arcsec.toFixed(2)}″`;
 }
@@ -133,6 +133,26 @@ function fitBox(pts: [number, number][], W: number, H: number, m: number) {
 
 const pathD = (pts: [number, number][]) =>
   pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
+
+/** Small arrowheads along a drawn path (screen points), so the loop reads as motion (Viewer). */
+function arrowHeads(pts: [number, number][]): SVGElement[] {
+  const out: SVGElement[] = [];
+  for (const f of [0.2, 0.45, 0.7, 0.92]) {
+    const i = Math.min(pts.length - 2, Math.max(1, Math.round(f * (pts.length - 1))));
+    const a = pts[i - 1];
+    const b = pts[i + 1];
+    const c = pts[i];
+    if (!a || !b || !c) continue;
+    const ang = (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI;
+    out.push(
+      s('path', {
+        d: 'M5,0 L-4,-4 L-4,4 Z',
+        transform: `translate(${c[0].toFixed(1)},${c[1].toFixed(1)}) rotate(${ang.toFixed(1)})`,
+      }),
+    );
+  }
+  return out;
+}
 
 // ---------- the measured view ----------
 async function thumbUrl(v: Visit): Promise<string | null> {
@@ -181,6 +201,7 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
   svg.append(s('title', { id: 'loop-m-title' }, t.alt(maxOff.toFixed(1))));
   svg.append(s('path', { d: pathD(sun.map(box.map)), class: 'lp-sun' }));
   svg.append(s('path', { d: pathD(earth.map(box.map)), class: 'lp-path' }));
+  svg.append(s('g', { class: 'lp-arrow' }, ...arrowHeads(earth.map(box.map))));
   // A tick each month on the predicted path, labelled every third month.
   let lastMonth = -1;
   for (const [mjd, ra, dec] of doc.pathEarth) {
@@ -220,8 +241,8 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
     const dy = y - H / 2;
     const dn = Math.hypot(dx, dy) || 1;
     const T = 88;
-    const cxT = Math.min(Math.max(x + (dx / dn) * 95, T / 2 + 4), W - T / 2 - 4);
-    const cyT = Math.min(Math.max(y + (dy / dn) * 95, T / 2 + 18), H - T / 2 - 40);
+    const cxT = Math.min(Math.max(x + (dx / dn) * 125, T / 2 + 4), W - T / 2 - 4);
+    const cyT = Math.min(Math.max(y + (dy / dn) * 125, T / 2 + 18), H - T / 2 - 40);
     const url = thumbs[i];
     if (url) {
       svg.append(s('line', { x1: x, y1: y, x2: cxT, y2: cyT, class: 'lp-leader' }));
@@ -238,6 +259,14 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
       svg.append(
         s('rect', { x: cxT - T / 2, y: cyT - T / 2, width: T, height: T, class: 'lp-thumb-frame' }),
       );
+      // Ticks pointing at the stack's centre: that is where Makemake is (Viewer).
+      for (const [x1, y1, x2, y2] of [
+        [cxT - 14, cyT, cxT - 7, cyT],
+        [cxT + 7, cyT, cxT + 14, cyT],
+        [cxT, cyT - 14, cxT, cyT - 7],
+        [cxT, cyT + 7, cxT, cyT + 14],
+      ] as const)
+        svg.append(s('line', { x1, y1, x2, y2, class: 'lp-tickmark' }));
     }
     svg.append(
       s('text', { x: cxT - T / 2, y: cyT - T / 2 - 5, class: 'lp-label' }, monthOf(v.first)),
@@ -256,6 +285,8 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
     { class: 'lp-key' },
     h('li', {}, h('span', { class: 'sw sw-path' }), t.keyPath),
     h('li', {}, h('span', { class: 'sw sw-sun' }), t.keySun),
+    h('li', {}, h('span', { class: 'sw sw-sunpt' }), t.keySunPt),
+    h('li', {}, h('span', { class: 'sw sw-push' }), t.keyPush),
     h('li', {}, h('span', { class: 'sw sw-visit' }), t.keyVisit),
     h('li', {}, h('span', { class: 'sw sw-photo' }), t.keyPhoto),
   );
@@ -288,7 +319,10 @@ async function measuredView(doc: LoopDoc): Promise<HTMLElement> {
         doc.ratioToProxima.toLocaleString('en'),
       ),
       ' ',
-      t.planetX(String(Math.round(ARCSEC_PER_AU / 500 / 10) * 10)),
+      t.planetX(
+        String(Math.round(ARCSEC_PER_AU / 500 / 10) * 10),
+        String(Math.round((2 * ARCSEC_PER_AU) / 500 / 5) * 5),
+      ),
     ),
     h('p', { class: 'hint' }, t.others),
     h('h2', {}, t.readoutHead),
@@ -319,46 +353,56 @@ function toEcliptic(ra: number, dec: number): [number, number] {
   return [Math.atan2(ye, x), Math.asin(ze)];
 }
 
+/** The Sun's geocentric ecliptic longitude (rad) at an MJD (the low-precision formula). */
+function sunLon(mjd: number): number {
+  const n = mjd - 51544.5;
+  const L = 280.46 + 0.9856474 * n;
+  const g = (357.528 + 0.9856003 * n) * RAD;
+  return (L + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * RAD;
+}
+
 /**
- * Two years of an imaginary object's path at distance d (AU) on a circular orbit (period d^1.5 yr)
- * at a fixed ecliptic latitude, seen from a circular 1 AU Earth orbit; and the times SPHEREx would
- * pass over it (90° from the Sun). Positions in ″ in a plane centred on the object's mean place.
+ * An imaginary object's path at distance d (AU): a circular orbit (period d^1.5 yr) at a fixed
+ * ecliptic latitude, through (lon0, lat0) heliocentric at tMid, seen from a circular 1 AU Earth on
+ * the real dates [mjd0, mjd1]. Returned as RA/Dec (°), the measured view's frame, plus where
+ * SPHEREx would pass over it (90° from the Sun). Viewer: toggling at 52.6 AU shows the same loop.
  */
-export function modelPath(dAu: number, lon0: number, lat0: number, steps = 730) {
-  const pts: [number, number][] = [];
+export function modelPath(
+  dAu: number,
+  lon0: number,
+  lat0: number,
+  tMid: number,
+  mjd0: number,
+  mjd1: number,
+  steps = 600,
+) {
+  const radec: [number, number][] = [];
   const pass: [number, number][] = [];
-  const raw: [number, number, number][] = [];
-  const w = (2 * Math.PI) / Math.pow(dAu, 1.5);
+  const w = (2 * Math.PI) / (Math.pow(dAu, 1.5) * 365.25); // rad per day
   let prevE = NaN;
   for (let i = 0; i <= steps; i++) {
-    const yr = (2 * i) / steps;
-    const lon = lon0 + w * (yr - 1);
+    const mjd = mjd0 + ((mjd1 - mjd0) * i) / steps;
+    const lon = lon0 + w * (mjd - tMid);
     const rx = dAu * Math.cos(lat0) * Math.cos(lon);
     const ry = dAu * Math.cos(lat0) * Math.sin(lon);
     const rz = dAu * Math.sin(lat0);
-    const le = 2 * Math.PI * yr; // Earth's heliocentric longitude
+    const le = sunLon(mjd) + Math.PI; // Earth's heliocentric longitude
     const ex = Math.cos(le);
     const ey = Math.sin(le);
     const gx = rx - ex;
     const gy = ry - ey;
     const gz = rz;
-    const gl = Math.atan2(gy, gx);
-    const gb = Math.atan2(gz, Math.hypot(gx, gy));
-    raw.push([gl, gb, yr]);
-    // Elongation from the Sun (the Sun is at -e from Earth).
+    // Ecliptic -> equatorial.
+    const qy = gy * Math.cos(OBLIQUITY) - gz * Math.sin(OBLIQUITY);
+    const qz = gy * Math.sin(OBLIQUITY) + gz * Math.cos(OBLIQUITY);
     const gn = Math.hypot(gx, gy, gz);
+    const pt: [number, number] = [(Math.atan2(qy, gx) / RAD + 360) % 360, Math.asin(qz / gn) / RAD];
+    radec.push(pt);
     const elong = Math.acos(-(gx * ex + gy * ey) / gn) / RAD;
-    if (!Number.isNaN(prevE) && (prevE - 90) * (elong - 90) <= 0) pass.push([gl, gb]);
+    if (!Number.isNaN(prevE) && (prevE - 90) * (elong - 90) <= 0) pass.push(pt);
     prevE = elong;
   }
-  const mlon = raw.reduce((a, p) => a + p[0], 0) / raw.length;
-  const mlat = raw.reduce((a, p) => a + p[1], 0) / raw.length;
-  const flat = ([l, b]: [number, number] | [number, number, number]): [number, number] => [
-    ((-(l - mlon) * Math.cos(mlat)) / RAD) * 3600,
-    ((b - mlat) / RAD) * 3600,
-  ];
-  for (const p of raw) pts.push(flat(p));
-  return { pts, passes: pass.map(flat) };
+  return { radec, passes: pass };
 }
 
 const DETENTS = [
@@ -379,8 +423,12 @@ const fmtDist = (au: number) =>
 
 function modelView(doc: LoopDoc | null): HTMLElement {
   // Placed at Makemake's own ecliptic place, so the two views compare.
-  const v0 = doc?.visits.find((v) => v.measured);
-  const [lon0, lat0] = v0?.measured ? toEcliptic(...v0.measured) : [180 * RAD, 29 * RAD];
+  // Placed on the Sun-view (heliocentric) track's middle point, over the measured path's dates.
+  const mid = doc?.pathSun[Math.floor((doc?.pathSun.length ?? 0) / 2)];
+  const [lon0, lat0] = mid ? toEcliptic(mid[1], mid[2]) : [200 * RAD, 29 * RAD];
+  const tMid = mid ? mid[0] : 61000;
+  const mjd0 = doc?.pathEarth[0]?.[0] ?? tMid - 300;
+  const mjd1 = doc?.pathEarth[doc.pathEarth.length - 1]?.[0] ?? tMid + 300;
   const W = 760;
   const H = 560;
   const svg = s('svg', {
@@ -392,11 +440,13 @@ function modelView(doc: LoopDoc | null): HTMLElement {
   const title = s('title', { id: 'loop-x-title' });
   const path = s('path', { class: 'lp-model' });
   const passes = s('g', {});
+  const arrowsG = s('g', { class: 'lp-arrow' });
   const bar = s('line', { class: 'lp-scale' });
   const barT = s('text', { class: 'lp-scale-t' });
   svg.append(
     title,
     path,
+    arrowsG,
     passes,
     bar,
     barT,
@@ -429,6 +479,7 @@ function modelView(doc: LoopDoc | null): HTMLElement {
       b.addEventListener('click', () => {
         input.value = String(toSlider(d.au));
         draw();
+        b.focus(); // keep focus on the button (Viewer)
       });
       return d.measured
         ? h(
@@ -451,12 +502,19 @@ function modelView(doc: LoopDoc | null): HTMLElement {
   );
   function draw(): void {
     const au = fromSlider(Number(input.value));
-    const m = modelPath(au, lon0, lat0);
-    const box = fitBox(m.pts, W, H, 70);
-    path.setAttribute('d', pathD(m.pts.map(box.map)));
+    const m = modelPath(au, lon0, lat0, tMid, mjd0, mjd1);
+    const n = m.radec.length;
+    const ra = m.radec.reduce((a, q) => a + q[0] / n, 0);
+    const de = m.radec.reduce((a, q) => a + q[1] / n, 0);
+    const P = projector(ra, de);
+    const pts = m.radec.map((q) => P(q[0], q[1]));
+    const box = fitBox(pts, W, H, 70);
+    const scr = pts.map(box.map);
+    path.setAttribute('d', pathD(scr));
+    arrowsG.replaceChildren(...arrowHeads(scr));
     passes.replaceChildren(
-      ...m.passes.map((p) => {
-        const [x, y] = box.map(p);
+      ...m.passes.map((q) => {
+        const [x, y] = box.map(P(q[0], q[1]));
         return s('circle', { cx: x, cy: y, r: 5, class: 'lp-pass' });
       }),
     );
@@ -562,7 +620,13 @@ async function main(): Promise<void> {
       void show('measured', true);
     }
   });
-  root.append(back, h('h1', {}, t.title), h('p', { class: 'lede' }, t.lede), seg, holder);
+  const head = h(
+    'div',
+    { class: 'lp-head' },
+    back,
+    h('a', { href: './', class: 'lp-backsky' }, t.backSky),
+  );
+  root.append(head, h('h1', {}, t.title), h('p', { class: 'lede' }, t.lede), seg, holder);
   await show(want);
 }
 

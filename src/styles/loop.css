@@ -72,7 +72,7 @@
   max-height: calc(100vh - 262px);
 }
 .lp-side {
-  font-size: 14.5px;
+  font-size: 13.75px;
   line-height: 1.4;
 }
 .lp-side p {
@@ -239,4 +239,36 @@
   font: 600 13px var(--sans);
   color: var(--mist);
   margin: 4px 0;
+}
+.lp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lp-backsky {
+  color: var(--mist);
+  font: 600 14px var(--sans);
+}
+.lp-arrow path {
+  fill: var(--sky-predicted);
+}
+.lp-tickmark {
+  stroke: var(--sky-measured);
+  stroke-width: 1.5;
+}
+.sw-sunpt {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--sky-mist);
+  border-radius: 50%;
+  margin: 0 6px;
+}
+.sw-push {
+  border-top: 1.5px dotted var(--sky-mist);
+}
+.lp-key {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 10px;
+  font-size: 12px;
 }

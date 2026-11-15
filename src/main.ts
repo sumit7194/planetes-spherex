@@ -1190,7 +1190,24 @@ function rebuildSearchIndex(): void {
     kind: 'constellation',
     at: f.at,
   }));
-  searchIndex = [...five, ...spots, ...stars, ...figs];
+  // Dwarf planets move a degree or more a year, so they open "Why a far planet loops", not a spot.
+  const pages: SearchEntry[] = [
+    {
+      id: 'page:makemake',
+      name: 'Makemake',
+      names: ['Makemake', '136472'],
+      kind: 'page',
+      at: { ra: 199.3, dec: 21.9 },
+    },
+    {
+      id: 'page:haumea',
+      name: 'Haumea',
+      names: ['Haumea', '136108'],
+      kind: 'page',
+      at: { ra: 220.3, dec: 14.2 },
+    },
+  ];
+  searchIndex = [...five, ...spots, ...stars, ...figs, ...pages];
 }
 // After the whole module has run (loadSurprises' cache is declared further down).
 queueMicrotask(
@@ -1266,7 +1283,9 @@ function entryOpt(e: SearchEntry, group?: string, away?: number): Opt {
           : f.tags.mover
         : e.kind === 'star'
           ? f.tags.star
-          : f.tags.constellation;
+          : e.kind === 'page'
+            ? f.tags.page
+            : f.tags.constellation;
   const meta =
     e.kind === 'test'
       ? f.testMeta(copy.wanderers[e.id as TargetId].short)
@@ -1276,14 +1295,16 @@ function entryOpt(e: SearchEntry, group?: string, away?: number): Opt {
           : f.moverMeta(String(Math.round((spot?.pmArcsecYr ?? 0) * 10) / 10))
         : e.kind === 'star'
           ? f.starMeta(positionText(e.at, 60))
-          : f.constellationMeta;
+          : e.kind === 'page'
+            ? f.pageMeta
+            : f.constellationMeta;
   return {
     id: e.id,
     label: e.name,
     tag,
     meta: away !== undefined ? f.nearMeta(awayText(away), meta) : meta,
     ...(group ? { group } : {}),
-    ...(e.kind !== 'constellation' ? { at: e.at } : {}),
+    ...(e.kind !== 'constellation' && e.kind !== 'page' ? { at: e.at } : {}),
     title: e.name,
     ...(e.kind === 'test' ? { packOf: e.id as TargetId } : {}),
     go: () => goEntryOpt(e, spot),
@@ -1293,6 +1314,10 @@ function entryOpt(e: SearchEntry, group?: string, away?: number): Opt {
 function goEntryOpt(e: SearchEntry, spot?: SurpriseSpot): void {
   searchNote = '';
   typedNote = null;
+  if (e.kind === 'page') {
+    location.href = 'loop.html';
+    return;
+  }
   if (e.kind === 'test') void openWanderer(e.id as TargetId);
   else if (e.kind === 'surprise' && spot) void openLook({ ra: spot.ra, dec: spot.dec }, spot);
   else if (e.kind === 'constellation') {
@@ -6595,7 +6620,13 @@ function tourCard(): HTMLElement {
     tryLine(last),
     // The last step points to the field guide (Viewer).
     tourStep === steps.length - 1
-      ? h('p', { class: 'hint' }, h('a', { href: 'fieldguide.html' }, copy.fieldguide.linkShort))
+      ? h(
+          'p',
+          { class: 'hint' },
+          h('a', { href: 'fieldguide.html' }, copy.fieldguide.linkShort),
+          ' · ',
+          h('a', { href: 'loop.html' }, copy.loop.linkShort),
+        )
       : null,
     tourStep === 0 ? h('p', { class: 'hint' }, copy.home.ringNote) : null,
     tourStep === 1 ? rideAlong() : null,
