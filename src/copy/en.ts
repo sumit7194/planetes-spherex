@@ -651,7 +651,7 @@ export const copy = {
     photosHere: 'photos of this spot',
     reading: (n: number) => `reading ${n} in one colour`,
     shownHeading: (n: number, of: number) => `${n} of ${of} shown`,
-    sameColourChip: 'same colour',
+    sameColourChip: 'Same colour',
     fieldWhy: 'Wider fields show faster movers but read more.',
     onePhotoOnly: 'In one photo only: could be an asteroid, a satellite or a cosmic ray.',
     meetOne: "Most of the sky holds still. Meet one that doesn't.",
@@ -735,6 +735,8 @@ export const copy = {
     /** The card's own line for a measured move: the number and the way, not a word. */
     chipMoved: '≈ {lo}″ {dir}',
     comingSoon: 'Coming in the next version',
+    /** A narrow card's "not measured yet" (typography pass, Viewer). */
+    unmeasuredShort: 'not measured',
     meetFive: 'Meet the five',
   },
   /** "What am I seeing?": every layer on the sky and where it comes from (UI round, Neural). */
@@ -1753,6 +1755,12 @@ export const copy = {
         what: '3D drawing',
         source: 'three.js',
         terms: 'MIT licence',
+      },
+      {
+        what: 'Typefaces',
+        source:
+          'Newsreader (Production Type), Atkinson Hyperlegible Next (Braille Institute), and the digits of Source Sans 3 (Adobe), bundled through Fontsource',
+        terms: 'SIL Open Font License 1.1',
       },
       {
         what: 'Constellation names',

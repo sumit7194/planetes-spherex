@@ -85,7 +85,7 @@
 }
 .dt-card code {
   font:
-    12.5px / 1.5 ui-monospace,
+    var(--t-meta) / 1.5 ui-monospace,
     Menlo,
     monospace;
   color: var(--starlight);
@@ -259,7 +259,7 @@
 .dx-source {
   margin: 10px 0 0;
   font:
-    11.5px / 1.4 ui-monospace,
+    var(--t-meta) / 1.4 ui-monospace,
     Menlo,
     monospace;
   color: var(--quiet);

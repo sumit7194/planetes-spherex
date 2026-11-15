@@ -11,8 +11,11 @@ body {
   background: var(--night);
   color: var(--starlight);
   font: var(--t-body)/1.55 var(--sans);
-  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
+}
+/* The root stays 16 px so rem widths and gaps don't shrink with the 15 px body (Viewer). */
+html {
+  font-size: 16px;
 }
 
 button {
@@ -79,4 +82,17 @@ button {
     forced-color-adjust: none;
     border: 1px solid CanvasText;
   }
+}
+/* Numbers as data: lining, tabular figures; an uncertainty reads as part of its value. */
+body {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.unc {
+  color: var(--quiet);
+}
+/* RA/Dec and typed positions keep the slashed zero (tokens.css). */
+.coords,
+input[type='search'],
+input[type='text'] {
+  font-family: var(--sans-coords);
 }

@@ -5,6 +5,21 @@
 @import '@fontsource-variable/newsreader/opsz.css';
 @import '@fontsource-variable/atkinson-hyperlegible-next';
 
+/* Atkinson draws every 0 with a slash and has no plain zero; in prose that makes "May 2025" read
+   like code. So the digits alone come from Source Sans 3 (OFL, bundled), scaled to Atkinson's
+   figure height (0.668 / 0.640). Coordinates and the search box keep Atkinson's slashed zero
+   (--sans-coords), where 0 against O matters (Sumit and Viewer, 15 Nov). */
+@font-face {
+  font-family: 'Planetes Digits';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('../../node_modules/@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0030-0039;
+  size-adjust: 104.4%;
+}
+
 :root {
   color-scheme: dark;
   /* The night: the sky, SPHEREx's photos and anything drawn over them use these in every
@@ -43,7 +58,9 @@
      Hyperlegible Next for everything read or clicked; it keeps 1/l/I and 0/O apart, which
      matters for coordinates. Both were already bundled (the observatory theme). */
   --serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
-  --sans: 'Atkinson Hyperlegible Next Variable', 'Avenir Next', system-ui, sans-serif;
+  --sans:
+    'Planetes Digits', 'Atkinson Hyperlegible Next Variable', 'Avenir Next', system-ui, sans-serif;
+  --sans-coords: 'Atkinson Hyperlegible Next Variable', 'Avenir Next', system-ui, sans-serif;
   /* One type scale, six steps (Viewer): meta (dates, sources), labels, body, lead, headings, hero. */
   --t-meta: 12px;
   --t-label: 14px;

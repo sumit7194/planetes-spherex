@@ -5080,6 +5080,13 @@ function chipLabel(id: TargetId, status: keyof typeof copy.statusChip): string {
 function cardChip(id: TargetId, status: keyof typeof copy.statusChip): HTMLElement {
   const p = packs.get(id);
   const s = p && showFor(p);
+  // The strip's cards are narrow: "not measured" there, the full "not measured yet" as its title.
+  if (status === 'unmeasured')
+    return h(
+      'span',
+      { class: `chip ${status}`, title: copy.statusChip.unmeasured },
+      copy.card.unmeasuredShort,
+    );
   if (status !== 'measured' || !s || s.kind !== 'motion')
     return h('span', { class: `chip ${status}` }, chipLabel(id, status));
   return h(

@@ -2114,9 +2114,7 @@ canvas.sky.backdrop {
   color: var(--starlight);
 }
 .fc-label .chip {
-  font-size: var(--t-meta);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font: 600 var(--t-meta) var(--sans);
   color: var(--mist);
 }
 .fc-label .chip::before {
@@ -3959,13 +3957,6 @@ canvas.sky.backdrop {
 
 /* The type scale's body step for what you read in the panel (Viewer: 13 -> 15 px). */
 .words .panel-body,
-.words .panel-summary p:not(.eyebrow) {
+.words .panel-summary p:not([class]) {
   font-size: var(--t-body);
-}
-/* Numbers as data: lining, tabular figures; an uncertainty reads as part of its value. */
-body {
-  font-variant-numeric: lining-nums tabular-nums;
-}
-.unc {
-  color: var(--quiet);
 }

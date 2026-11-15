@@ -25,15 +25,22 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 export function minus(s: string): string {
   return s.replace(/(^|[\s([:=≈~])-(?=\.?\d)/g, '$1−');
 }
+/**
+ * "± x″" as span.unc (quieter), and "RA … , Dec …" as span.coords, which keeps the sans font's
+ * slashed zero (prose takes a plain zero: tokens.css, Sumit 15 Nov).
+ */
+const MARKED =
+  /(±\s?[\d.,]+\s?(?:″|"|′|px|%|mag|µm|°)?|RA [\dh m s.°]+, Dec [−+]?[\d°′″. ]+[\d°′″])/;
 function text(s: string): Node {
   const t = minus(s);
-  if (!t.includes('±')) return document.createTextNode(t);
+  if (!t.includes('±') && !t.includes('RA ')) return document.createTextNode(t);
   const f = document.createDocumentFragment();
-  for (const part of t.split(/(±\s?[\d.,]+\s?(?:″|"|′|px|%|mag|µm|°)?)/)) {
+  for (const part of t.split(MARKED)) {
     if (!part) continue;
-    if (part.startsWith('±')) {
+    const cls = part.startsWith('±') ? 'unc' : MARKED.test(part) ? 'coords' : '';
+    if (cls) {
       const u = document.createElement('span');
-      u.className = 'unc';
+      u.className = cls;
       u.textContent = part;
       f.append(u);
     } else f.append(document.createTextNode(part));
