@@ -1787,7 +1787,7 @@ export const copy = {
     makers: [
       {
         role: 'Measurements and data packs',
-        who: 'My own pipeline (pipeline/ in the repository)',
+        who: 'My own pipeline (pipeline/ in the repository), with AI assistance (Claude, by Anthropic)',
         when: '14–15 Nov 2026, during the event',
         facts: [
           'SPHEREx DR1 + QR3, read during the event',
