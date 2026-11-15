@@ -229,5 +229,128 @@ def steady(slug: str) -> None:
                 print(k, pp, {x: e[x] for x in e if x != "stars"})
 
 
+def wide(slug: str) -> None:
+    """Amendment (15 Nov): one wider read (250x250 px, centred on the target) of the same photos of
+    the one pass pair that has >= 3 target pairs, then the steady-star test with counts per rule.
+    No target ratio is computed here."""
+    t = target_of(slug)
+    tepoch = float(t.get("epoch", 2016.0))
+    prev = json.loads((CACHE / f"variables_{slug}_steady.json").read_text())
+    rows = {r["obs"] + f"_D{r['det']}": r for r in photos(t)}
+    # The pass pair(s) that met "3 pairs" in the first step, and their photos (D1 for RW Aur).
+    todo = [(det, pp) for det, v in prev["result"].items() if "status" not in v
+            for pp, e in v.items() if e.get("target_pairs", 0) >= 3]
+    gaia = gaia_field(t["ra"], t["dec"], 0.25)
+    report = {}
+    for det, pp in todo:
+        d = int(det[1:])
+        a, b = (int(x) - 1 for x in pp.split("->"))
+        rs = [r for r in rows.values() if r["det"] == d and r["pass"] in (a, b)]
+        # The same photos: those where the target is usable (as in the first step).
+        boxes = {}
+        async def read_all():
+            async with aiohttp.ClientSession() as s_:
+                rd = sx.RangeReader(s_)
+                for r in rs:
+                    e0 = pickle.loads((CACHE / r["path"]).read_bytes())  # our own cache
+                    w0 = WCS(fits.Header.fromstring(e0["wcs_hdr"]))
+                    tg = star_in(e0, w0, *at_date(t, r["mjd"], tepoch))
+                    if not tg or tg.get("rejected"):
+                        continue
+                    tra, tdec = at_date(t, r["mjd"], tepoch)
+                    bx = await sx.read_box(rd, dict(url=e0["url"], t=r["mjd"]), tra, tdec, 125)
+                    tab = await sx.read_wave(rd, e0["url"])
+                    if bx:
+                        boxes[r["obs"]] = (r, bx, tab, tg)
+        asyncio.run(read_all())
+        counts = collections.Counter()
+        per = {}
+        for obs, (r, bx, tab, tg) in boxes.items():
+            e = dict(img=bx["img"], fl=bx["fl"], bits=bx["bits"], x0=bx["x0"], y0=bx["y0"])
+            w = bx["wcs"]
+            nx, ny = int(bx["hdr"]["NAXIS1"]), int(bx["hdr"]["NAXIS2"])
+            stars = {}
+            for s in gaia:
+                sra, sdec = at_date(s, r["mjd"])
+                px, py = w.all_world2pix(sra, sdec, 0)
+                if not (8 <= float(px) <= nx - 9 and 8 <= float(py) <= ny - 9):
+                    continue  # the detector-edge rule
+                m = star_in(e, w, sra, sdec)
+                if m is None:
+                    continue
+                counts["in box, off the edge"] += 1
+                if m["rejected"]:
+                    continue
+                counts["unsaturated, clean core (§1)"] += 1
+                stars[str(s["source_id"])] = dict(m, lam=sx.wave_at(tab, m["x"] + bx["x0"], m["y"] + bx["y0"])[0])
+            tl = sx.wave_at(tab, bx["xt"], bx["yt"])[0]
+            per[obs] = dict(pass_=r["pass"], target=tg, target_lam=tl, stars=stars)
+        ok_ids = set()
+        for s in gaia:
+            if (s.get("phot_variable_flag") or "") == "VARIABLE" or s["phot_g_mean_mag"] is None:
+                continue
+            if any(o is not s and o["phot_g_mean_mag"] is not None and o["phot_g_mean_mag"] < s["phot_g_mean_mag"] + 3
+                   and fg.sep_deg(o["ra"], o["dec"], s["ra"], s["dec"]) * 3600 < 2 * fg.PIX_ARCSEC for o in gaia):
+                continue
+            ok_ids.add(str(s["source_id"]))
+        A = [p_ for p_ in per.values() if p_["pass_"] == a]
+        B = [p_ for p_ in per.values() if p_["pass_"] == b]
+        tpairs = [(pa, pb) for pa in A for pb in B if abs(pa["target_lam"] - pb["target_lam"]) <= pa["target_lam"] / 80]
+        tpeak = float(np.median([x["target"]["peak"] for pr in tpairs for x in pr]))
+        rule = collections.Counter()
+        ratios = {}
+        for sid in {k for p_ in per.values() for k in p_["stars"]}:
+            rule["clean in some photo (§1)"] += 1
+            if sid not in ok_ids:
+                continue
+            rule["not Gaia VARIABLE, no bright neighbour (§3)"] += 1
+            rs_, es_ = [], []
+            peaks = []
+            for pa, pb in tpairs:
+                sa, sb = pa["stars"].get(sid), pb["stars"].get(sid)
+                if not sa or not sb or sa["flux"] <= 0 or sb["flux"] <= 0:
+                    continue
+                # Paired at the star's own wavelength (λ/80), not the target's (Physics).
+                if abs(sa["lam"] - sb["lam"]) > sa["lam"] / 80:
+                    continue
+                if not (tpeak / 3 <= sa["peak"] <= tpeak * 3):
+                    continue
+                q = sb["flux"] / sa["flux"]
+                rs_.append(q)
+                es_.append(q * math.hypot(sa["err"] / sa["flux"], sb["err"] / sb["flux"]))
+                peaks.append(sa["peak"])
+            if not rs_:
+                continue
+            rule["peak within x3 of the target's, paired at its own wavelength"] += 1
+            wts = 1 / np.array(es_) ** 2
+            mean = float((np.array(rs_) * wts).sum() / wts.sum())
+            err = max(float(1 / math.sqrt(wts.sum())), float(np.std(rs_) / math.sqrt(len(rs_))) if len(rs_) > 1 else 0.0)
+            ratios[sid] = dict(ratio=round(mean, 4), err=round(err, 4), pairs=len(rs_),
+                               peak_over_target=round(max(peaks) / tpeak, 2))
+        n = len(ratios)
+        entry = dict(box_px=250, photos_read=len(boxes), target_pairs=len(tpairs), target_peak=round(tpeak, 2),
+                     star_counts=dict(counts), rule_counts=dict(rule), steady_stars=n, stars=ratios)
+        if n < 5:
+            entry["status"] = "fewer than 5 steady stars, not tested"
+        else:
+            v = np.array([x["ratio"] for x in ratios.values()])
+            e_ = np.array([x["err"] for x in ratios.values()])
+            med = float(np.median(v))
+            chi2 = float((((v - med) / e_) ** 2).sum() / max(1, n - 1))
+            bright = [x for x in ratios.values() if x["peak_over_target"] >= 0.5]
+            diff = v / med
+            entry.update(median=round(med, 4), chi2_dof=round(chi2, 2), bright_enough=len(bright),
+                         systematic_rms=round(float(np.sqrt(np.mean((diff - 1) ** 2))), 4))
+            if not bright:
+                entry["status"] = "no steady star this bright here, not tested"
+            elif abs(med - 1) > 0.02 or chi2 >= 2:
+                entry["status"] = "steady stars don't hold, no number"
+            else:
+                entry["status"] = "steady stars hold"
+        report[f"{det} {pp}"] = entry
+        print(det, pp, {k: v for k, v in entry.items() if k != "stars"})
+    (CACHE / f"variables_{slug}_wide.json").write_text(json.dumps(report, indent=1))
+
+
 if __name__ == "__main__":
-    {"steady": steady}[sys.argv[1]](sys.argv[2])
+    {"steady": steady, "wide": wide}[sys.argv[1]](sys.argv[2])
