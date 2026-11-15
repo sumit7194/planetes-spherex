@@ -1,7 +1,7 @@
 # Project page texts (drafts for Sumit to edit and paste)
 
 Deadline: **Sun 15 Nov 2026, 23:59 IST** (Gorakhpur). Resubmitting is allowed until the deadline.
-Every number below is copied from the live site's "How we tested" page (15 Nov 2026). If the site changes, re-check them before pasting. ⟨…⟩ marks values still to fill.
+Every number below is copied from the live site's "How we tested" page (15 Nov 2026). If the site changes, re-check them before pasting.
 
 ---
 
@@ -25,7 +25,7 @@ https://sumit7194.github.io/planetes-spherex/ · code: https://github.com/sumit7
 
 **What it does**
 - **Any spot in the sky.** Type a name or a position (decimal or h m s / d m s), click the sky map, or open a link such as `?at=133.76,-7.2426`. Planetes finds every SPHEREx photo of that spot in DR1 and QR3 (usually 250–500 photos in 3–4 passes; thousands in the deep fields). It then lets you blink between passes, subtract them, or play every photo in date order.
-- **Play and Learn.** Play is the tool itself. Learn walks through the same sky with guided explanations. Both share one sky view, which can be shown as a globe or a flat map.
+- **Play and Learn.** Play is the tool itself. Learn walks through the same sky with guided explanations. Both share one sky, seen from inside (Look around) or as a flat map of the whole sky.
 - **The challenge's five, tested** (the "How we tested" page lists each, with its limits):
   - Barnard's Star: moved 10.2″ ± 1.5″ north, Aug 2025 to Aug 2026. Predicted 10.2″ (Gaia DR3).
   - Epsilon Indi B: moved 6.4″ ± 0.3″ south-east, May 2025 to Sep 2026. Predicted 6.5″.
