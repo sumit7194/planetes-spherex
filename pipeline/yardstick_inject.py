@@ -123,7 +123,17 @@ def draw_fakes(field: dict, pass_no: int, t_ref: float, srcs: list, blobs: list,
                 continue
             break
         else:
-            raise RuntimeError(f"{field['field']} pass {pass_no}: no room for fake {k}")
+            # A crowded field with no spot 8 px from every source (PLAN §8, 15 Nov): this fake is
+            # placed anywhere instead and labelled "anywhere", so the isolated rows stay truly isolated.
+            if not isolated:
+                raise RuntimeError(f"{field['field']} pass {pass_no}: no room for fake {k}")
+            isolated = False
+            for _ in range(10000):
+                x, y = rng.uniform(margin, n - 1 - margin, 2)
+                if not (on_sat(x, y) or in_glare(x, y)):
+                    break
+            else:
+                raise RuntimeError(f"{field['field']} pass {pass_no}: no room for fake {k}")
         ra, dec = gw.all_pix2world(x, y, 0)
         if EXT == "E1":
             pm = 10 ** rng.uniform(4, 5)  # mas/yr, 10-100″/yr
@@ -234,19 +244,27 @@ def run_field(field: dict) -> None:
         fakes = draw_fakes(field, p, t_ref, srcs, blobs, sat_any)
         spectra = {f["fake_id"]: spectrum_jy(f) for f in fakes}
         noise_root = seeds(name, p)[2]
-        injected, per_photo = [], []
+        injected, per_photo, not_injected = [], [], []
         for i, e in enumerate(exps_ok):
             hdr, planes = psfs[e["psf_sha256"]]
             cut = io.cutout_from(e, hdr, planes)
             ff, rec = frame_fakes(e, cut, fakes, spectra)
             if ff:
                 rng = np.random.default_rng(np.random.SeedSequence(noise_root.entropy, spawn_key=(i,)))
-                out, _ = inject(cut, ff, rng)
+                try:
+                    out, _ = inject(cut, ff, rng)
+                except (IndexError, ValueError) as ex:
+                    # No usable (unflagged, finite) pixels to measure the variance slope from: the
+                    # photo can't carry a fake, and its rejected pixels are blank in the stack anyway.
+                    # Left un-injected and recorded (PLAN §8, 15 Nov).
+                    not_injected.append(dict(obs=e.get("obs_id"), det=e.get("det"), why=repr(ex)[:120]))
+                    injected.append(e)
+                    continue
                 injected.append(dict(e, img=out.image))
                 per_photo.extend(rec)
             else:
                 injected.append(e)
-        truth = dict(field=name, pass_no=p, t_ref=t_ref, w2_system=W2_SYSTEM, fakes=fakes, per_photo=per_photo,
+        truth = dict(field=name, pass_no=p, t_ref=t_ref, w2_system=W2_SYSTEM, fakes=fakes, per_photo=per_photo, not_injected=not_injected,
                      seeds=[int(seeds(name, p)[0].entropy)])
         sha = seal(fdir / f"truth_p{p}.json", truth)
         stacks = fs.stack_exps(field, rows_ok, injected, "passes")
@@ -254,7 +272,7 @@ def run_field(field: dict) -> None:
         st = yn.load_stacks(fdir / f"stacks_p{p}.npz")
         res = sp.search_stacks(st, fs.SIZE, lambda _s: quiet, keep_all=True)
         (fdir / f"search_p{p}.json").write_text(json.dumps(res, default=float))
-        log["passes"].append(dict(pass_no=p, truth_sha256=sha, injected_photos=sum(1 for r in per_photo),
+        log["passes"].append(dict(pass_no=p, truth_sha256=sha, injected_photos=sum(1 for r in per_photo), not_injected=len(not_injected),
                                   pairs=len(res)))
         print(f"{name} pass {p}: truth sealed {sha[:12]}, {len(per_photo)} fake-photo renders, {len(res)} pairs", flush=True)
     (fdir / "run.json").write_text(json.dumps(log, indent=1, default=float))
