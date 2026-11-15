@@ -112,7 +112,8 @@ export const copy = {
     /** The Sun on the day SPHEREx last photographed the spot looked at (Sumit, 14 Nov: say why). */
     sunOn: 'The Sun on {date}, when SPHEREx last photographed this spot',
     /** Under the Sun's label the first time it moves (Sumit, 15 Nov: "it keeps drifting"). */
-    sunWhy: 'SPHEREx looks at right angles to the Sun, so it stays about 90° from wherever you look',
+    sunWhy:
+      'SPHEREx looks at right angles to the Sun, so it stays about 90° from wherever you look',
     /** Under the aim's readout while the zoomed-in sky shows Gaia's fainter stars. */
     gaiaNote: 'Fainter stars: Gaia DR3 (ESA), not SPHEREx',
     /** A star the mouse rests on (Viewer, 14 Nov): honest and short. */
