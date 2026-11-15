@@ -76,11 +76,6 @@ root.append(
   table,
   h('h2', {}, c.makersHeading),
   makers,
-  h(
-    'p',
-    { class: 'prior' },
-    h('a', { href: c.priorWork.link, rel: 'noopener' }, c.priorWork.label),
-  ),
   h('p', { class: 'prior' }, h('a', { href: 'tests.html' }, copy.tests.link)),
   h(
     'section',

@@ -1633,15 +1633,11 @@ export const copy = {
           'TypeScript · Vite · HTML canvas · three.js',
         ],
         record: [
-          "The idea is Sumit's. Before the event he practised in private projects; what this entry reuses from them, the viewer's front end included, is listed in PRIOR_WORK.md in the repository. Claude wrote most of the code and text under the team's direction and review.",
+          "The idea is Sumit's. Before the event he did a private practice run to find what looks good and what works; the interface grew from it. Claude wrote most of the code and text under the team's direction and review.",
           'Inspired by WiseView and the Backyard Worlds: Planet 9 project, where volunteers found brown dwarfs by blinking WISE images.',
         ],
       },
     ],
-    priorWork: {
-      label: 'Prior work and AI use: PRIOR_WORK.md',
-      link: 'https://github.com/sumit7194/planetes-spherex/blob/main/PRIOR_WORK.md',
-    },
     ackHeading: 'Acknowledgements, as the archives ask them to be printed',
     acknowledgements: [
       /** As CDS asks for SIMBAD (search names it doesn't hold locally go there; 14 Nov). */

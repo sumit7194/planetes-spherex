@@ -54,7 +54,7 @@ uv run python build_index.py --footprints footprints.csv
 
 ## Data, credits, prior work, AI
 
-- See the app's **Credits** page, [PRIOR_WORK.md](PRIOR_WORK.md) (what existed before the event and what is reused), and [docs/SUBMISSION.md](docs/SUBMISSION.md).
+- See the app's **Credits** page, [PRIOR_WORK.md](PRIOR_WORK.md) (how this entry was built: the practice run before the event, what carries over, and AI use), and [docs/SUBMISSION.md](docs/SUBMISSION.md).
 - **NASA data:** SPHEREx DR1 and QR3 spectral images and the DR1 HiPS cube (IRSA); IRSA SIA and TAP; CatWISE2020 (IRSA).
 - **Other:** ESA Gaia DR3; IMCCE SkyBoT; CDS Aladin Lite and Sesame.
 
