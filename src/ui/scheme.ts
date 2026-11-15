@@ -27,7 +27,23 @@ function apply(pick: SchemePick): void {
   root.dataset['ui'] = pick;
 }
 
+/**
+ * Design lab (dev server only, Sumit 15 Nov): ?lab=<name> adds design-lab/<name>.css to this page,
+ * so look variants can be compared on the real pages. The folder is git-ignored and never built.
+ */
+function devLab(): void {
+  if (!import.meta.env.DEV) return;
+  const name = new URLSearchParams(location.search).get('lab');
+  if (!name || !/^[a-z0-9-]+$/.test(name)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `/design-lab/${name}.css`;
+  document.head.append(link);
+  document.documentElement.dataset['lab'] = name;
+}
+
 export function watchScheme(): void {
+  devLab();
   apply(stored());
   // A choice made in another tab of this site.
   addEventListener('storage', (e) => {

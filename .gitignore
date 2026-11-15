@@ -18,3 +18,4 @@ pipeline/yardstick_inject/
 pipeline/yardstick_inject_e1/
 pipeline/parallaxloop/
 pipeline/cache/parallaxloop/
+design-lab/

@@ -8122,6 +8122,9 @@ function render(): void {
     words.classList.add('arrive');
   }
   placeLensScan();
+  // The sky's spoken caption ("Looking near …") belongs to the sky: off a page, it's emptied so a
+  // screen reader doesn't hear the old sky place during a look (Viewer).
+  if (state.place.kind !== 'sky') focusCaption.textContent = '';
   // N7: after the tour ends into a spot, focus lands on where the visitor arrived (the look's
   // summary, or a page's heading), and stays there as the column is rebuilt (Viewer).
   // For a short while (the look's column is rebuilt as its photos arrive, sometimes with no
@@ -8171,7 +8174,7 @@ function render(): void {
   if (
     state.place.kind !== 'sky' &&
     app.classList.contains('booting') &&
-    app.classList.contains('panel-full')
+    (app.classList.contains('panel-full') || state.place.kind === 'trouble')
   )
     // The tabbed layout settles a frame or two later: reveal just after it.
     setTimeout(() => app.classList.remove('booting'), 120);

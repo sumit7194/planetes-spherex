@@ -3713,13 +3713,22 @@ span[data-fit='1'] {
   min-height: 30px;
   border-radius: 7px;
 }
+/* The same layout as the real tab row (.panel-tabs): four equal columns, centred labels, so
+   nothing slides sideways when the real tabs arrive (Viewer). */
 .skel-tabbed .skel-tabs {
   display: flex;
-  gap: 24px;
-  padding: 0 2px 8px;
+  gap: 2px;
   border-bottom: 1px solid var(--dusk-line);
-  font-size: 14px;
+  font: 600 14px var(--sans);
   color: color-mix(in srgb, var(--quiet) 55%, transparent);
+}
+.skel-tabbed .skel-tabs > span {
+  flex: 1;
+  display: inline-flex;
+  justify-content: center;
+  padding: 9px 4px 10px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
 }
 .skel-tabbed .skel-body {
   display: grid;
@@ -3767,7 +3776,7 @@ span[data-fit='1'] {
   height: 2px;
   border-radius: 2px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--look) 16%, transparent);
+  background: color-mix(in srgb, var(--look) 12%, transparent);
 }
 .load-bar i {
   display: block;
@@ -3813,15 +3822,23 @@ span[data-fit='1'] {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
+  /* A short arc (~40°) travelling round the lens rim, like a progress ring: "photos loading",
+     not a radar sweep (which would say "searching", and this is a look, not a search: Viewer). */
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    transparent 290deg,
-    color-mix(in srgb, var(--look) 5%, transparent) 330deg,
-    color-mix(in srgb, var(--look) 14%, transparent) 360deg
+    transparent 320deg,
+    color-mix(in srgb, var(--look) 20%, transparent) 340deg,
+    color-mix(in srgb, var(--look) 60%, transparent) 360deg
   );
-  -webkit-mask: radial-gradient(closest-side, #000 98%, transparent 100%);
-  mask: radial-gradient(closest-side, #000 98%, transparent 100%);
+  -webkit-mask: radial-gradient(
+    closest-side,
+    transparent 96%,
+    #000 97%,
+    #000 99.5%,
+    transparent 100%
+  );
+  mask: radial-gradient(closest-side, transparent 96%, #000 97%, #000 99.5%, transparent 100%);
   animation: lens-scan 6s linear infinite;
 }
 .lens-scan[hidden] {
@@ -3841,6 +3858,8 @@ span[data-fit='1'] {
     animation: none;
   }
   .lens-scan {
+    -webkit-mask: none;
+    mask: none;
     background: radial-gradient(
       circle,
       transparent 0 60%,
