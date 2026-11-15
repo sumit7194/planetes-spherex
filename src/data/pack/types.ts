@@ -101,6 +101,8 @@ export interface Frame {
   sha256: string;
   /** The data release the photo came from (DR1, QR3). */
   release?: string;
+  /** SPHEREx's mid-exposure position (header X_SC/Y_SC/Z_SC, km, geocentric), when known. */
+  observerKm?: [number, number, number];
   image: string;
   flags: string;
 }

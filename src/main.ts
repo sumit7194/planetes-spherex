@@ -246,7 +246,13 @@ let live: {
   probe: { done: number; total: number; of: number } | null;
   /** Every photo of the spot in the sky index (the spectrum picks from these). */
   photos: LivePhoto[];
-  landed: { candidate: LiveCandidate<LivePhoto>; tile: Tile; key: string }[];
+  landed: {
+    candidate: LiveCandidate<LivePhoto>;
+    tile: Tile;
+    key: string;
+    /** SPHEREx's position at this photo (header), for SkyBoT's places (G2). */
+    observer: Observer | null;
+  }[];
   /** Known asteroids per shown photo, once SkyBoT answers. */
   movers: MoverMark[][] | 'failed' | null;
   spectrum: {
@@ -2230,6 +2236,7 @@ function watchLiveRange(job: LiveRange): void {
     frames.map((f) => f.mjd),
     grid.size,
     grid.scaleArcsec,
+    frames.map((f) => f.observerKm),
   ).then((marks) => {
     if (liveRange === job && job.playing && series === play && marks !== 'failed')
       play.setMovers(marks);
@@ -2535,7 +2542,12 @@ async function openLook(
   await eachLimited(plan.set, readsAtOnce(), async (c) => {
     const frame = await readPhoto(c.hit, at, grid.size, grid.scaleArcsec, look.abort.signal);
     if (!frame || live !== look || look.done) return;
-    look.landed.push({ candidate: c, tile: frame.tile, key: c.hit.key });
+    look.landed.push({
+      candidate: c,
+      tile: frame.tile,
+      key: c.hit.key,
+      observer: frame.observerKm ?? null,
+    });
     dispatch({ type: 'frameIn' });
   });
   if (live === look && !look.done) finishLook(look);
@@ -2861,6 +2873,7 @@ function finishLook(look: NonNullable<typeof live>): void {
     look.landed.map((x) => x.candidate.mjd),
     grid.size,
     grid.scaleArcsec,
+    look.landed.map((x) => x.observer),
   ).then((marks) => {
     if (live !== look) return;
     look.movers = marks;
@@ -6642,6 +6655,7 @@ async function playColour(detector: number): Promise<void> {
     frames.map((f) => f.mjd),
     g.size,
     g.pixelScaleArcsec,
+    frames.map((f) => f.observerKm),
   ).then((marks) => {
     if (watching !== detector || current?.pack !== pack || series !== play) return;
     runMovers = marks;
@@ -6897,13 +6911,17 @@ async function moversOn(
   mjds: number[],
   size: number,
   scaleArcsec: number,
+  /** SPHEREx's position per photo (same order as mjds), when known: places as SPHEREx saw them. */
+  observers?: (Observer | null | undefined)[],
   signal?: AbortSignal,
 ): Promise<MoverMark[][] | 'failed'> {
+  const at = new Map(mjds.map((m, i) => [m, observers?.[i] ?? null] as const));
   const { byMjd, failed } = await knownMoversAt(
     centre,
     mjds,
     fieldRadiusDeg(size, scaleArcsec),
     signal,
+    (m) => at.get(m) ?? null,
   );
   if (failed > 0) return 'failed';
   return mjds.map((m) => marksAt(byMjd.get(m) ?? [], centre, size, scaleArcsec));

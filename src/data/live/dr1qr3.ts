@@ -924,6 +924,20 @@ export interface LiveFrame {
   bandwidthUm: number;
   mjd: number;
   bytes: number;
+  /** SPHEREx's position at mid-exposure (X_SC/Y_SC/Z_SC, km, geocentric), when the header has it. */
+  observerKm?: [number, number, number] | null;
+}
+
+/**
+ * SPHEREx's mid-exposure position from a parsed IMAGE header (X_SC/Y_SC/Z_SC, km), only when
+ * XYZ_SC_SYSTEM says GEOCENTER (G2, 15 Nov: known asteroids placed as SPHEREx saw them).
+ */
+export function observerOf(h: Header): [number, number, number] | null {
+  if (h.get('XYZ_SC_SYSTEM') !== 'GEOCENTER') return null;
+  const v = ['X_SC', 'Y_SC', 'Z_SC'].map((k) => h.get(k));
+  return v.every((x) => typeof x === 'number' && Number.isFinite(x))
+    ? (v as [number, number, number])
+    : null;
 }
 
 /**
@@ -1043,6 +1057,7 @@ export function decodeHelperFrame(buf: ArrayBuffer, photo: LivePhoto, size?: num
     lambdaUm: number | null;
     bandwidthUm: number | null;
     mjd: number;
+    observerKm?: [number, number, number] | null;
   };
   // A frame for another photo or grid must never reach the lens.
   if (meta.obsId !== photo.obsId) throw new Error('planetes frame is for another photo');
@@ -1063,6 +1078,13 @@ export function decodeHelperFrame(buf: ArrayBuffer, photo: LivePhoto, size?: num
     // value), falling back to the index's time.
     mjd: Number.isFinite(meta.mjd) && meta.mjd > 0 ? meta.mjd : photo.mjd,
     bytes: buf.byteLength,
+    // Older cached answers don't carry it: those photos keep Earth's centre for SkyBoT.
+    observerKm:
+      Array.isArray(meta.observerKm) &&
+      meta.observerKm.length === 3 &&
+      meta.observerKm.every(Number.isFinite)
+        ? meta.observerKm
+        : null,
   };
 }
 
@@ -1208,6 +1230,7 @@ export async function readPhoto(
     bandwidthUm,
     mjd: num(hi.header, 'MJD-AVG', photo.mjd),
     bytes,
+    observerKm: observerOf(hi.header),
   };
 }
 

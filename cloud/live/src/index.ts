@@ -99,6 +99,7 @@ function encodeFrame(f: NonNullable<Awaited<ReturnType<typeof readPhoto>>>): Uin
     bandwidthUm: f.bandwidthUm,
     mjd: f.mjd,
     upstreamBytes: f.bytes,
+    observerKm: f.observerKm ?? null,
   });
   let j = new TextEncoder().encode(json);
   if (j.length % 4) {

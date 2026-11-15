@@ -261,6 +261,13 @@
           "description": "The data release the photo came from (DR1, QR3).",
           "type": "string"
         },
+        "observerKm": {
+          "description": "SPHEREx's own position at mid-exposure from the photo's IMAGE header (X_SC, Y_SC, Z_SC), km, geocentric (XYZ_SC_SYSTEM = GEOCENTER), so known asteroids can be placed as SPHEREx saw them (pipeline/add_observer.py, 15 Nov 2026).",
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
         "image": {
           "type": "string",
           "description": "float32 little-endian, size × size, MJy/sr, IMAGE − ZODI − frame median"
