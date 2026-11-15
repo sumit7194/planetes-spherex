@@ -1,0 +1,66 @@
+name: Keep the sky index up to date (new SPHEREx photos)
+
+# G3 (15 Nov 2026), the challenge's "easy to update with the latest data releases".
+# Every day: list NASA's SPHEREx bucket, and if there are photos our sky index doesn't have yet,
+# add them (each record made from the photo's own headers, after re-checking that recipe against
+# 50 records made from IRSA's footprints), run every check, and open a pull request. Nothing goes
+# live until a person merges it (the update goes to a branch with a compare link). A release folder we don't index yet (e.g. a new data release) is
+# reported in the run summary and the pull request, for a person to add.
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Re-check the recipe against IRSA's records
+        working-directory: pipeline
+        run: |
+          uv sync
+          uv run python update_index.py --check 50
+      - name: Add new photos
+        working-directory: pipeline
+        run: uv run python update_index.py --write
+      - name: Report
+        run: |
+          {
+            echo "### SPHEREx data check"
+            echo '```json'
+            cat pipeline/update_index_report.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Every check
+        run: |
+          npm ci
+          npm run check
+      # This repo doesn't let Actions open pull requests (a repository setting, left to its owner),
+      # so the update goes to a branch, with a one-click compare link in the run summary.
+      - name: Push the update to a branch
+        run: |
+          if git diff --quiet -- public/data/index/dr1qr3; then
+            echo "No new photos: nothing to push." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "planetes-bot"
+          git config user.email "planetes-bot@users.noreply.github.com"
+          git switch -c data/sky-index-update
+          git add public/data/index/dr1qr3
+          git commit -m "Sky index: new SPHEREx photos (update_index.py)"
+          git push --force origin data/sky-index-update
+          echo "Review and merge: https://github.com/${GITHUB_REPOSITORY}/compare/main...data/sky-index-update?expand=1" >> "$GITHUB_STEP_SUMMARY"
