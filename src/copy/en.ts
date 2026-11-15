@@ -1288,7 +1288,7 @@ export const copy = {
         id: 'v4',
         title: 'Moving objects within one visit (v4)',
         looks:
-          'Sources that move 0.25–3 pixels between photos taken 129 s apart within one SPHEREx visit: main-belt asteroids.',
+          'Sources that move up to 3 pixels per 129 s step between photos within one SPHEREx visit, near-stationary ones included (a source that also sits there in other visits is treated as a star): in practice, main-belt asteroids.',
         status: 'Tested · passed its pre-registered test',
         test: [
           'Registered test V_LOOK_1, scored on 6 Nov 2026 on held-out sky (patches V-1 to V-3). Fake asteroids planted in real photos: half were found down to AB magnitude 17.07, measured in the visit’s short-wavelength detector (68% range 17.04–17.10); completeness levels off at 73%, so even bright fakes are not all found.',
@@ -1389,7 +1389,7 @@ export const copy = {
         e: 'E · Known asteroids re-found',
       },
       bCaption:
-        'All planted brightnesses together, so these sit below A’s 73% plateau. Bars: share found, with its 95% interval; n is the number of fakes.',
+        'By speed (pixels per 129 s step): each fake’s true speed, over all planted brightnesses together, so the levels sit below A’s 73% plateau. Fakes are clones of real asteroid orbits, so most move slowly; the search covers 0–3 px per step, and the top bin is open only in how the scorer groups them. Bars: share found, with its 95% interval; n is the number of fakes.',
       e: 'Known asteroids re-found in the three test patches (catalogued objects; no positions).',
       eNote:
         'Most known asteroids in these visits are far fainter than the detector reaches, so this is not a recovery rate; the realism check (D) is the like-for-like test.',

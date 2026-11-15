@@ -11,8 +11,9 @@ have not been vetted, so they are withheld from this copy.
 
 ## What v4 does
 
-It looks for sources that move 0.25–3 pixels (1 px = 6.15″) between photos taken 129 s apart within one SPHEREx
-visit: in practice, main-belt asteroids. Thresholds are set on noise-only data for 0.1 false alarms per square degree
+It looks for sources that move up to 3 pixels (1 px = 6.15″) per 129 s step between photos within one SPHEREx
+visit, near-stationary ones included (trial speeds 0–3 px per step on a 0.25 px grid; a source that also sits at the
+same place in other visits is vetoed as a star). In practice: main-belt asteroids. Thresholds are set on noise-only data for 0.1 false alarms per square degree
 per visit.
 
 ## The registered test and its result
@@ -28,7 +29,9 @@ per visit.
 - **Known asteroids re-found:** 28, 13 and 10 in the three patches.
 - **Limits:** no number for faster movers (near-Earth asteroids). Overall completeness is lower within 2 px (12″) of
   stars brighter than Gaia G 16: 0.16 (95% 0.12–0.22) against 0.23–0.26 further out.
-- `FINDINGS_excerpt.md` has the two dated log entries, trimmed where marked.
+- `FINDINGS_excerpt.md` has the two dated log entries, trimmed where marked. **Correction (15 Nov 2026):** its
+  "Scope: … v4's search (0.25–3 px/step)" should read 0–3 px/step; the search grid starts at zero motion
+  (`code/src/smo/detect/v0.py`, `MAX_RATE_PX = 3.0`, `RATE_STEP_PX = 0.25`). The log copy is left as written.
 
 ## What is here
 
