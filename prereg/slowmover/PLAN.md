@@ -150,7 +150,7 @@ How faint, and how slow, a mover can the season-pair search find, at a fixed fal
     - So a shift is measurable only within ±2 px (12.3″) of the median position: **at most ~4 px ≈ 25″ between two passes**.
     - A mover that shifts more than about a PSF width between passes also fades from the median, so it isn't found as a source at all.
     - The field is 64 px (394″) across.
-    - **The search's window is far below ~200″, so by Physics' rule the Planet X reach limit is stated as: shifts above ~25″ between passes can't be measured by this search (a planet at ≤ 2000 AU shifts ≥ 200″).**
+    - **The search's window is far below ~200″, so by Physics' rule the Planet X reach limit is stated as (Physics' wording, 15 Nov): "this search can't measure shifts above about 25″ between passes; a planet a few hundred to ~2000 AU away usually shifts by hundreds of arcseconds between passes (from Earth's own motion around the Sun), so it would fall outside what this search can follow."** ("Usually": the parallax shift between two passes depends on the target's ecliptic latitude and on where Earth was at each pass, and can be small near the ecliptic at some pass dates.)
   - **E1 spec:**
     - Same code, T, 40 development fields, W2 grid (U(12, 18)), families, placements (4 isolated + 2 anywhere), 5 passes × 6 fakes.
     - Fakes move linearly at R″/yr, with R log-uniform 10–100″/yr and no parallax (distance set very large). So 12-month pairs see 10–100″ and 6-month pairs 5–50″, spanning well past the ~25″ code limit, so the fall-off is measured, not assumed.
