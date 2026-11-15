@@ -13,6 +13,7 @@ import './styles/detectors.css';
 import { copy } from './copy/en';
 import { h } from './ui/dom';
 import { siteHeader } from './ui/header';
+import { v4Explorer } from './ui/v4explorer';
 import { watchScheme } from './ui/scheme';
 
 watchScheme();
@@ -63,3 +64,4 @@ root.append(
   h('p', { class: 'dt-summary' }, t.summary),
   h('div', { class: 'dt-grid' }, ...t.cards.map(card)),
 );
+void v4Explorer().then((x) => root.append(x));

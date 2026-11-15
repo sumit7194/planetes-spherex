@@ -1292,7 +1292,7 @@ export const copy = {
         status: 'Tested · passed its pre-registered test',
         test: [
           'Registered test V_LOOK_1, scored on 6 Nov 2026 on held-out sky (patches V-1 to V-3). Fake asteroids planted in real photos: half were found down to AB magnitude 17.07, measured in the visit’s short-wavelength detector (68% range 17.04–17.10); completeness levels off at 73%, so even bright fakes are not all found.',
-          'Thresholds were set on noise-only data for 0.1 false alarms per square degree per visit; all three test patches stayed within the registered bound.',
+          'Thresholds were set on noise-only data for 0.1 false alarms per square degree per visit; all three test patches passed the registered false-alarm rule (V-1’s best estimate is above the target; see the chart below).',
           'Realism check (14 Nov): fakes and real known asteroids are recovered alike (difference −0.005 mag, 90% range −0.075 to +0.050; the bar was ±0.2).',
           'Known asteroids re-found: 28, 13 and 10 in the three test patches.',
         ],
@@ -1353,6 +1353,36 @@ export const copy = {
         planHref: 'tests.html#yardstick',
       },
     ],
+    /** The v4 results explorer: charts from the published files only (Physics' rules, 15 Nov). */
+    explorer: {
+      title: 'Explore the moving-object test’s published results',
+      lede: 'Every chart below is drawn in your browser from the published result files in research/v4/results, as they are. Each file’s sha256 is computed here and compared with PROVENANCE.md; a chart is drawn only if they match.',
+      matches: 'matches PROVENANCE.md',
+      differs: 'doesn’t match PROVENANCE.md: not drawn',
+      source: (file: string, sha: string) => `Source: research/v4/results/${file} · sha256 ${sha}`,
+      trimmed:
+        'trimmed copy; original sha256 2e58bc61f87fdd8823952514ab904db7ed9d45ada6f1e22208919ad6dd3c64d0',
+      loadFailed: 'The result files couldn’t be loaded just now.',
+      a: 'Completeness of planted fake asteroids by brightness (AB magnitude in the visit’s short-wavelength detector), at the primary threshold of 0.1 false alarms per deg² per visit. Bars: 95% intervals per bin. Line: the registered fit. Half are found at 17.07 (68% 17.04–17.10); the curve levels off at 73%.',
+      primary: 'Primary threshold (0.1 false alarms per deg² per visit)',
+      secondary: (m50: string) =>
+        `Secondary threshold (1 false alarm per deg² per visit): m50 ${m50}`,
+      axisMag: 'AB magnitude (fainter →)',
+      axisFound: 'found',
+      bRate: 'By speed (pixels per 129 s step)',
+      bStar: 'By distance to the nearest star brighter than Gaia G 16',
+      fewFakes: 'few fakes',
+      c: 'False alarms per test patch at the primary threshold. Dots: false-alarm rate with its 95% interval. Line: twice the target (0.2 per deg² per visit); the registered rule fails a patch only when its whole 95% interval lies above it.',
+      cV1: 'V-1 had 3 false-alarm events in 10.9 deg²-visits: 0.28 per deg² per visit (95% 0.06–0.81). Its best estimate is above twice the target (0.2). But the registered rule fails a patch only when the whole 95% interval lies above 0.2, and V-1’s doesn’t, so it counts. With so few events (6–7 were needed to fail), this check has little power.',
+      cHead: ['Patch', 'Events', 'Area (deg²-visits)', 'Rate (95%)', 'Events needed to fail'],
+      pooled: 'Pooled (reported only; the per-patch rule decides)',
+      d: 'Realism check: are planted fakes found like real known asteroids? The difference in the magnitude where half are found (fakes − known), with its 90% interval; the registered test passes if the interval lies inside ±0.2 mag (shaded).',
+      dReported: 'reported, not the registered test',
+      e: 'Known asteroids re-found in the three test patches (catalogued objects; no positions).',
+      eNote:
+        'Most known asteroids in these visits are far fainter than the detector reaches, so this is not a recovery rate; the realism check (D) is the like-for-like test.',
+      eHead: ['Patch', 'Designation', 'V mag', 'Visit', 'Speed band'],
+    },
     linkShort: 'Other detectors we’ve built, and where each stands →',
   },
   /** "Why a far planet loops" (loop.html): Makemake measured, and a distance model (15 Nov). */

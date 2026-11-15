@@ -93,3 +93,186 @@
   color: var(--starlight);
   white-space: normal;
 }
+
+/* The v4 results explorer: charts from the published files. Mist and lilac only: the fit is a
+   model (lilac), the bins are the file's numbers (starlight); no ember on this page. */
+.dx {
+  margin-top: 34px;
+}
+.dx h2 {
+  font: 600 22px / 1.3 var(--serif);
+  color: var(--starlight);
+  margin: 0 0 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.dx-lede {
+  max-width: 72ch;
+  color: var(--mist);
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+.dx-block {
+  margin: 0 0 22px;
+  padding: 14px 18px;
+  border: 1px solid var(--dusk-line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dusk) 40%, transparent);
+}
+.dx-block h3 {
+  margin: 0 0 4px;
+  font: 600 13px var(--sans);
+  letter-spacing: 0.08em;
+  color: var(--quiet);
+}
+.dx-block > figcaption {
+  max-width: 90ch;
+  font-size: 13.5px;
+  color: var(--mist);
+  margin: 0 0 10px;
+}
+.dx-svg {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  height: auto;
+}
+.dx-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 800px) {
+  .dx-pair {
+    grid-template-columns: 1fr;
+  }
+}
+.dx-small {
+  margin: 0;
+}
+.dx-small figcaption {
+  font-size: 13px;
+  color: var(--mist);
+  margin-bottom: 4px;
+}
+.dx-grid {
+  stroke: var(--dusk-line);
+  stroke-width: 1;
+}
+.dx-zero {
+  stroke: var(--quiet);
+  stroke-width: 1;
+}
+.dx-tick {
+  fill: var(--quiet);
+  font: 11.5px var(--sans);
+}
+.dx-axis {
+  fill: var(--mist);
+  font: 12px var(--sans);
+}
+.dx-fit {
+  fill: none;
+  stroke: var(--predicted);
+  stroke-width: 2;
+}
+.dx-mark {
+  stroke: var(--quiet);
+  stroke-dasharray: 3 4;
+}
+.dx-limit {
+  stroke: var(--mist);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+.dx-band {
+  fill: color-mix(in srgb, var(--mist) 12%, transparent);
+}
+.dx-ci {
+  stroke: var(--mist);
+  stroke-width: 1.5;
+}
+.dx-pt {
+  fill: var(--starlight);
+}
+.dx-bar rect {
+  fill: color-mix(in srgb, var(--mist) 35%, transparent);
+}
+.dx-bar.few rect {
+  fill: none;
+  stroke: var(--mist);
+  stroke-dasharray: 3 3;
+}
+.dx-row.primary .dx-tick {
+  fill: var(--starlight);
+  font-weight: 700;
+}
+.dx-row.reported .dx-tick {
+  font-style: italic;
+}
+.dx-seg {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0 0 8px;
+  flex-wrap: wrap;
+}
+.dx-seg button {
+  font: 600 12.5px var(--sans);
+  color: var(--mist);
+  background: transparent;
+  border: 1px solid var(--dusk-line);
+  border-radius: 99px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.dx-seg button[aria-checked='true'] {
+  color: var(--starlight);
+  border-color: var(--starlight);
+  background: var(--dusk);
+}
+.dx-table {
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.dx-table th,
+.dx-table td {
+  text-align: left;
+  padding: 4px 14px 4px 0;
+  border-bottom: 1px solid var(--dusk-line);
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
+}
+.dx-table th {
+  color: var(--quiet);
+  font-weight: 600;
+}
+.dx-note,
+.dx-count {
+  font-size: 13.5px;
+  color: var(--mist);
+  max-width: 90ch;
+  margin: 6px 0;
+}
+.dx-count {
+  color: var(--starlight);
+  font-weight: 600;
+}
+.dx-source {
+  margin: 10px 0 0;
+  font:
+    11.5px / 1.4 ui-monospace,
+    Menlo,
+    monospace;
+  color: var(--quiet);
+  word-break: break-all;
+}
+.dx-source.bad,
+.dx-bad {
+  color: var(--flag);
+}
+.dx-details summary {
+  cursor: pointer;
+  color: var(--look);
+  font-size: 13px;
+}
