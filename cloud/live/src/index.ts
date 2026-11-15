@@ -276,10 +276,16 @@ const numOrNull = (v: string | undefined) =>
   v === undefined || v.trim() === '' ? null : Number(v);
 
 /** IRSA's TAP, cone on the motion-epoch position; a string says why it failed. */
-async function catwiseIrsa(ra: number, dec: number, r: number): Promise<CatwiseRow[] | string> {
+async function catwiseIrsa(
+  ra: number,
+  dec: number,
+  r: number,
+  w2: number | null,
+): Promise<CatwiseRow[] | string> {
   const adql =
     'SELECT source_name, ra_pm, dec_pm, pmra, pmdec, w1mpro_pm, w2mpro_pm FROM catwise_2020 ' +
-    `WHERE CONTAINS(POINT('ICRS', ra_pm, dec_pm), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1`;
+    `WHERE CONTAINS(POINT('ICRS', ra_pm, dec_pm), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1` +
+    (w2 !== null ? ` AND w2mpro_pm < ${w2}` : '');
   const q = new URLSearchParams({ QUERY: adql, FORMAT: 'csv' });
   // One short try: when IRSA is down the visitor's deadline is better spent on VizieR.
   let text: string;
@@ -333,6 +339,7 @@ async function catwiseVizier(
   ra: number,
   dec: number,
   r: number,
+  w2: number | null,
 ): Promise<CatwiseRow[] | string> {
   const q = new URLSearchParams({
     '-source': 'II/365/catwise',
@@ -340,6 +347,7 @@ async function catwiseVizier(
     '-c.rs': String(r + 5),
     '-out': 'Name,RAPMdeg,DEPMdeg,pmRA,pmDE,W1mproPM,W2mproPM',
     '-out.max': 'unlimited',
+    ...(w2 !== null ? { W2mproPM: `<${w2}` } : {}),
   });
   let text: string;
   try {
@@ -365,7 +373,7 @@ async function catwiseVizier(
   const out: CatwiseRow[] = [];
   for (const l of rows) {
     const f = l.split('\t');
-    const [id, ra2, dec2, pmra, pmdec, w1, w2] = at.map((c) => f[c]);
+    const [id, ra2, dec2, pmra, pmdec, w1, w2s] = at.map((c) => f[c]);
     const a = numOrNull(ra2);
     const b = numOrNull(dec2);
     if (a === null || b === null) continue;
@@ -380,6 +388,8 @@ async function catwiseVizier(
         d2r) *
       3600;
     if (sep > r) continue;
+    const w2v = numOrNull(w2s);
+    if (w2 !== null && !(w2v !== null && w2v < w2)) continue;
     out.push({
       id: (id ?? '').trim(),
       ra: a,
@@ -387,7 +397,7 @@ async function catwiseVizier(
       pmra: (numOrNull(pmra) ?? 0) * 1000,
       pmdec: (numOrNull(pmdec) ?? 0) * 1000,
       w1: numOrNull(w1),
-      w2: numOrNull(w2),
+      w2: w2v,
     });
   }
   return out;
@@ -401,10 +411,14 @@ async function catwise(url: URL, ctx: ExecutionContext): Promise<Response> {
   const ra = Number(Number(url.searchParams.get('ra')).toFixed(5)) % 360;
   const dec = Number(Number(url.searchParams.get('dec')).toFixed(5));
   const r = Math.round(Number(url.searchParams.get('r') ?? 60));
+  // w2: an optional faint limit (the five's overlay uses W2 < 17), allowing a bigger cone (G1).
+  const w2 = url.searchParams.has('w2') ? Number(url.searchParams.get('w2')) : null;
   if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
-  if (!(r >= 1 && r <= 150)) return bad('r must be 1..150 arcsec');
+  if (w2 !== null && !(w2 >= 5 && w2 <= 20)) return bad('w2 must be 5..20');
+  const rMax = w2 !== null && w2 <= 17 ? 700 : 150;
+  if (!(r >= 1 && r <= rMax)) return bad(`r must be 1..${rMax} arcsec`);
   const cacheKey = new Request(
-    `https://cache.planetes/${VERSION}/v1/catwise?ra=${ra}&dec=${dec}&r=${r}`,
+    `https://cache.planetes/${VERSION}/v1/catwise?ra=${ra}&dec=${dec}&r=${r}${w2 !== null ? `&w2=${w2}` : ''}`,
   );
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(cacheKey);
@@ -416,13 +430,13 @@ async function catwise(url: URL, ctx: ExecutionContext): Promise<Response> {
   const t0 = Date.now();
   // IRSA first; when its TAP is down, VizieR's copy of the same catalogue (II/365), CDS or its
   // Harvard mirror (G1, 15 Nov: IRSA's TAP was down overnight). Same columns, same units.
-  let got = await catwiseIrsa(ra, dec, r);
+  let got = await catwiseIrsa(ra, dec, r, w2);
   let archive = 'IRSA';
   const why: string[] = [];
   if (typeof got === 'string') {
     why.push(got);
     for (const [host, name] of VIZIER_HOSTS) {
-      const v = await catwiseVizier(host, ra, dec, r);
+      const v = await catwiseVizier(host, ra, dec, r, w2);
       if (typeof v !== 'string') {
         got = v;
         archive = name;
@@ -459,11 +473,16 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   const ra = Number(Number(url.searchParams.get('ra')).toFixed(5)) % 360;
   const dec = Number(Number(url.searchParams.get('dec')).toFixed(5));
   const r = Math.round(Number(url.searchParams.get('r') ?? 30));
+  // g: an optional faint limit. A brighter cut allows a bigger cone, for marks across a whole
+  // live cutout (G1, 15 Nov: the five's overlay uses G < 19.5).
+  const g = url.searchParams.has('g') ? Number(url.searchParams.get('g')) : 21;
   if (!(ra >= 0 && ra < 360 && dec >= -90 && dec <= 90)) return bad('ra/dec out of range');
-  if (!(r >= 1 && r <= 120)) return bad('r must be 1..120 arcsec');
+  if (!(g >= 10 && g <= 21)) return bad('g must be 10..21');
+  const rMax = g <= 19.5 ? 700 : 120;
+  if (!(r >= 1 && r <= rMax)) return bad(`r must be 1..${rMax} arcsec at g ${g}`);
   const cacheKey = new Request(
     // c=2: answers carry BP−RP (Physics' colour guard, 15 Nov); older cached answers don't.
-    `https://cache.planetes/${VERSION}/v1/gaia?ra=${ra}&dec=${dec}&r=${r}&c=2`,
+    `https://cache.planetes/${VERSION}/v1/gaia?ra=${ra}&dec=${dec}&r=${r}&c=2${g !== 21 ? `&g=${g}` : ''}`,
   );
   const cache = (caches as unknown as { default: Cache }).default;
   const hit = await cache.match(cacheKey);
@@ -475,7 +494,7 @@ async function gaia(url: URL, ctx: ExecutionContext): Promise<Response> {
   const adql =
     'SELECT source_id, ra, dec, pmra, pmdec, phot_g_mean_mag, bp_rp FROM gaiadr3.gaia_source ' +
     `WHERE CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', ${ra}, ${dec}, ${r / 3600}))=1 ` +
-    'AND phot_g_mean_mag < 21';
+    `AND phot_g_mean_mag < ${g}`;
   const q = new URLSearchParams({ REQUEST: 'doQuery', LANG: 'ADQL', FORMAT: 'csv', QUERY: adql });
   const t0 = Date.now();
   let text = '';

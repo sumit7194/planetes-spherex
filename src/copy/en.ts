@@ -1092,7 +1092,14 @@ export const copy = {
     gaiaShort: 'Gaia',
     catwiseShort: 'CatWISE',
     gaiaHint: 'Gaia stars, drawn on the lens as circles: catalogue, not SPHEREx',
-    catwiseHint: 'CatWISE sources, drawn on the lens as squares: catalogue, not SPHEREx',
+    catwiseHint:
+      "CatWISE2020 sources (from NASA's WISE), drawn as squares: another telescope's catalogue, not SPHEREx",
+    /** G1: a live look's chips, when an archive doesn't answer (never shown as "0"). */
+    notReachable: (label: string) => `${label}: not reachable now`,
+    notReachableTitle: (tried: string) =>
+      `Not reachable just now (tried ${tried}). Try again later.`,
+    gaiaArchive: "ESA's Gaia archive",
+    catwiseArchives: 'IRSA, then VizieR at CDS and its Harvard mirror',
   },
   /** Spectra on the fly (checklist C3), from Physics' per-photo photometry; lines checked by Physics. */
   spectrum: {

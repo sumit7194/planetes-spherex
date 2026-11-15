@@ -1337,12 +1337,14 @@ export async function gaiaNear(
   at: SkyPosition,
   radiusArcsec: number,
   signal?: AbortSignal,
+  /** A faint limit (G); 19.5 or brighter allows cones up to 700″ (G1's marks on live looks). */
+  gMax?: number,
 ): Promise<GaiaStar[] | null> {
   // Not through tryHelper: a slow Gaia archive must not pause the helper for photos.
   if (!helperActive()) return null;
   try {
     const r = await helperGet(
-      `${helperBase}/v1/gaia?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}&c=2`,
+      `${helperBase}/v1/gaia?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}&c=2${gMax !== undefined ? `&g=${gMax}` : ''}`,
       'gaia',
       signal,
     );
@@ -1371,11 +1373,13 @@ export async function catwiseNear(
   at: SkyPosition,
   radiusArcsec: number,
   signal?: AbortSignal,
+  /** A faint limit (W2); 17 or brighter allows cones up to 700″. */
+  w2Max?: number,
 ): Promise<{ stars: CatwiseStar[]; archive: string } | null> {
   if (!helperActive()) return null;
   try {
     const r = await helperGet(
-      `${helperBase}/v1/catwise?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}`,
+      `${helperBase}/v1/catwise?ra=${at.ra.toFixed(5)}&dec=${at.dec.toFixed(5)}&r=${Math.round(radiusArcsec)}${w2Max !== undefined ? `&w2=${w2Max}` : ''}`,
       'gaia',
       signal,
     );

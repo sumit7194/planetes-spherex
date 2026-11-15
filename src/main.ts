@@ -246,6 +246,8 @@ let live: {
   probe: { done: number; total: number; of: number } | null;
   /** Every photo of the spot in the sky index (the spectrum picks from these). */
   photos: LivePhoto[];
+  /** G1: Gaia and CatWISE for this look's marks, fetched on the first toggle. */
+  catalogues?: { gaia: CatFetch; catwise: CatFetch };
   landed: {
     candidate: LiveCandidate<LivePhoto>;
     tile: Tile;
@@ -2867,6 +2869,7 @@ function finishLook(look: NonNullable<typeof live>): void {
   });
   dispatch({ type: 'seasonsIn', total: look.plan.total });
   flipLook();
+  applyLiveCatalogue(look);
   const grid = lookGrid();
   void moversOn(
     look.at,
@@ -6020,7 +6023,7 @@ function lookWords(): HTMLElement[] {
             ...factRow('unmeasured', copy.facts.brightness, copy.facts.dash.none),
             ...factRow('unmeasured', copy.facts.spectrum, copy.facts.dash.none),
             ...factRow('flag', copy.facts.flags, flagsControl(look.tiles)),
-            ...factRow('catalogue', copy.facts.catalogue, copy.facts.dash.noCatalogue),
+            ...factRow('catalogue', copy.facts.catalogue, liveCatalogueChips(look)),
           ),
           // Moved from Compare (Viewer's audit).
           factsFooter(look.at, null, false),
@@ -6231,6 +6234,148 @@ function overlaySection(id: TargetId): HTMLElement | null {
       copy.overlay.catwiseShort,
       copy.overlay.catwiseHint,
     ),
+  );
+}
+
+/* ---------- G1: Gaia and CatWISE marks on a live look (Viewer's design, 15 Nov) ---------- */
+
+/** One catalogue's answer for a live look: positions with their own epoch (Julian year). */
+type CatFetch = {
+  state: 'idle' | 'loading' | 'done' | 'failed';
+  stars: { ra: number; dec: number; pmra: number; pmdec: number; epoch: number }[];
+};
+/** The five's cuts (planetes_pack.py), so a count means the same thing on every page. */
+const LIVE_CUTS = { gaia: 19.5, catwise: 17 } as const;
+
+/** Every star's place at each shown look's own date, in lens pixels from the centre. */
+function liveCatalogueMarks(look: NonNullable<typeof live>): LensOverlay['catalogue'] {
+  const cats = look.catalogues;
+  if (!cats || !(overlayOn.gaia || overlayOn.catwise)) return null;
+  const grid = lookGrid();
+  const half = grid.size / 2;
+  const cosd = Math.cos((look.at.dec * Math.PI) / 180);
+  return look.landed.map((x) => {
+    const yr = yearOfMjd(x.candidate.mjd);
+    const marks: { east: number; north: number; kind: 'gaia' | 'catwise' }[] = [];
+    for (const kind of ['gaia', 'catwise'] as const) {
+      if (!overlayOn[kind] || cats[kind].state !== 'done') continue;
+      for (const st of cats[kind].stars) {
+        const p = placeAt({ ra: st.ra, dec: st.dec }, st.pmra, st.pmdec, st.epoch, yr);
+        const east = ((((p.ra - look.at.ra + 540) % 360) - 180) * cosd * 3600) / grid.scaleArcsec;
+        const north = ((p.dec - look.at.dec) * 3600) / grid.scaleArcsec;
+        // The centre source isn't hidden: on a look there's no prediction to protect (Viewer).
+        if (Math.abs(east) <= half && Math.abs(north) <= half) marks.push({ east, north, kind });
+      }
+    }
+    return marks;
+  });
+}
+
+function applyLiveCatalogue(look: NonNullable<typeof live>): void {
+  if (live !== look || !look.done) return;
+  lens.setOverlay({ catalogue: liveCatalogueMarks(look) });
+}
+
+/** Sources inside the cutout (what the marks show), for the chip's count. */
+function liveCatalogueCount(look: NonNullable<typeof live>, kind: 'gaia' | 'catwise'): number {
+  const grid = lookGrid();
+  const halfArcsec = (grid.size / 2) * grid.scaleArcsec;
+  const cosd = Math.cos((look.at.dec * Math.PI) / 180);
+  return (look.catalogues?.[kind].stars ?? []).filter(
+    (st) =>
+      Math.abs((((st.ra - look.at.ra + 540) % 360) - 180) * cosd * 3600) <= halfArcsec &&
+      Math.abs((st.dec - look.at.dec) * 3600) <= halfArcsec,
+  ).length;
+}
+
+/** Fetched once, on the first toggle, sized to the cutout's half-diagonal (Viewer). */
+function fetchLiveCatalogue(look: NonNullable<typeof live>, kind: 'gaia' | 'catwise'): void {
+  look.catalogues ??= {
+    gaia: { state: 'idle', stars: [] },
+    catwise: { state: 'idle', stars: [] },
+  };
+  const c = look.catalogues[kind];
+  if (c.state !== 'idle') return;
+  c.state = 'loading';
+  const grid = lookGrid();
+  const r = Math.min(700, Math.ceil((grid.size / 2) * grid.scaleArcsec * Math.SQRT2) + 10);
+  const done = (stars: CatFetch['stars'] | null) => {
+    c.state = stars ? 'done' : 'failed';
+    c.stars = stars ?? [];
+    if (live === look) {
+      applyLiveCatalogue(look);
+      render();
+    }
+  };
+  if (kind === 'gaia')
+    void gaiaNear(look.at, r, undefined, LIVE_CUTS.gaia)
+      .then((g) =>
+        done(
+          g
+            ? g.map((x) => ({ ra: x.ra, dec: x.dec, pmra: x.pmra, pmdec: x.pmdec, epoch: 2016.0 }))
+            : null,
+        ),
+      )
+      .catch(() => done(null));
+  else
+    void catwiseNear(look.at, r, undefined, LIVE_CUTS.catwise)
+      .then((w) =>
+        done(
+          w
+            ? w.stars.map((x) => ({
+                ra: x.ra,
+                dec: x.dec,
+                pmra: x.pmra,
+                pmdec: x.pmdec,
+                epoch: yearOfMjd(57170),
+              }))
+            : null,
+        ),
+      )
+      .catch(() => done(null));
+}
+
+/** The five's own chips, reused on a live look: same shapes, words, state and hint. */
+function liveCatalogueChips(look: NonNullable<typeof live>): HTMLElement {
+  const o = copy.overlay;
+  // A catalogue already switched on (perhaps on one of the five) is fetched for this look too.
+  for (const kind of ['gaia', 'catwise'] as const)
+    if (overlayOn[kind] && look.done) fetchLiveCatalogue(look, kind);
+  const chip = (kind: 'gaia' | 'catwise', label: string, hint: string, tried: string) => {
+    const c = look.catalogues?.[kind];
+    const failed = c?.state === 'failed';
+    const b = h(
+      'button',
+      {
+        type: 'button',
+        class: `flag-chip ${kind}`,
+        title: failed ? o.notReachableTitle(tried) : hint,
+        'aria-pressed': String(overlayOn[kind] && !failed),
+        'aria-busy': String(c?.state === 'loading'),
+        disabled: failed,
+      },
+      h('span', { class: `mk cat-${kind}`, 'aria-hidden': 'true' }),
+      failed
+        ? o.notReachable(label)
+        : c?.state === 'done'
+          ? `${label} ${liveCatalogueCount(look, kind)}`
+          : c?.state === 'loading'
+            ? `${label} …`
+            : label,
+    );
+    b.addEventListener('click', () => {
+      overlayOn = { ...overlayOn, [kind]: !overlayOn[kind] };
+      if (overlayOn[kind]) fetchLiveCatalogue(look, kind);
+      applyLiveCatalogue(look);
+      render();
+    });
+    return b;
+  };
+  return h(
+    'span',
+    { class: 'chip-row' },
+    chip('gaia', o.gaiaShort, o.gaiaHint, o.gaiaArchive),
+    chip('catwise', o.catwiseShort, o.catwiseHint, o.catwiseArchives),
   );
 }
 
