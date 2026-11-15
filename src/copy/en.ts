@@ -1367,6 +1367,16 @@ export const copy = {
         result:
           'Frames cut out by our helper on Cloudflare match the browser’s own reading of the same NASA files (correlation 0.999996); both use the same reader code.',
       },
+      {
+        title: 'Known asteroids, where SPHEREx saw them',
+        result:
+          'SkyBoT predicts where asteroids are as seen from Earth’s centre; SPHEREx is about 7,000 km from it. We move each prediction to SPHEREx’s own position, taken from each photo’s header. 644 Cosima’s corrected place agrees with an independent prediction (kete) to 0.14″. In a real photo, 1214 Richilde shows 0.24″ (0.04 pixel) from its corrected place, against 1.03″ without the correction. No near-Earth asteroid is in the five’s photos, so the shift there stays under a pixel.',
+      },
+      {
+        title: 'Keeping up with new photos',
+        result:
+          'Every day, a check lists NASA’s SPHEREx bucket and adds any new photo to our sky index, making its record from the photo’s own headers. That recipe is re-checked each run against records made from IRSA’s footprints: 100 of 100 match (centres within 0.05″, times and flags equal). Nothing goes live until a person merges it.',
+      },
     ],
     afterTitle: 'Choices made after seeing these fields',
     afterLede:
