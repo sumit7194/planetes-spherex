@@ -1,0 +1,65 @@
+[project]
+name = "spherex-movers"
+version = "0.1.0"
+description = "Moving objects in SPHEREx images, with measured and guaranteed error rates"
+requires-python = ">=3.15,<3.16"
+license = { text = "Apache-2.0" }
+# Kept deliberately small: every dependency is attack surface (see SECURITY.md).
+# Add a package only when a stage needs it, after checking its name, source repo and wheels.
+dependencies = [
+  "numpy>=2.5",
+  "scipy>=1.18",
+  "astropy>=8.0",
+  "httpx>=0.28",
+  "pyarrow>=26",
+  "matplotlib>=3.11",
+  "photutils>=3.1",
+  "pyvo>=1.9",
+]
+
+[project.optional-dependencies]
+ephem = ["kete>=3.3"]
+# Neural-network work on the Mac GPU. PyTorch has no cp315 wheel yet; MLX does (attested, ml-explore/mlx).
+ml = ["mlx>=0.32"]
+# Optional CHOLMOD back end for the scene fit (smo.linalg.cholmod): rgl-epfl/cholespy, abi3 arm64 wheel.
+# Used only where an equivalence check passed (prereg/METHOD_V6.md); SuperLU otherwise.
+fast = ["cholespy==2.2.0"]
+
+[dependency-groups]
+dev = ["pytest>=8", "hypothesis>=6", "ruff>=0.15"]
+
+[project.scripts]
+smo = "smo.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/smo"]
+
+[tool.uv]
+# Supply-chain cooldown: only resolve artifacts that have been public for at least 7 days,
+# so a freshly compromised release (e.g. LiteLLM, March 2026) is not picked up.
+exclude-newer = "7 days"
+# Security fixes override the cooldown, package by package, with the advisory recorded here.
+# certifi: PYSEC-2026-4320 / GHSA-6q48-6c7w-9gw2 (compromised emSign intermediates), fixed 2026.10.19.
+exclude-newer-package = { certifi = false }
+# Third-party build scripts are not run, except for packages on the allowlist enforced by
+# tests/security/test_lock_policy.py (currently only pyyaml, which has no cp315 wheel yet).
+
+[tool.ruff]
+line-length = 120
+target-version = "py315"
+
+[tool.ruff.lint]
+# pyflakes (F: unused or undefined names, dead code) and pycodestyle errors (E), plus bugbear (B).
+select = ["F", "E", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts set thread-count environment variables before numpy is imported, on purpose.
+"scripts/*.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

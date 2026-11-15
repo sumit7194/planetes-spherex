@@ -13,3 +13,5 @@ public/packs/
 
 # Registered files: their sha256 hashes are recorded in the plans, so they are never reformatted.
 prereg/
+research/
+design-lab/

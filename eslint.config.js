@@ -13,6 +13,8 @@ export default tseslint.config(
       'src-event-v0',
       // The design lab is git-ignored and dev-only (?lab=); never part of the site.
       'design-lab',
+      // Published research evidence (Python, byte-identical to its source; not part of the site).
+      'research',
       'pipeline',
     ],
   },

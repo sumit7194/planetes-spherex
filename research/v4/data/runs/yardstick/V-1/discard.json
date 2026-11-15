@@ -1,0 +1,4114 @@
+{
+  "bytes_freed": 989216688,
+  "decision": "Sumit, 28 Oct 2026 ~23:25, asked to delete re-fetchable raw cutouts to free disk: \"Yes, all three\" (N-4/N-5/N-9/N-11 with maps; V and T patches; NC-1/NC-2). Receipts kept; re-fetch and verify content_sha256 before any later use.",
+  "deleted": [
+    {
+      "content_sha256": "a2accd857b01eff2ad62686012a2f814ba4437dcf8b5115045e8f909e1021bb2",
+      "file_sha256": "50919b6627c2866d1c3771786859c72b72721b0841f5fe6033440db590a27a00",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0411_3D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0411_3_D1_x293_y1261_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 293,
+      "y0": 1261
+    },
+    {
+      "content_sha256": "655ae6c70d858b2a063a9eb69c3f574898b2c6907aa830096c7b2dd9204ba869",
+      "file_sha256": "18c499b6cc0618e5eb954f617604270312b0355dc93cd1eded63144c9394de97",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0484_2D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_2_D4_x292_y1020_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 292,
+      "y0": 1020
+    },
+    {
+      "content_sha256": "31df292304c8250deecc6897fc2e1cfb0207a49fa2239c8931d937e562e92298",
+      "file_sha256": "4a65a9542727fd78d6b9c001b80d068cbfb20912b22c9b22d0822c7f8144d609",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0411_3D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0411_3_D4_x299_y1249_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 299,
+      "y0": 1249
+    },
+    {
+      "content_sha256": "a49cd73d5333f1b263a1548bd34440f3027a26b049210cad99d007cad59a52b9",
+      "file_sha256": "e11c1c26bf7db07d9a37305922ca86d20741f571e88132a0fbcfb0b53958923b",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0484_2D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_2_D1_x287_y1031_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 287,
+      "y0": 1031
+    },
+    {
+      "content_sha256": "1f432c3520c56a5c391649c9a3d2c9868898987837d94fd86c2101a334a417fa",
+      "file_sha256": "e8dc067144e901f0ea53b15bce99aae64ea61ae57aef7e3f25d781d77596671a",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0504_4D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0504_4_D4_x272_y332_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 272,
+      "y0": 332
+    },
+    {
+      "content_sha256": "2d2652391936a8fb7646490e0b205a47275105403ded1608cd2ca29abeb24e92",
+      "file_sha256": "827c9c898bb4a56a960b6c10395cc9d919beefed81de622f5593c72d9401a483",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0504_4D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0504_4_D1_x269_y343_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 269,
+      "y0": 343
+    },
+    {
+      "content_sha256": "cb2679e5e6d549dbe549f223ca5d3c58bf65b4e346ea9c9c1b2cd9665039378c",
+      "file_sha256": "d02d2a134456934cabe8119340827586c359239abbd3ac61d13ffadefd7cc470",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0411_1D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0411_1_D1_x300_y1490_585x550.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        550,
+        585
+      ],
+      "x0": 300,
+      "y0": 1490
+    },
+    {
+      "content_sha256": "10f4bf2356f4e416a492150231b9201f2e95acf7efb5c6512d9929f66d04207b",
+      "file_sha256": "f853e57de28e15ccd867d41cc7b4164b2ada123d6963370a002dec45a451c55a",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0411_1D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0411_1_D4_x305_y1478_585x562.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        562,
+        585
+      ],
+      "x0": 305,
+      "y0": 1478
+    },
+    {
+      "content_sha256": "11a06e9967bf3c864cd46496a622e9d5cc1a2265464f093d844e099774ec9039",
+      "file_sha256": "645b67958beb92d87584058d9f5875513da2b13ec56c359ad0299397bfe9d073",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0484_3D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_3_D4_x288_y906_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 288,
+      "y0": 906
+    },
+    {
+      "content_sha256": "9a3136a995ca029175d4d88f35509c348e8825dcbb2327a141d9b3b012f69596",
+      "file_sha256": "1f00eb4c9effd3b0575e8cae027ac708f42cbe31fb6174731e3e852ba1ab04f4",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0484_4D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_4_D4_x285_y791_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 285,
+      "y0": 791
+    },
+    {
+      "content_sha256": "d5932f866aaccbd708e80df0d56da2dd93772340ada3c18d9c917ecd8c7afdff",
+      "file_sha256": "67d2d2b7ca0e09d7602db578832a8cfbecc1aca12981e95d710e64e145b11b7c",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0484_3D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_3_D1_x284_y917_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 284,
+      "y0": 917
+    },
+    {
+      "content_sha256": "54947c2a3a3137883396a5b9a9aef1fd0e9ea3a6481d59c9b19c2b2dc5f97f6e",
+      "file_sha256": "e27fd0ef5b8d1f242197b44913207539a04b6e0825e6cb4f9885d4511d3e890e",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0484_4D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_4_D1_x280_y802_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 280,
+      "y0": 802
+    },
+    {
+      "content_sha256": "95ebd8c43fc9a60e4944099a674df776a97060170be46f2480de2601688e2eb7",
+      "file_sha256": "6d4b490074746a7c2b4e42033b27e0f9f1ad66bbe186106a396b2db6b9290940",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0504_3D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0504_3_D4_x276_y447_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 276,
+      "y0": 447
+    },
+    {
+      "content_sha256": "f96d9e1f1f38df250700e61bb49234ac530a46ab00d0ef4b67ad44135a68c415",
+      "file_sha256": "95b90172b21e9df16c75fcba58eae53c57bcea47f9169d75608b653a71959fba",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0484_1D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_1_D1_x290_y1146_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 290,
+      "y0": 1146
+    },
+    {
+      "content_sha256": "d0d1345077f5e3f8e4d97551f69f8053cfe8f34a47d70781aa6fd351e78708f8",
+      "file_sha256": "f2bda870df54870bd0318bb0431741fb083802049d39fc2524beb7d9adae12f6",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0504_3D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0504_3_D1_x272_y458_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 272,
+      "y0": 458
+    },
+    {
+      "content_sha256": "5191954ed6210ffa55dca624549d2c00424da0bbc45a7402ca2a0ae860cf17f2",
+      "file_sha256": "85e9381d5624ec538306f38c5983897d8aaa464d458a5b2ed7a0c0e80e9989fc",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0484_1D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0484_1_D4_x295_y1135_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 295,
+      "y0": 1135
+    },
+    {
+      "content_sha256": "1897f01ccfbc0665ae0ce158f65e026eb2163f4fc9fc7d981beec4d0e13025f8",
+      "file_sha256": "4d763f2d111f13aff19ddd15b9176c475b268e129aa41d37db6101d44671011e",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/1/level2_2026W21_1A_0411_2D1_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0411_2_D1_x296_y1375_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 296,
+      "y0": 1375
+    },
+    {
+      "content_sha256": "1c70b653c17a7e30c7bd1ca7525faa4a5beec47dd4f0dffe1b2b55a2318515d4",
+      "file_sha256": "e269014ae14457e18a7e0fd97936f13d548b1fd3d7c7cdeb3762cc21c5de59bc",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/1/level2_2026W21_2A_0275_1D1_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0275_1_D1_x278_y687_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 278,
+      "y0": 687
+    },
+    {
+      "content_sha256": "b118dec1909051c91bcc0913516f7b75e9df2e69ab8b8124b81c80fdbc1f1ce3",
+      "file_sha256": "db8de26b7b54b397a9225158af4bda66f2e5263c30d058656d22464402ed2800",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/4/level2_2026W21_2A_0275_1D4_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0275_1_D4_x282_y677_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 282,
+      "y0": 677
+    },
+    {
+      "content_sha256": "3da04e906cee11a92682b8e91f589ccb7f5a157e37031fd042254e56aa475a36",
+      "file_sha256": "4d3e07a7546c65f69816bed2047f6592368941075f3538edb936e2cebab53f14",
+      "key": "qr2/level2/2026W21_1A/l2b-v25-2026-146/4/level2_2026W21_1A_0411_2D4_spx_l2b-v25-2026-146.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_1A/2026W21_1A_0411_2_D4_x302_y1364_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-146",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 302,
+      "y0": 1364
+    },
+    {
+      "content_sha256": "a5392008c32c19e196c69c028c7609b635d9084feaacb810b49bad2590038809",
+      "file_sha256": "076a5135113dafdde848d55b4b98f2a75a08957487cb33486a1935d7a6d23f62",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/1/level2_2026W21_2A_0078_4D1_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_4_D1_x256_y0_585x467.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        467,
+        585
+      ],
+      "x0": 256,
+      "y0": 0
+    },
+    {
+      "content_sha256": "327a8a4f5d3f6ad592ebb8e770587b1a9c0933a45fb6df80962e168c12de47da",
+      "file_sha256": "3c07be4126db3e096ec32803767030a84787f48967a44adc366da8865dbf8ada",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/4/level2_2026W21_2A_0078_4D4_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_4_D4_x259_y0_585x457.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        457,
+        585
+      ],
+      "x0": 259,
+      "y0": 0
+    },
+    {
+      "content_sha256": "e8ae6752d917cfdbca1c7c34dc4ca47b6208bce03f0a8398b467c1fcd03fcd6e",
+      "file_sha256": "05c4a0813da6299af42d94a1fa2a706c03bf3da6aa7d01410992c1d19c559ad7",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0584_2D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_2_D2_x0_y467_548x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        548
+      ],
+      "x0": 0,
+      "y0": 467
+    },
+    {
+      "content_sha256": "6f8335e5dac18c6b5665a6aee3fd24b98bd4dcbea7f7ff9e985c7c647a837569",
+      "file_sha256": "8347da585efcf043a949d54384025bd7e81af1d8c125cd11d276813856466d1e",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0584_2D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_2_D5_x0_y461_549x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        549
+      ],
+      "x0": 0,
+      "y0": 461
+    },
+    {
+      "content_sha256": "371928cdae92d78fdea5c29e19e6f2ee2af1c2eec72da8016719507e419db586",
+      "file_sha256": "1f25aa35aa89eec41ed29b50798871d0be0d0b14168e05ee93ab4e5f17a2801f",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0584_3D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_3_D2_x0_y352_545x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 0,
+      "y0": 352
+    },
+    {
+      "content_sha256": "7bb96f0cd50d3d718dc805447b5b5b68c5cbae434d97001a0ae9bddb7136900b",
+      "file_sha256": "fd2685d124b66fef7740d57b9a31b908114a86353b32c4a9c28b3d5222c6ec7e",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/1/level2_2026W21_2A_0078_2D1_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_2_D1_x262_y113_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 262,
+      "y0": 113
+    },
+    {
+      "content_sha256": "fa4c3e7e81d4285dde98646681f765095e11bfa06e2ece0c0bb8925cbd8628a8",
+      "file_sha256": "4ea0a1968d5e18b8a905fee062aa2b1c3a9021b3f77538c59c9f2590565e6942",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0584_3D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_3_D5_x0_y346_547x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        547
+      ],
+      "x0": 0,
+      "y0": 346
+    },
+    {
+      "content_sha256": "304e6589a8c7db714451becd8399537e40d415e2760892f03383e04feab8bba6",
+      "file_sha256": "68e0c4d1a1b9a2ca0b5f0d8036dc6be5bec0ad692fcd686e2d34d863d3084e7b",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/4/level2_2026W21_2A_0078_2D4_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_2_D4_x266_y103_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 266,
+      "y0": 103
+    },
+    {
+      "content_sha256": "7e36f6eea31ff1c111acb7ae60e14fb929eeeedab7feb4c35272eccbba560a23",
+      "file_sha256": "b9c3984b4475e6b64686e4f7d4a7858ee1aaba9b5c747938b2c2416538975fb1",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0584_4D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_4_D2_x0_y236_543x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        543
+      ],
+      "x0": 0,
+      "y0": 236
+    },
+    {
+      "content_sha256": "b49f1517aec2e51c2e09755a30101c3c53ccddd914d5aed08c242a523570b3ab",
+      "file_sha256": "24205576207d627e8c903ab99d40a69251f0c48e053198862a15d4c7ef763d6b",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/4/level2_2026W21_2A_0078_3D4_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_3_D4_x262_y0_585x572.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        572,
+        585
+      ],
+      "x0": 262,
+      "y0": 0
+    },
+    {
+      "content_sha256": "9d5517f20e38453cb629de8c5e7dd507a5baf775636582dcf2bc24d97e7da47c",
+      "file_sha256": "b105e53d5479aebda63c0ebd32089dc207ba97bcde0fa036f4da1c1144bba423",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0584_4D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_4_D5_x0_y230_544x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        544
+      ],
+      "x0": 0,
+      "y0": 230
+    },
+    {
+      "content_sha256": "300e50d30fc585ab8787a474c7bd61e7c03ce58fe8fc2f64a347fa0cfe35d07f",
+      "file_sha256": "7ee18a41a1f23f631e5692733007d651e62a5cb0b28d42fcbb0031dea57d4524",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/1/level2_2026W21_2A_0078_3D1_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_3_D1_x259_y0_585x582.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        582,
+        585
+      ],
+      "x0": 259,
+      "y0": 0
+    },
+    {
+      "content_sha256": "46ac1f69f9ffcbad350c592a6f100e3dd81e7e5845415d3b5b4584165d050f0d",
+      "file_sha256": "4fbed43e68887aa08251dc8e9ea699371316498182ee92967da2a1f8a0785ef1",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0584_1D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_1_D5_x0_y576_552x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        552
+      ],
+      "x0": 0,
+      "y0": 576
+    },
+    {
+      "content_sha256": "69c8718a824827173c99c5e6d984b01dbd90579b4384f927e3c326b08735451e",
+      "file_sha256": "3a5aaf7b9b900b474d8b6a7502fbdb6908b71a50453b5bd20c8df0b19ba92b90",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0504_4D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0504_4_D5_x0_y691_553x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        553
+      ],
+      "x0": 0,
+      "y0": 691
+    },
+    {
+      "content_sha256": "dc0ed75085e30713e42358431fef872ea7d99054e24a6f41692b424c2d260706",
+      "file_sha256": "ee1940839b6eac2f41ea850f7962fdc653cf675957bb62769ba64e78db93a8b4",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0504_4D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0504_4_D2_x0_y698_551x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        551
+      ],
+      "x0": 0,
+      "y0": 698
+    },
+    {
+      "content_sha256": "86af7bedc9fca72d600ca2debc5e17615a128d0a5dd19c3067af9e828cc3c983",
+      "file_sha256": "1a7c25f29d8ed6a7a173d656825ffadbf3fc9654475ca6c93b5375836df36208",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0584_1D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0584_1_D2_x0_y583_550x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        550
+      ],
+      "x0": 0,
+      "y0": 583
+    },
+    {
+      "content_sha256": "27b02ed05c3921c068bc8ec1be240208dbff921ed02b71e506f8681df5f9ae1a",
+      "file_sha256": "df0259e948561a9b69f4124ed00b120d0efab140ebb39fe948064ea700273382",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0492_1D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0492_1_D5_x0_y1266_566x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        566
+      ],
+      "x0": 0,
+      "y0": 1266
+    },
+    {
+      "content_sha256": "9654928c31f6cb763fe1e16827f6089f2c916bedd4cbd13f81b3d729f9561f20",
+      "file_sha256": "ea3bb99526b89b668255046d098528a85c5d36b6e130d89848ed5f5912c29fcf",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0492_1D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0492_1_D2_x0_y1273_561x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        561
+      ],
+      "x0": 0,
+      "y0": 1273
+    },
+    {
+      "content_sha256": "024b0ee04b347cf4d115d9e1013cc5ed2aad59ee514f351ce8a52b39f73d1bab",
+      "file_sha256": "a8bda719895b7c83cd1954a721367535c77fc11a053202be488f73b293c57383",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/1/level2_2026W21_2A_0275_2D1_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0275_2_D1_x275_y572_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 275,
+      "y0": 572
+    },
+    {
+      "content_sha256": "ca05dec06ea18982fa5a32ab1ed5c4f20d1a0fc777c1bbf89cb2afd7aad088d1",
+      "file_sha256": "4e68df37183b66ab9311522b3cfd61967172184581b2aca0ee7cb8a5bf1cc1ae",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/4/level2_2026W21_2A_0275_2D4_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0275_2_D4_x279_y562_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 279,
+      "y0": 562
+    },
+    {
+      "content_sha256": "049878b34aea7471a40fe6c673505416fbb1d7fa11bf404164612aa40d86f5d2",
+      "file_sha256": "a09526c5db24e5893d6ac86880b9f3900cc4c933c2887bf38f39d9d80457c110",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/1/level2_2026W21_2A_0078_1D1_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_1_D1_x266_y228_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 266,
+      "y0": 228
+    },
+    {
+      "content_sha256": "592f4a482ab4022a41c12a2ea75ac02ed8a0f881b1c0387fe378c7b6296c05f1",
+      "file_sha256": "2e6ad4129a4243e10c4dc74775c3fb4ea0ed4fbb3739046b09d341e1c3a39045",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/4/level2_2026W21_2A_0078_1D4_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0078_1_D4_x269_y217_585x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 269,
+      "y0": 217
+    },
+    {
+      "content_sha256": "bc1d2e5fe920447c62d2aa06b6c2dc400be67ff6d3a401ae5c22b30e552e183e",
+      "file_sha256": "ad05dbd6293c30135eda0f25d00aa09d1f92292505ed9b87d536d53ee43bacfb",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0504_2D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0504_2_D2_x0_y928_554x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        554
+      ],
+      "x0": 0,
+      "y0": 928
+    },
+    {
+      "content_sha256": "a1d51b18fb2f86bf0597d202e0530b2dec623d820c1c81b64e7425c51a5347c2",
+      "file_sha256": "579d589f289d254fdfc46865a180d81c1b7da86215773912ad9b944daf55d24c",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0504_2D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0504_2_D5_x0_y921_558x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        558
+      ],
+      "x0": 0,
+      "y0": 921
+    },
+    {
+      "content_sha256": "987e1bf8a639703046265c43bc41e9522d022b5704186dc6d1afb1ac75cf8546",
+      "file_sha256": "7b0554c5559c61b822ff7e3ad4030ce914d28a4ff2c6d50a64e55dfaec23a0be",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0492_2D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0492_2_D5_x0_y1151_563x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        563
+      ],
+      "x0": 0,
+      "y0": 1151
+    },
+    {
+      "content_sha256": "0003be0a2c6852479091a75e1ebfff4d2ec3df514a1a7a2e78ea376f5c108e94",
+      "file_sha256": "542c69be9dd4e8449cb24f13d6f21770650b37b51caffa80b5fa109936e49eaa",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0504_3D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0504_3_D2_x0_y813_553x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        553
+      ],
+      "x0": 0,
+      "y0": 813
+    },
+    {
+      "content_sha256": "9605db7735669425fdaf9d16070d428aa0bc0288a8203cf54c226d3fa92c81a5",
+      "file_sha256": "32fe79ccfcd30cb727f77a6efaa831cefa79f43d4ce5750d87f30282fd5e2988",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/2/level2_2026W21_2A_0492_2D2_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0492_2_D2_x0_y1158_559x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        559
+      ],
+      "x0": 0,
+      "y0": 1158
+    },
+    {
+      "content_sha256": "65e7a4b0755e2974abb94059fa5a81c63c7dbd8d701921795df8feb45df6c988",
+      "file_sha256": "88008ada04c18804ddba8ebb20be85b4068175e72be325995b74f25facf2ef30",
+      "key": "qr2/level2/2026W21_2A/l2b-v25-2026-147/5/level2_2026W21_2A_0504_3D5_spx_l2b-v25-2026-147.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W21_2A/2026W21_2A_0504_3_D5_x0_y806_556x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-147",
+      "shape": [
+        585,
+        556
+      ],
+      "x0": 0,
+      "y0": 806
+    },
+    {
+      "content_sha256": "43748357543fc8c9b1fa2855de1662c428ec6bb71da441a5d9b6796911b2b0a0",
+      "file_sha256": "ebc493b2c197bd2b1c7ebf534c16ca1969ddaa490e1ba8c32b74225c9e5df700",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0209_4D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0209_4_D2_x0_y1732_568x308.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        308,
+        568
+      ],
+      "x0": 0,
+      "y0": 1732
+    },
+    {
+      "content_sha256": "b8ce806f73cccac5328ab80bac7252c0e69da1334a281d790e5ce2e98ac9e468",
+      "file_sha256": "2c145a8adcefc4dea65b67f7de74c8244c7e4c2e051ecbffa1eb7f4291b068df",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0209_4D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0209_4_D5_x0_y1724_575x316.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        316,
+        575
+      ],
+      "x0": 0,
+      "y0": 1724
+    },
+    {
+      "content_sha256": "3d657b1780d27a4c260467d552e6d0907886beee6e84e7ca06090bbbbc0db135",
+      "file_sha256": "8e28f56ec3fc6bb022394d959c2d1b86531034541db1308ac9d62484823289e4",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0105_3D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_3_D5_x0_y0_536x469.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        469,
+        536
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "f097306fdf1512ed7716773c56b049ad4dd3f60f24865dd9b818056cbff694d1",
+      "file_sha256": "b15b899951817e1eb75b746e875e47eed7b19d8362db021823c1b3629148c892",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0272_1D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0272_1_D2_x0_y1503_564x537.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        537,
+        564
+      ],
+      "x0": 0,
+      "y0": 1503
+    },
+    {
+      "content_sha256": "d65d24bd0bf0891acd3d5a1b2282cf837d5c770946f66e9e974713110717f8ad",
+      "file_sha256": "5392ddfdf895f11e783ae1a4a3b9a156222b1edbcf50cea59e5d863ddd0ae43f",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0105_3D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_3_D2_x0_y0_538x475.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        475,
+        538
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "588ab6b796a2cd0a6692f1b26f22e2b64d3baff58ca4dd4cb881c0210d6e61a9",
+      "file_sha256": "8052e6d470456ef848a1aa73fc824f82c52075cdd6a4f7ddbb47a052a6980e97",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0272_1D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0272_1_D5_x0_y1496_571x544.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        544,
+        571
+      ],
+      "x0": 0,
+      "y0": 1496
+    },
+    {
+      "content_sha256": "2d1515a300c2cb8eaa41c9603221b74cd249122a54ac6c591eab1269e6a43388",
+      "file_sha256": "54e55d4ce8192cb7d47446697810b5f7c6d5e9f3b24162e75cb041ad94c27454",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0105_4D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_4_D2_x0_y0_536x359.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        359,
+        536
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "d2826453de47be34a5c2bc29f36c0dc5a2254a13797a416245bbbe4e1ae3c2ec",
+      "file_sha256": "547330523abe781682ab1cbc7f834c768c87c4a77437fc63e514ed5313e85382",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0272_2D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0272_2_D2_x0_y1388_562x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        585,
+        562
+      ],
+      "x0": 0,
+      "y0": 1388
+    },
+    {
+      "content_sha256": "022aadfddfb26688cc675dc5886fd42f3890c9e62c11b3fad620ef0fc71aae13",
+      "file_sha256": "6d2ba15240a2b04785f01550609ca77e60e9b5eed64060e156e7ffa52f8d8005",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0272_2D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0272_2_D5_x0_y1381_568x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        585,
+        568
+      ],
+      "x0": 0,
+      "y0": 1381
+    },
+    {
+      "content_sha256": "b4edd6c78b4bd33827c71f09c13765502c4ead34543c26fabdf9bd15ef0943b1",
+      "file_sha256": "1260bb682b369d984390e708258a97618f0726ed8a21bf514290de46acecda0a",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0105_1D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_1_D5_x0_y115_542x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        585,
+        542
+      ],
+      "x0": 0,
+      "y0": 115
+    },
+    {
+      "content_sha256": "de799d82bbfa3100dc5bebbad836b673711b6beacf227d3b70e62b2408d3eb75",
+      "file_sha256": "91f516414c5fa421dd061eb551490c28472ec9c2ed01513c4a75b4cf2269e6eb",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0105_4D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_4_D5_x0_y0_534x354.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        354,
+        534
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "b7c0ca9fe92b95090a19459e47ebdcfa450d9073e7eaf72b0877a25a095c763a",
+      "file_sha256": "3730a5d359ca2255fb595f9435edc4f752f2c704d2fb812ce42b4cb4466836ac",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0105_1D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_1_D2_x0_y121_542x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        585,
+        542
+      ],
+      "x0": 0,
+      "y0": 121
+    },
+    {
+      "content_sha256": "bf7ae60cf9fba5f5e3d4ab21789c5bd04d868113c1967ee9b5b43b6f7ff15fdd",
+      "file_sha256": "c7f1f75bf94d8a1f5725ba4ec4a08ab781342b1c9c74b1f33b054fcf0318a6f0",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0576_4D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_4_D3_x1607_y577_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 577
+    },
+    {
+      "content_sha256": "c2ff6db832af9bdd1070af62dc5798cab47a48ce281d6d57c6bcd91245c9b270",
+      "file_sha256": "14064d0214bc83a3c3a5f6358d712a95243880ab2bd75ecb86b196ac5d4d142c",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/5/level2_2026W22_1A_0105_2D5_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_2_D5_x0_y0_539x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        585,
+        539
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "1e75c55ca8aba958710466f9b054e9cdb8d09b8ba4b9d5b71c1563ee5a3ac351",
+      "file_sha256": "f13160d9ed1dfd4583123aaed0ba9941ca1cb3ef285b33d4029fb8e56fb97457",
+      "key": "qr2/level2/2026W22_1A/l2b-v25-2026-150/2/level2_2026W22_1A_0105_2D2_spx_l2b-v25-2026-150.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_1A/2026W22_1A_0105_2_D2_x0_y5_540x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-150",
+      "shape": [
+        585,
+        540
+      ],
+      "x0": 0,
+      "y0": 5
+    },
+    {
+      "content_sha256": "afa43d87d8c761e6b5c1d78c5780e191af8010ea001f5409bd6c2ab0d4d95e29",
+      "file_sha256": "2fe32943ba44691cf6cb479ba5ecb6d22efe66d12290a9de2f4c6e44ff2aa4d3",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0495_3D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_3_D6_x1607_y1135_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1135
+    },
+    {
+      "content_sha256": "4d3dc9ebdc3581bbd348c83980e9bdc824fcf2ff963f45b13e9a7d707d0955cd",
+      "file_sha256": "dac706a1dc6f91e7370f073c69ed91b6be99f2aa16ce7563ee7d476fce6e8229",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0495_3D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_3_D3_x1607_y1149_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1149
+    },
+    {
+      "content_sha256": "a2b902f6f40ca683e6f6135a6f56bbeca9577a351f9860321a838d7a96c007cd",
+      "file_sha256": "6026031601fc9a8c7da21ad27a098a2b8ef9d8df34af1a1237131febfe6bb216",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0576_4D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_4_D6_x1605_y564_435x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        435
+      ],
+      "x0": 1605,
+      "y0": 564
+    },
+    {
+      "content_sha256": "555bde13e2b072a2daeb217c6f0833c431370612d71610ecbdffe4ff34119fa9",
+      "file_sha256": "54214d2adfd0ea5b8d1d1ac8e8c9c3a79dacb7d5aa487ae91805f3d8f3e99ce2",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0576_2D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_2_D3_x1607_y806_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 806
+    },
+    {
+      "content_sha256": "4e12413b3b08c677bfe5c89194dd3a33c8f35e21f5ca362f7cec0114639a7256",
+      "file_sha256": "93f32d7c306a9149ab79ef41f835c13454e07a21f260be77393b61080d37973a",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0576_3D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_3_D3_x1607_y692_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 692
+    },
+    {
+      "content_sha256": "2a41d6148b087fd4e086785ecdade84c7789444e5f5f1fd2def832d34bc514e8",
+      "file_sha256": "556589d50edf87fd78d444f4e4208b34a7948b40b9cc36475d603f739a21f272",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0576_2D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_2_D6_x1606_y793_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 793
+    },
+    {
+      "content_sha256": "5d0a40752d332c5f197cd67795560d07a8c86bff4ed9ed7a34b5750c812b9961",
+      "file_sha256": "8019ba8eaee433753c3ddb488d50b005ac837ad8bbe6494e4277539973e58afe",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0576_3D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_3_D6_x1606_y679_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 679
+    },
+    {
+      "content_sha256": "3c3fedfc179e51c9f40dcd7e8b36012f2e497262d8f085b847f0486c3ef08eca",
+      "file_sha256": "2d9d3a26687bd87877d206042a731d48cfd0d88622279a9c872abb3ed5dece2d",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0495_1D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_1_D6_x1607_y1364_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1364
+    },
+    {
+      "content_sha256": "42a85a91368ca86d659306e75c49c502c7b726b7877e24833dfe3a56f9164d32",
+      "file_sha256": "4797210fd980808b3e60e5c068e1be33bf8609e929e369d6fb9eb57f745de64f",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0495_1D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_1_D3_x1608_y1378_432x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        432
+      ],
+      "x0": 1608,
+      "y0": 1378
+    },
+    {
+      "content_sha256": "57eae3138b7bdb5ce012ccbb422112096dc14e881083689a30dfa74cb6d09745",
+      "file_sha256": "58684d6716ddb58a4508ae192593e73daf49ba848d1463072e7249dcb0debbfd",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0495_2D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_2_D3_x1608_y1263_432x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        432
+      ],
+      "x0": 1608,
+      "y0": 1263
+    },
+    {
+      "content_sha256": "364972677c2d9ec4dd3f5105b6dfd479265e9d0aa6717b57080f89da1737cdd6",
+      "file_sha256": "e561a7dae647ce5495b5852782d0f76366c9fb7b03992a992a0962da5ed2a020",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0576_1D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_1_D3_x1607_y921_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 921
+    },
+    {
+      "content_sha256": "4ac2c739f759eb638fd76103cf6351a9cee4c544248ef7556454d190592a8d31",
+      "file_sha256": "2a44796046306ec457f979d3f7908867514575ac878e1ed0dbe147a938177dcd",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0576_1D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0576_1_D6_x1606_y907_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 907
+    },
+    {
+      "content_sha256": "91d1a043dc2a98c59c03573630d483ccff2e6ed074fe16ee80b79128ae7d0e5c",
+      "file_sha256": "ba10eccc5287590ef7421b455ddcdfdb698614d2d86b690d4e5316dbbfbd29a4",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/3/level2_2026W22_2A_0495_4D3_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_4_D3_x1607_y1035_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1035
+    },
+    {
+      "content_sha256": "9207aa265eef97cd0ca69ae46f27818a8b1a4145343d034aff71eff730c9bf17",
+      "file_sha256": "42949c0d0ae55e2762ea73e917c41d73d8c0211979bc1188ddaaf6c3a2a81848",
+      "key": "qr2/level2/2026W22_2A/l2b-v25-2026-152/6/level2_2026W22_2A_0495_4D6_spx_l2b-v25-2026-152.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W22_2A/2026W22_2A_0495_4_D6_x1606_y1021_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-152",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 1021
+    },
+    {
+      "content_sha256": "9b0ab998685ee02fe4e93ecde4a076bd0eaf445b49d767dbbc83de5a3072ae91",
+      "file_sha256": "760d87ee915c0fa92c1babcc8fadc5021f29a491b367e3048cf73bce819f03c9",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0099_3D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_3_D6_x1603_y0_437x462.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        462,
+        437
+      ],
+      "x0": 1603,
+      "y0": 0
+    },
+    {
+      "content_sha256": "f0ef2636dbebbb0e621b47046a28eb725898372f945be0560e221fb6c096fbc7",
+      "file_sha256": "b3e96861213182426cd848696292b2fcd46f00de03d283ea1257662f0dc18611",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0099_3D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_3_D3_x1606_y0_434x474.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        474,
+        434
+      ],
+      "x0": 1606,
+      "y0": 0
+    },
+    {
+      "content_sha256": "079e88a413b23e1011700eaaa5ba25c36c0f7e9bcaffc0e634e9badaf7cd5ed4",
+      "file_sha256": "44aabb76130407fda5c4ebc1130cc97edfe28038096bde2c438379c1058b8c41",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0099_4D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_4_D6_x1602_y0_438x347.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        347,
+        438
+      ],
+      "x0": 1602,
+      "y0": 0
+    },
+    {
+      "content_sha256": "c473ee7e5157ae5d75a539395c2f8a620c463827bb94a3bf41dba7d1da1da213",
+      "file_sha256": "4724791828541e78d91391393ea2c269cc1a582260c31e836ff04bec8895df44",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0064_3D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0064_3_D3_x1607_y1606_433x434.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        434,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1606
+    },
+    {
+      "content_sha256": "49248e13afdfa9c13234c2295ed037c87f1c92d472f8b000fdc07a6a1b8aaefa",
+      "file_sha256": "16a73a2bb9da7c0840106f1c3acf5080a76e91982f6599cb6040f34a4e529d43",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0064_3D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0064_3_D6_x1608_y1592_432x448.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        448,
+        432
+      ],
+      "x0": 1608,
+      "y0": 1592
+    },
+    {
+      "content_sha256": "ea94284bece180ebb23a605da8db4905be63caaad4bfb7ff6849b2f4f14d29e0",
+      "file_sha256": "6261887e4fdbc904a2a77b4203ba2c242fe8b8824f1f6fc38a834687af583f72",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0099_4D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_4_D3_x1605_y0_435x359.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        359,
+        435
+      ],
+      "x0": 1605,
+      "y0": 0
+    },
+    {
+      "content_sha256": "2d05b14f4c97216f045ce02f2885906ed6445838374549b21e9bb897602b5421",
+      "file_sha256": "577b65580bae48f05046fddebeb63ba50b408609ae02b2e6f7b49be6bda736c9",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0040_1D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0040_1_D3_x1607_y463_433x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 1607,
+      "y0": 463
+    },
+    {
+      "content_sha256": "184b48021eda9757605591350d133f352dc16343dd36f938738dc88315d30648",
+      "file_sha256": "62428d0982c369b6e86cebdf5dd54f36193c4c9af1a0292cbf24b4e6ab304ab2",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0099_1D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_1_D6_x1604_y106_436x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        436
+      ],
+      "x0": 1604,
+      "y0": 106
+    },
+    {
+      "content_sha256": "d1c5f5adfabc7e3c7deb435d8afad8582426b2d75b620ebcc2c89c1a14c24dc4",
+      "file_sha256": "ba3932a2270682b76a434b21ba0c1105edbdc4fa87f9bb8d4817709ebe27a488",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0040_1D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0040_1_D6_x1605_y450_435x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        435
+      ],
+      "x0": 1605,
+      "y0": 450
+    },
+    {
+      "content_sha256": "d3bc04cb8411f6fa6d88241bd112de77a018a4b6d886df502b45701d04556f7a",
+      "file_sha256": "8ee593e007d32b0145b857363a9d3998761f7d6fc00b014ca599db3ed5548904",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0099_1D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_1_D3_x1606_y119_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 119
+    },
+    {
+      "content_sha256": "aedfba7dea0c796dc0738a913a86211738eeb33ba8ae93b1c4dbfef03c952347",
+      "file_sha256": "b6206b42f3c059b2a4b928d5ab116bd35f14528b72167a604dac1efb0325b22c",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0064_4D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0064_4_D6_x1607_y1478_433x562.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        562,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1478
+    },
+    {
+      "content_sha256": "1672c81654dbe996bd5cbe6580967e755d1861607e56a1566e1e21f0fcd8c252",
+      "file_sha256": "91e7bcd72d273a4a50d52f753fcd76957a4d5b32a4f87eea85e849beab3ffc84",
+      "key": "qr2/level2/2026W24_1A/l2b-v25-2026-163/2/level2_2026W24_1A_0480_1D2_spx_l2b-v25-2026-163.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W24_1A/2026W24_1A_0480_1_D2_x0_y1618_565x422.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-163",
+      "shape": [
+        422,
+        565
+      ],
+      "x0": 0,
+      "y0": 1618
+    },
+    {
+      "content_sha256": "e65c5c65a98bf2b2715419de1e5a8df71cdb8759e83e63ecffb920991e28bf27",
+      "file_sha256": "9f0d8dfc54f8b61309a1c9936c85611a1558f429d8cc3f555aae79593ae0715f",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0064_4D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0064_4_D3_x1607_y1492_433x548.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        548,
+        433
+      ],
+      "x0": 1607,
+      "y0": 1492
+    },
+    {
+      "content_sha256": "abd0365a68bc9e27b473a9029ba1ee683ec82831133569f11cec4e8769d2a7ea",
+      "file_sha256": "af1af6f88138cb9a3c22f97167c54b631d23550bbff12f5ac1cf0021680918ea",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0040_2D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0040_2_D3_x1606_y348_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 348
+    },
+    {
+      "content_sha256": "633dc4a604270517ff6923522b695bb41b99268a9ba8259ef70351a556f56f17",
+      "file_sha256": "66ea335d580d2c2e08750d637acdab3be84c672090b5d6c9ad755cfb7909ba0c",
+      "key": "qr2/level2/2026W24_1A/l2b-v25-2026-163/5/level2_2026W24_1A_0480_1D5_spx_l2b-v25-2026-163.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W24_1A/2026W24_1A_0480_1_D5_x0_y1610_572x430.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-163",
+      "shape": [
+        430,
+        572
+      ],
+      "x0": 0,
+      "y0": 1610
+    },
+    {
+      "content_sha256": "18f2a6443ba8a44aa2ce34ef1c8657416e82d72c144994a82351c5d872ae1062",
+      "file_sha256": "9feed9259b14a6f80f20f22ad847fb1902cb4dae76349eae17d06d000b25eda7",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0040_2D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0040_2_D6_x1604_y335_436x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        436
+      ],
+      "x0": 1604,
+      "y0": 335
+    },
+    {
+      "content_sha256": "d87b028b9dabc2a39ce36d62a8d33d1d3aee12fa5291a57818c75e0b537a49d0",
+      "file_sha256": "db6d47388bff09535ad94976341e664baa7ba5dcba4cac2e8659beabecfd3b99",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0064_2D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0064_2_D6_x1608_y1706_432x334.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        334,
+        432
+      ],
+      "x0": 1608,
+      "y0": 1706
+    },
+    {
+      "content_sha256": "2c9640c3e980e61dccd2da86859bed1c76da1605fa1c94a8a9dfddf20abd68ce",
+      "file_sha256": "a601886186eba07d6019212e1ce09bb7ed68cff0a3524d359ce4adc1794595f0",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0064_2D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0064_2_D3_x1608_y1720_432x320.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        320,
+        432
+      ],
+      "x0": 1608,
+      "y0": 1720
+    },
+    {
+      "content_sha256": "517e0183099995d7ea8f0d2cf7dd5028034a4ed3543c5f77c6efeb6acad0aaf1",
+      "file_sha256": "4b60baec079ecb301c1d6032c12294f8df3c5f4d0632c4332e6f2e7320ec92a9",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0099_2D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_2_D6_x1603_y0_437x577.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        577,
+        437
+      ],
+      "x0": 1603,
+      "y0": 0
+    },
+    {
+      "content_sha256": "0bebfd4412d38afb8a1333e1fd62d8dd4a7f4ba2a548d33cf78cced4fd3edb4f",
+      "file_sha256": "cd35deba6f2c47d791a903882a7dc7644017d5bfba191ce6b4d7a612a441a8fc",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0099_2D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0099_2_D3_x1606_y4_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 4
+    },
+    {
+      "content_sha256": "35190a2394e69c0fc8a8f84adadf94a42510a29e0986db5e5007fc0ee403c113",
+      "file_sha256": "0fd5c1ff27f66341d71a8a2c31da6bfe9630cc90b1e566ed27f67ed596e22a19",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/3/level2_2026W23_1A_0040_3D3_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0040_3_D3_x1606_y233_434x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 1606,
+      "y0": 233
+    },
+    {
+      "content_sha256": "0191f27df146af0ae35473febbae1d6084c0a3795e2cd5702c59cb1e1031d3b5",
+      "file_sha256": "efa1bfbe3c41374ebd32650ce410de2482b9b0075b2f941969dc6034856f877f",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0412_1D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0412_1_D6_x1491_y514_549x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        549
+      ],
+      "x0": 1491,
+      "y0": 514
+    },
+    {
+      "content_sha256": "b0fb6bba6e9db8cbecb730bda1b50f8ec943dcd8973f2b9c5af21278b6b4d013",
+      "file_sha256": "29add3572de40e96cad321ead355119cad362451d07c873f78143ea2d8df2872",
+      "key": "qr2/level2/2026W23_1A/l2b-v25-2026-156/6/level2_2026W23_1A_0040_3D6_spx_l2b-v25-2026-156.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2026W23_1A/2026W23_1A_0040_3_D6_x1604_y221_436x585.npz",
+      "pipeline_version": "6.5.7",
+      "processing_tag": "l2b-v25-2026-156",
+      "shape": [
+        585,
+        436
+      ],
+      "x0": 1604,
+      "y0": 221
+    },
+    {
+      "content_sha256": "0e97f1bb4e1c0c1212237d48883e292698a05f03b5632f4783029f94888ac08f",
+      "file_sha256": "908250a6e4d7255b85c173d8e09afbd5c6f1a323b3dd718dbe053ceaaa048cf5",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0412_1D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0412_1_D3_x1492_y526_548x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        548
+      ],
+      "x0": 1492,
+      "y0": 526
+    },
+    {
+      "content_sha256": "b3093cdac2a032439402d5f79e68ff5d30e3f2f46c5c762a07f10b48b6f5a600",
+      "file_sha256": "5c1bc65016c266ac1ed4aa21218241e7085a07cb1127b9037423cdd7d0e87ae0",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/1/level2_2025W22_1B_0008_2D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_2_D1_x172_y971_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 172,
+      "y0": 971
+    },
+    {
+      "content_sha256": "6f005cabdfd6ec78cdea7a2a6b309c77c60298d9cdf7e71b8ab02d02ee418623",
+      "file_sha256": "60aaaf8395cec568d6f776bf835ff3d8cbaa5e1950ca22209a0bf5296cfbb218",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/4/level2_2025W22_1B_0008_2D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_2_D4_x176_y961_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 176,
+      "y0": 961
+    },
+    {
+      "content_sha256": "0ef941396e943a66677a8753b68776e75d84a1dcfc19daf4003ecbc237e55739",
+      "file_sha256": "297ade749577bf74151cb69bf5a643b6a75cc5c5e998ca1fb61d778bbec3907b",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0286_3D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_3_D5_x1557_y569_483x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        483
+      ],
+      "x0": 1557,
+      "y0": 569
+    },
+    {
+      "content_sha256": "c1b837fb4a14911333e9f2a8d05bce510e02472fcb8a4c896812f6caaf49e31a",
+      "file_sha256": "f3d7fa7d25d3735b8c8f07e22b78d56b763627592a86aaaf5cbee288ebec4439",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/4/level2_2025W22_1B_0008_3D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_3_D4_x174_y846_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 174,
+      "y0": 846
+    },
+    {
+      "content_sha256": "068b05358944d539b6c6ba9100ef7b8e1b3390adbb622e8f851c30fcce154c23",
+      "file_sha256": "e38fb5e9e49190baa6122de842271307ddb022ebf3b24754d956f9b5e561ae6d",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0286_3D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_3_D2_x1557_y583_483x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        483
+      ],
+      "x0": 1557,
+      "y0": 583
+    },
+    {
+      "content_sha256": "9377b9f151725462f550abfb2ea03492242a682de6b700c3b032a95dedf883ca",
+      "file_sha256": "e40eadc91734f03054ee9b1d297a70facbebda11c9d43f31a25f1629f34a4b17",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/1/level2_2025W22_1B_0008_3D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_3_D1_x169_y856_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 169,
+      "y0": 856
+    },
+    {
+      "content_sha256": "b4a758a66183260f4e3003a431697f7de0147cea71e581ffb773916c6065c26d",
+      "file_sha256": "6093a7405d62c12a6871a7a9ab0fbaa999586beede1f6966c5a1cf7e2be856c5",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/1/level2_2025W49_1A_0119_3D1_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_3_D1_x0_y129_483x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        483
+      ],
+      "x0": 0,
+      "y0": 129
+    },
+    {
+      "content_sha256": "b82d21017f672da1c059e5d6c2780f93f82ecb16f49d403ab9ff2d85b378b64a",
+      "file_sha256": "729fa734786bafe4fdbfe88a374e685d2b9bbb4a672da3e806bd1ce7c5716dff",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/1/level2_2025W47_2A_0051_1D1_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0051_1_D1_x0_y0_475x370.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        370,
+        475
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "eb80981f0c599e617c1a54907ec8a33baa43a97dd40a51b95971520480611c5f",
+      "file_sha256": "f5b1135c5ffc49ae850b97b7507aff0b773c44581df577924170b44817f0cf57",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/4/level2_2025W47_2A_0051_1D4_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0051_1_D4_x0_y0_478x360.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        360,
+        478
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "64f2286ede6c83e2a44d2a6574d229f6a8dfc0921a3334ce29f5d55a5a36a2e9",
+      "file_sha256": "0070ea588343b0ec49455804a52f582b4d185f845f607f77cd5f01030c69141e",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/4/level2_2025W49_1A_0119_3D4_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_3_D4_x0_y120_486x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        486
+      ],
+      "x0": 0,
+      "y0": 120
+    },
+    {
+      "content_sha256": "32118cfd14caf4bfa2529289f3c73a85dd943137e75f796f3a412ad112bbf9cf",
+      "file_sha256": "3e2ba42d7e14c85f19a766e7cbc9063a934bcc5a949d53456b95e855073c0291",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0413_1D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0413_1_D6_x1490_y399_550x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        550
+      ],
+      "x0": 1490,
+      "y0": 399
+    },
+    {
+      "content_sha256": "1cc3c605c1fe3973f86fb3c3fda40b612fa527d881a8ac8bdd7bc1091c39d9ca",
+      "file_sha256": "e89ee8a4c6dac7b7babd5b726d28551c03836f99332a9dca0cafd97aff1675c6",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0413_1D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0413_1_D3_x1492_y412_548x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        548
+      ],
+      "x0": 1492,
+      "y0": 412
+    },
+    {
+      "content_sha256": "d425224e8280b4f53958562aaefd972d4192901a3443d5d325906a97b4f294bd",
+      "file_sha256": "e70e3ce652fe478e6a6469ea71777e117c4ce0e11b0f648de7e7b0b2730167f0",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0331_3D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_3_D5_x0_y864_445x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        445
+      ],
+      "x0": 0,
+      "y0": 864
+    },
+    {
+      "content_sha256": "7a8b1ed4edd759d5f626a291a39336fab3b31abae8a2789fcfec4e5bc8de5cbf",
+      "file_sha256": "f41225e121f5455907813cf7f4f371bb415c9087f7df64b84101d0a539b9fd2b",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-252/5/level2_2025W23_2B_0496_2D5_spx_l2b-v20-2025-252.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_2_D5_x0_y58_425x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-252",
+      "shape": [
+        585,
+        425
+      ],
+      "x0": 0,
+      "y0": 58
+    },
+    {
+      "content_sha256": "57d043e16b873148873a44102f745d6760e7641ccaf69f3c16ffc2f0ca60a322",
+      "file_sha256": "c9bbc74e4338a3db182af92df603009aa71ea313ed4cb79079c6a0790757b1b0",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-251/2/level2_2025W23_2B_0496_2D2_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_2_D2_x0_y64_425x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        425
+      ],
+      "x0": 0,
+      "y0": 64
+    },
+    {
+      "content_sha256": "e10ca2ff7d312a18ccd5f20c4021533a52f562d6ae59be820f99171b2da0daf1",
+      "file_sha256": "b7479403461ba29aaa01c5c0f6e7f489b72f1faa78f0fb154a76fafd79c91778",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0331_3D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_3_D2_x0_y870_441x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        441
+      ],
+      "x0": 0,
+      "y0": 870
+    },
+    {
+      "content_sha256": "a77257348a177990e52c021928490f4073aad68bcdf4f9a7f5228f96291ede4d",
+      "file_sha256": "9a000c14bd48bfe4e5de1e2f8aeb28a04aefddc8c836cf3f6ea1e497f41b59c0",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/4/level2_2025W49_1A_0119_4D4_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_4_D4_x0_y5_483x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        483
+      ],
+      "x0": 0,
+      "y0": 5
+    },
+    {
+      "content_sha256": "ce293863e9976046efe171d7462d4f3265e42cd3f67f61e69c563adf285dcd92",
+      "file_sha256": "658f8a8875b1f936d00ab9e68fcb63fad3ac98103f072220ebdd0e4316aa7159",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0487_2D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_2_D2_x0_y525_434x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        434
+      ],
+      "x0": 0,
+      "y0": 525
+    },
+    {
+      "content_sha256": "0ac5553b0d4f6a904b7cc9a03807c0460c172e523bf174a549f98be5b0467f51",
+      "file_sha256": "1db38e0791fcb2a1bc839979e28a426c3eb9f4fe305498589e0212389681b2a6",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0487_2D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_2_D5_x0_y519_436x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        436
+      ],
+      "x0": 0,
+      "y0": 519
+    },
+    {
+      "content_sha256": "67bb3e4f975f443cd965de78771f85e94cc4959916d53a6d37f0e8c2ead8cbf7",
+      "file_sha256": "7e0e322229308ddb69f03aa42590ee153891c2624042a21f08be6162b149d028",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/1/level2_2025W49_1A_0119_4D1_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_4_D1_x0_y14_480x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        480
+      ],
+      "x0": 0,
+      "y0": 14
+    },
+    {
+      "content_sha256": "81d208ee392c9513945e2649867b640e2a07f1fd612e88d21e16b1b3de37f866",
+      "file_sha256": "0b8367a6c8683b269f70fb278543316ce75236a36ae0e595da6f3fdd9689e2e8",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0229_1D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_1_D3_x1494_y1441_546x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        546
+      ],
+      "x0": 1494,
+      "y0": 1441
+    },
+    {
+      "content_sha256": "e5f078c4b25dd084e3e6d92abf7bf5ddd9b0f5413cf05a8d03677678929787fe",
+      "file_sha256": "098169bdbaff3040f2526496617f9b4f9fdbf5ac925569db7e19f54905d0f441",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0331_4D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_4_D2_x0_y755_439x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        439
+      ],
+      "x0": 0,
+      "y0": 755
+    },
+    {
+      "content_sha256": "4a0e2e152ddbace483dcabdaecfaf1416b99d40bde03321ff411e71b10fe1e6a",
+      "file_sha256": "68eeba430e6c315c83c66b96ed37ac93b56542c5cadf05f16dd46c6e27bb1f8c",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0331_4D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_4_D5_x0_y749_443x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        443
+      ],
+      "x0": 0,
+      "y0": 749
+    },
+    {
+      "content_sha256": "e2ebb050d06e8609f0fcb2bb357562351ee4d3cd3737ae118835140855367e7d",
+      "file_sha256": "2426b183bf95ff048974064e597fbbb2c5b5549dbadbd949f3bda4ddf3ca1084",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0229_1D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_1_D6_x1493_y1428_547x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        547
+      ],
+      "x0": 1493,
+      "y0": 1428
+    },
+    {
+      "content_sha256": "f79a86876984f50367d6edbbf397ded750686eafd20790616b6e5ed31d531163",
+      "file_sha256": "f1748f1dbc7b0b2a910cd9301561c75cc5c5af367cde54e603343e7e1ffc86ad",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/6/level2_2025W46_1A_0160_4D6_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_4_D6_x1247_y1294_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1247,
+      "y0": 1294
+    },
+    {
+      "content_sha256": "79bb1ae20e615d8434de8d17c10c27a8a057909ec6eef2e017ac0193436e272a",
+      "file_sha256": "0f4b621ae674d04d6b4ea0f0c671fbb3411fbace61172b12d7cbedf937072133",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0728_1D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_1_D5_x1554_y339_486x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        486
+      ],
+      "x0": 1554,
+      "y0": 339
+    },
+    {
+      "content_sha256": "c361f4d48c125313e5187152be5008e2d0c12b13ccd460eecabfa9a5af94b8e2",
+      "file_sha256": "5608fa6cb621d4b54f53962a6db2d4542d242fe5f297c2d8bf7661ca280aef80",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0728_1D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_1_D2_x1554_y353_486x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        486
+      ],
+      "x0": 1554,
+      "y0": 353
+    },
+    {
+      "content_sha256": "7d36272201993936a8849cd7571f326f4ae2eb18c35af3640f98f2b49a54975a",
+      "file_sha256": "3471789e0c2f88f14f328676925b9fce9a6dc9f491779c874d0106adafa71452",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/6/level2_2025W46_1A_0160_3D6_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_3_D6_x1248_y1408_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1248,
+      "y0": 1408
+    },
+    {
+      "content_sha256": "36abcd6d7849d0bd0e4b7bbce8d4afaff7d38f2a504a9ad2e0be984596f79a4c",
+      "file_sha256": "0d3bb8daf08ff94663e87c26d8f3d120cfe690d1e925e9addf19fc6f439a2352",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/3/level2_2025W46_1A_0160_3D3_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_3_D3_x1247_y1422_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1247,
+      "y0": 1422
+    },
+    {
+      "content_sha256": "8e72030afc955d4962d415cbeabda9e14d9a812ae16c28f5ec79545a3a919d89",
+      "file_sha256": "2648b17850b9bba518b676b1eb5530eaae3f7651048964319a74b4c7bd7adf00",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/4/level2_2025W47_2A_0553_1D4_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_1_D4_x0_y1265_522x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        522
+      ],
+      "x0": 0,
+      "y0": 1265
+    },
+    {
+      "content_sha256": "70d69b8cd00cbb05d14258c086cbd01b4204dff64e5fdc502fddb997dbac4bdb",
+      "file_sha256": "8d892c3878fbd43b366ce3ea3b6fe0a834077e367fae50dccb8e84cf5148675a",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/1/level2_2025W47_2A_0553_1D1_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_1_D1_x0_y1276_516x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        516
+      ],
+      "x0": 0,
+      "y0": 1276
+    },
+    {
+      "content_sha256": "844227bc0dd193406389bae04c603f34e711c26cd1ba47ab79101df4370d752b",
+      "file_sha256": "8aae92ccd93d2c80fcf5d56e2422b3f22ddad31297ee7133298653be209b930e",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0433_4D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_4_D2_x1561_y928_479x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        479
+      ],
+      "x0": 1561,
+      "y0": 928
+    },
+    {
+      "content_sha256": "4467e4b6e7b7d11f5b84eddfaedbc7efb51a894ab4ab142e80b7dc4e09069e61",
+      "file_sha256": "b079b788a2f53d75cbf0ec6eb0fe7d720f6259ce59e427c28ca05c043843d236",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0433_4D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_4_D5_x1563_y914_477x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        477
+      ],
+      "x0": 1563,
+      "y0": 914
+    },
+    {
+      "content_sha256": "a16b9443d3bba6223973ff8c0e51e32f77de13bfc365761e598309bab3fd313b",
+      "file_sha256": "c628b655134e25794dc476e86ba6c10f3f31ede0c818fbdbc73a96806a0193cb",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/6/level2_2025W47_1A_0137_1D6_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_1_D6_x1241_y150_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1241,
+      "y0": 150
+    },
+    {
+      "content_sha256": "d3878855d0540517de27d531dc9ed9722823775945a6ec5618922def2f0cf1be",
+      "file_sha256": "6fff2ba9f069307295a8655f9e0dc1a48ef350cfdb6c13c96a966ea1a3a74e41",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/3/level2_2025W47_1A_0137_1D3_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_1_D3_x1243_y162_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1243,
+      "y0": 162
+    },
+    {
+      "content_sha256": "ab02c42bdf07105c1037fc811381422424fc7e232ceb3fd1a929c69f33d659f3",
+      "file_sha256": "d6e40ccc4a373edafba384ca3fe4e1a2c83088028225e639b40fb07ad1e74a42",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0052_2D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0052_2_D3_x1246_y1079_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1246,
+      "y0": 1079
+    },
+    {
+      "content_sha256": "5ddb8214e9258cfef43043443eb2d6c81492888ac89fab250e71e43c61db9e02",
+      "file_sha256": "ad19b376edd42421d960aa54ca4447a8f96415ab7dd3246d968d1c32e1f712ea",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0052_2D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0052_2_D6_x1246_y1066_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1246,
+      "y0": 1066
+    },
+    {
+      "content_sha256": "8d6a890911173c7265e98b3870afb15cff4b9841ffdc68b3748611f4859fdd96",
+      "file_sha256": "42af61daf1f0d6a67ecc1c01ff937a72d5895757f72d7330e72d78b81028a48b",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0433_2D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_2_D5_x1567_y1144_473x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        473
+      ],
+      "x0": 1567,
+      "y0": 1144
+    },
+    {
+      "content_sha256": "53013ebecffc7ea23579b4e1991b14b3c2c03d0a9cb64cbeff0ce4e616f62b4e",
+      "file_sha256": "29cfcabcd100590168be4a40f5b00abdc28113772ee9b1b5f21205c07d2825ad",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0433_2D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_2_D2_x1563_y1158_477x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        477
+      ],
+      "x0": 1563,
+      "y0": 1158
+    },
+    {
+      "content_sha256": "a2aa40abde9a1ec95e205aff67f4bc9aaf144debdbb37ef75bb782bd909b7542",
+      "file_sha256": "46cd1bebc5b2351122562b77057c212516c51a6dd8c01565fd5588c3de0d5bd1",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0539_4D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_4_D3_x1244_y276_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1244,
+      "y0": 276
+    },
+    {
+      "content_sha256": "9d1edae3a5d1e67a3a4d5b211fe0bd3f570d26536bb014dba563c8acee229a5d",
+      "file_sha256": "59fc3a4a1ed028345c93d88e57da018607db4b6a8b163f24cfbfe5ba8f7f5e0e",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0539_4D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_4_D6_x1242_y264_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1242,
+      "y0": 264
+    },
+    {
+      "content_sha256": "849588960025cf05b5c5da82522e04afad9f79556b3896906b6903ce9ef9b941",
+      "file_sha256": "1e7459e16edf42bd868a3dcf5196310ee425091914a23af80469063a20a7a62a",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0231_2D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_2_D5_x1573_y1603_467x437.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        437,
+        467
+      ],
+      "x0": 1573,
+      "y0": 1603
+    },
+    {
+      "content_sha256": "7f5ddfe0ad624e4d8fad3ca75c4c39a082fe5d9fe445ee6aebf177549a81d970",
+      "file_sha256": "fec62eb66f51d67a7e46191829f3cca682662e7b50ae63db78c8269e5d342493",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/4/level2_2025W21_2C_0262_3D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_3_D4_x188_y1304_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 188,
+      "y0": 1304
+    },
+    {
+      "content_sha256": "40cc653ea466ead2d747363910e9f3397216e062616efa2ef0c09bbb00d93174",
+      "file_sha256": "214c56e5a78fac7458addffa2b44b3ac06c5c040d4a10a341bd0f6dd70944d84",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0231_2D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_2_D2_x1568_y1618_472x422.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        422,
+        472
+      ],
+      "x0": 1568,
+      "y0": 1618
+    },
+    {
+      "content_sha256": "706f29366c4aba0828273263e2265c12f962bab7ebc29a56a4f0b5670ff2584b",
+      "file_sha256": "d5e7ab9799ec12bb2cdce03a778c912d7c08a8de35329d93368c335b20eeb512",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/1/level2_2025W21_2C_0262_3D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_3_D1_x182_y1315_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 182,
+      "y0": 1315
+    },
+    {
+      "content_sha256": "b9a243e3d0770fd7bbce2eb013aa33910e63a712de4fb977b36c6246c3a33f3d",
+      "file_sha256": "4805e7314df041c3561a0b577dde8474f236d52715327b9293c578afe47375be",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0286_1D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_1_D5_x1561_y799_479x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        479
+      ],
+      "x0": 1561,
+      "y0": 799
+    },
+    {
+      "content_sha256": "99fc99e6cdb2c02c29957f483ec91ebfbbd78aa2eaf23180bd8d6aa7c80fbc02",
+      "file_sha256": "aabbf304032fdb07f298ef95aa7ea8c93389970a939796132891f08be5370187",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0286_1D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_1_D2_x1559_y813_481x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        481
+      ],
+      "x0": 1559,
+      "y0": 813
+    },
+    {
+      "content_sha256": "118c0d8110350d973bb8f44e0a49a7c66f547e980d1d2c9eda8548a800831e15",
+      "file_sha256": "ffbdcf1ac66e5db8fe51b755717fc3ee5b140af322bfa438034e0568ba835678",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/4/level2_2025W48_1A_0278_4D4_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_4_D4_x0_y464_498x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        498
+      ],
+      "x0": 0,
+      "y0": 464
+    },
+    {
+      "content_sha256": "037bfd488a3a8774fe3be1aa3fa84a081ff20c7910ad7a8ecc7feccf9564fe72",
+      "file_sha256": "dfebf262356c8cfcfd26b0bd2c257ce021c9e2a8430911b05bec318cec50cd19",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/1/level2_2025W48_1A_0278_4D1_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_4_D1_x0_y474_493x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        493
+      ],
+      "x0": 0,
+      "y0": 474
+    },
+    {
+      "content_sha256": "f9a2fb88ff1aeb7527bed1d18496721d3b407ff8cc9735ac23f0a65e47e8ab28",
+      "file_sha256": "10ae50d63e13e366b35872364b34afd1c2b74e866782c34e30aaccd9dd040d9c",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0286_4D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_4_D5_x1556_y454_484x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        484
+      ],
+      "x0": 1556,
+      "y0": 454
+    },
+    {
+      "content_sha256": "8d82b0d79a50cc5cd26bb64cb55025c1ae2d1e138f02227f6fb300ce8c0fde18",
+      "file_sha256": "481e80b5bc8165010acedb2b855f928006626ee6555ce170d99b1cac4ad311ec",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0286_4D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_4_D2_x1556_y468_484x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        484
+      ],
+      "x0": 1556,
+      "y0": 468
+    },
+    {
+      "content_sha256": "0fabe4eab92dc68eb5219a2421661dee2099b7e1bdd723c68fce0865f636d998",
+      "file_sha256": "6ad24b522c6d143a2ea8f2d98e6dea369b49347f13dea41261d5f8d580062869",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0331_1D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_1_D2_x0_y1100_443x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        443
+      ],
+      "x0": 0,
+      "y0": 1100
+    },
+    {
+      "content_sha256": "fe5ca2a53c871033c9b0afc5f4c8d1c15ae5297e07d4f9ad9041d54524272103",
+      "file_sha256": "829d8c69acc50a2d73a1448313e420ece76dfc57cbc522f6dcd5e9bc18b1580e",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0331_1D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_1_D5_x0_y1094_447x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        447
+      ],
+      "x0": 0,
+      "y0": 1094
+    },
+    {
+      "content_sha256": "079b774f81a24eb9730c82adbf4fa4d3b04f32053fff14f7894c29c9bbc2ad19",
+      "file_sha256": "6c2fa430e788ad5ffa3f269248b0109897e586a586ff41162feeb2ba82c47bc5",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0268_1D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0268_1_D6_x1245_y837_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1245,
+      "y0": 837
+    },
+    {
+      "content_sha256": "7e02460efd57ed32bbcf6221f54dd05275c9d370567289c885da84363ed3d731",
+      "file_sha256": "83a55481182cd6155925038317e72827fef59d9ec7ca7ef654be099cd9bcf02f",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0268_1D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0268_1_D3_x1246_y850_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1246,
+      "y0": 850
+    },
+    {
+      "content_sha256": "70b6deccce39c540c7cbdde2595aa4589d962977eaaa844d1ee8ef702094d393",
+      "file_sha256": "9a46f459f8c46b561b49d0e5dd28d3a55531ad21d00dead91e619c22e01c2417",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0564_1D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0564_1_D6_x1488_y0_552x411.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        411,
+        552
+      ],
+      "x0": 1488,
+      "y0": 0
+    },
+    {
+      "content_sha256": "f7743ec15edbf731a87929e7eb9f2388fa69d2b732e0de5fc6ae7918cab89977",
+      "file_sha256": "be3328ea92fdb0c472defcc96b6e9cb7b027704d3cde71a8e4ebc1a5d60e1381",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0180_1D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0180_1_D2_x1549_y0_491x361.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        361,
+        491
+      ],
+      "x0": 1549,
+      "y0": 0
+    },
+    {
+      "content_sha256": "f5dc7c99f2abd647ba2ff7851f457309685de2e74e624b34a009e92f9643f5fb",
+      "file_sha256": "f25635160be07e417d294c0b7ce2cc610f3c08c124cd45b97dd4543350d2098d",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0564_1D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0564_1_D3_x1491_y0_549x423.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        423,
+        549
+      ],
+      "x0": 1491,
+      "y0": 0
+    },
+    {
+      "content_sha256": "3341f4f66ce683f1c6e446b7c15a45f660c61371701c52faab935de166b93fd7",
+      "file_sha256": "0bab1644d7b5c34919a11c2546fb080f8932ff4cc1f32cda52be7dd1888dfc0b",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0180_1D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0180_1_D5_x1546_y0_494x348.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        348,
+        494
+      ],
+      "x0": 1546,
+      "y0": 0
+    },
+    {
+      "content_sha256": "a7b593f1b71c706d44a9dbc5fe317e93083aa8a3c7e66a5c4761d7e07daa163f",
+      "file_sha256": "6370a08708f5809390b86bb6a124d4e3d3ca817c7553d46a5d24c3a40a4c0cbd",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0728_2D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_2_D5_x1552_y224_488x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        488
+      ],
+      "x0": 1552,
+      "y0": 224
+    },
+    {
+      "content_sha256": "9f502f67c87946857bdd337205beae9fd42b636380f8ca80e760fc0b6454dfaf",
+      "file_sha256": "4e75f91dd6ec4645903bfd992981484749eba9cba2c5a2c34dda91ecbaa9f10e",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0564_2D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0564_2_D3_x1492_y0_548x307.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        307,
+        548
+      ],
+      "x0": 1492,
+      "y0": 0
+    },
+    {
+      "content_sha256": "745250f607d84f547bc85f29f6f8f1067277dc282bdc155eea2139447a19d255",
+      "file_sha256": "beacf4f231e74d36c35faf8a3747ec4434b5d30772258f4feeab977c1c2d6972",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0231_4D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_4_D5_x1570_y1373_470x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        470
+      ],
+      "x0": 1570,
+      "y0": 1373
+    },
+    {
+      "content_sha256": "3f38ced7597a57d610308bad37c6aebd288c611339afca9bb87ad1b1c2d8dcd6",
+      "file_sha256": "39a14b9e9f40eccacb49aa981a0d6897bd0b6d0efa6aeecd46d73cd9e0162dab",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0228_3D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_3_D2_x0_y1330_449x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        449
+      ],
+      "x0": 0,
+      "y0": 1330
+    },
+    {
+      "content_sha256": "51c42d795d8120272fa93468d6d3eb518c37da3b94196e93cc6c8e53708a8293",
+      "file_sha256": "eb12116c69cfeabdc791fd74edb68ba1f49515679243b1157b13455524172548",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0231_4D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_4_D2_x1565_y1388_475x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        475
+      ],
+      "x0": 1565,
+      "y0": 1388
+    },
+    {
+      "content_sha256": "5d69deb0ba63595fda52864c62c595ad0680c33106aa2f670fc9551251db99e6",
+      "file_sha256": "672a8df761cf5721bc234b2b8ba3c035c8b0366620dc824d7811044df987a32f",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0728_2D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_2_D2_x1553_y237_487x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        487
+      ],
+      "x0": 1553,
+      "y0": 237
+    },
+    {
+      "content_sha256": "6212d82e8dc0fc2fe930a973266fe353626b4dd8f47dd7eb5936177693fbbfa8",
+      "file_sha256": "ccf8c057f80219132c519df7c5780434dcf7eaa730c677dc8ebfd9f1429677b4",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0228_3D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_3_D5_x0_y1323_455x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        455
+      ],
+      "x0": 0,
+      "y0": 1323
+    },
+    {
+      "content_sha256": "74a99e7f0fde90a27e558c481c33595f01693775e9fed5a9a13343b8957d97c9",
+      "file_sha256": "cc72c3d97dc344d2e90c78493a430c4c5887e6d73bbb08feef6b073aef722a6e",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/6/level2_2025W46_1A_0160_1D6_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_1_D6_x1248_y1637_585x403.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        403,
+        585
+      ],
+      "x0": 1248,
+      "y0": 1637
+    },
+    {
+      "content_sha256": "6774976ee63c1a36e983626e0bbdd9adf96bc5105c54f704771b9c8e83620692",
+      "file_sha256": "a6cfeabea2ca29e936e91445f08541631e7cbcff03a6774dc8b56bc8914567b3",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/3/level2_2025W46_1A_0160_1D3_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_1_D3_x1248_y1650_585x390.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        390,
+        585
+      ],
+      "x0": 1248,
+      "y0": 1650
+    },
+    {
+      "content_sha256": "90b30e0d8f9d89308ce2fcf03bc761b827a9f80da0efb291b0d059b636e39199",
+      "file_sha256": "50995617746dd1d4ae066833b11ea43b2de37719d7f747110c1bd900a3e26fa5",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0433_3D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_3_D2_x1562_y1043_478x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        478
+      ],
+      "x0": 1562,
+      "y0": 1043
+    },
+    {
+      "content_sha256": "1d6e8f445f8a25e61715988a2e9a5d2b47968734001febc8cc0348a3c263209b",
+      "file_sha256": "e78ff43faa3c2f8553e49a17f52819bb8d352ec23d6b11277058bc0488c1200d",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/1/level2_2025W22_1B_0008_4D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_4_D1_x167_y742_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 167,
+      "y0": 742
+    },
+    {
+      "content_sha256": "f28896fc6a7f4812a2068a28f2feee83b258b10952255a5ba7a333927f9b6b46",
+      "file_sha256": "3a284bb8f663d7f0872ac5b0126932645d95ea78dc55a84fee0157d3eec74560",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/4/level2_2025W22_1B_0008_4D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_4_D4_x171_y731_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 171,
+      "y0": 731
+    },
+    {
+      "content_sha256": "1d8d4a4b176788eda53dfe0f94a81328a288636a30fa729f1117bedc8054b166",
+      "file_sha256": "96cd860b26e31c0858b91d62e9cdeb2503da929d1497e6a517b4c34767c86c6a",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0433_3D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_3_D5_x1565_y1029_475x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        475
+      ],
+      "x0": 1565,
+      "y0": 1029
+    },
+    {
+      "content_sha256": "d95ad5b145e1ddbead6d611bb2cbb60f905ed286419b0fc94bfa9627503a34ac",
+      "file_sha256": "3e25298508efe870f095187e82d037d1785f70d18f4ced9d947c22ad3f9f89c6",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0539_1D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_1_D3_x1244_y621_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1244,
+      "y0": 621
+    },
+    {
+      "content_sha256": "59c6161e7d53fa395f5c71c69e438a2d7d6c28b8392942fbc9b5f111a984a593",
+      "file_sha256": "60319817b80975bf8596ddd81ceb98984b5a67888e26f428fda0671aba8318fa",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0229_3D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_3_D3_x1496_y1212_544x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        544
+      ],
+      "x0": 1496,
+      "y0": 1212
+    },
+    {
+      "content_sha256": "17e8531fb3ef17b793138a0ff8547263e2141b7bbca42cb9a32ebac6f3b940d2",
+      "file_sha256": "98333f44f369a57934a328f5397fe5ab63f26b7642867a81a5fba56cbaefc6e8",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0229_3D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_3_D6_x1495_y1199_545x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 1495,
+      "y0": 1199
+    },
+    {
+      "content_sha256": "7e579a5d56e683d9b033ecff0033a2e3d061c6c53a92c33fbd2a5d14e21fff0c",
+      "file_sha256": "cbc8c3ae3db9bb5d37f204c44430b37a1e1203ab779667e1f6931ff12c114731",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0728_3D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_3_D2_x1552_y122_488x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        488
+      ],
+      "x0": 1552,
+      "y0": 122
+    },
+    {
+      "content_sha256": "f604090d13fa4f0e06d21fa3b5d9b1680822d0c21edb8256f162cfdcb69f1db6",
+      "file_sha256": "15eb8df9c00e8406392e937c6172d7050a4ecb04b5b020b9927190c486607056",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0728_3D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_3_D5_x1550_y109_490x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        490
+      ],
+      "x0": 1550,
+      "y0": 109
+    },
+    {
+      "content_sha256": "8046720c5dffdf4640b394befda5e055e6cb309c371977f7e15b60c683d41db4",
+      "file_sha256": "c245241b675fc2bb9719638136686e1499893fcd9bea5030317937116d89d7b1",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0229_4D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_4_D3_x1496_y1098_544x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        544
+      ],
+      "x0": 1496,
+      "y0": 1098
+    },
+    {
+      "content_sha256": "aea7f9857c1348676cc6041c376809b7b80a142d3e4c2db7b0983232c58cbabf",
+      "file_sha256": "19bb070de95fbef46c95f717c01b0525713fcb1369bf768782676de38c9d1d3c",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0229_4D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_4_D6_x1495_y1085_545x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 1495,
+      "y0": 1085
+    },
+    {
+      "content_sha256": "346666ef64d7b4bf2ea2a89ad92a186ba34a0f5cf85669309da451d9614c37c0",
+      "file_sha256": "c69acc999c4d7a301c48e1e2e99cac821d1fa84569b87ff592a05d88f26dea29",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0231_3D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_3_D2_x1567_y1503_473x537.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        537,
+        473
+      ],
+      "x0": 1567,
+      "y0": 1503
+    },
+    {
+      "content_sha256": "a2d2238c98dc2b8b9c909ccbe2a618ba9920ba6c4c7876a3f28ac1183494bb8c",
+      "file_sha256": "cc882c17180537f2e1c963aa366c281bd0192010b6fd8fff8c7b894049311124",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0231_1D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_1_D2_x1569_y1732_471x308.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        308,
+        471
+      ],
+      "x0": 1569,
+      "y0": 1732
+    },
+    {
+      "content_sha256": "0876e988071674551c07ed5f9c15414283acedcb3d6989b7ee4e0b7b4c7a68b4",
+      "file_sha256": "14c3f8b04ad185e38bec49b9d6c6d8676a1c661111d18835cf39204942a2ac34",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0231_1D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_1_D5_x1575_y1717_465x323.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        323,
+        465
+      ],
+      "x0": 1575,
+      "y0": 1717
+    },
+    {
+      "content_sha256": "01d778c61dbe8658a6d157a23b089f917f7392dfa6f92df151feb2811a6c0f13",
+      "file_sha256": "497fe7ffbcdf40302a915766ff20e3f5200c004ebc30398a7c05fe8cf9abdb26",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0231_3D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0231_3_D5_x1572_y1488_468x552.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        552,
+        468
+      ],
+      "x0": 1572,
+      "y0": 1488
+    },
+    {
+      "content_sha256": "4ad3876dac0fba90b01504b8dc3299d7ebec178dd1596621d8edd845f8b1b23c",
+      "file_sha256": "941fcf472b386ba55f50de86f987b9f307ec482e627f343abec6fecee93ddb9a",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0309_2D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_2_D3_x1494_y869_546x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        546
+      ],
+      "x0": 1494,
+      "y0": 869
+    },
+    {
+      "content_sha256": "d72869b95bd63a0eb73d5e460e8b9790d67ca8b6f0c49a6a4e63deab94836820",
+      "file_sha256": "41ae22b113b1e629348239c7ba3965a22416a0907e33c7a637f8cbb5bf4767a5",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0309_1D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_1_D3_x1493_y984_547x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        547
+      ],
+      "x0": 1493,
+      "y0": 984
+    },
+    {
+      "content_sha256": "747054ba18929f5b8e230c7cc5fd03375e2f5a18f766b3358ead5478ad64cccc",
+      "file_sha256": "eca02da23eb16ec3f6fb88fa20c5c5624b7352b5a4ab2136e18d093bf8b8a9e0",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0309_2D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_2_D6_x1493_y856_547x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        547
+      ],
+      "x0": 1493,
+      "y0": 856
+    },
+    {
+      "content_sha256": "5e56c1f490d45e4db453637c2c189d33d451eeb2809dcc371302de8e488e48b4",
+      "file_sha256": "0f65199e61b829ee3fb6685ce79db06021ca93513c451cc665833a1143df194a",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0309_1D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_1_D6_x1492_y971_548x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        548
+      ],
+      "x0": 1492,
+      "y0": 971
+    },
+    {
+      "content_sha256": "4384bc70f5d824fe52c822917e9c72622a60252b4f7def4f4e2b656a12920673",
+      "file_sha256": "683aac2b2cd49257fe17c43aad97eec7c543e9bf3e6e4685127fe590dc14926d",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/4/level2_2025W47_1A_0583_1D4_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_1_D4_x0_y1722_536x318.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        318,
+        536
+      ],
+      "x0": 0,
+      "y0": 1722
+    },
+    {
+      "content_sha256": "904921cc901601ae008f552649d305b50efa3f726f5cc69fee8fe2daa04982ec",
+      "file_sha256": "d99d04a463450aabeb1e6fc0780dfc061a12fead36ca91092e2d76e6a2acc2be",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/1/level2_2025W47_1A_0583_1D1_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_1_D1_x0_y1733_530x307.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        307,
+        530
+      ],
+      "x0": 0,
+      "y0": 1733
+    },
+    {
+      "content_sha256": "f6f095bc7a86fd6c736b865eb84a41f9da47c82b535c6d120a4f9354fc0bbd02",
+      "file_sha256": "cb8f4b7d154a16cf33987ebc16fe3f00d235866217a476fb3c60b1c154daf7e1",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/1/level2_2025W48_1A_0278_2D1_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_2_D1_x0_y703_500x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        500
+      ],
+      "x0": 0,
+      "y0": 703
+    },
+    {
+      "content_sha256": "06a98ad6a97f9775d68ccbc8959dd1c58b2eb9cdfa2144094ffbcf23dcb17e6f",
+      "file_sha256": "99d1d97dcfdddf563fe25cd50cd59aad8df68310821814c404c5e78146b20ebd",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/4/level2_2025W48_1A_0278_2D4_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_2_D4_x0_y693_504x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        504
+      ],
+      "x0": 0,
+      "y0": 693
+    },
+    {
+      "content_sha256": "e94f2029fd42b993e06a86db1e9d653bf1de02a99b53aee2504b6af43d7c4c1d",
+      "file_sha256": "1c9ea57c47000e5db55954f72687df9657ef43e3541f5b14ac081a396832566e",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0539_2D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_2_D6_x1243_y494_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1243,
+      "y0": 494
+    },
+    {
+      "content_sha256": "890bd417f2f3b80291b6c7f83e4d95ca5366f3fc5236dca0b83cbbece7622022",
+      "file_sha256": "d8d333c62a4e7bc2cda1eea55128aa709384a2c74b2dd722419c320e40a2b269",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0539_2D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_2_D3_x1244_y506_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1244,
+      "y0": 506
+    },
+    {
+      "content_sha256": "40cef259f5793601c957ad0b0a79ca5346879c65de18e16fa34e896f7feb81f2",
+      "file_sha256": "14b596e5baf4115787d9b1dae3fcd5897fb17bf937b0eb6aa4185ae509ef40df",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-251/2/level2_2025W23_2B_0496_3D2_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_3_D2_x0_y0_424x533.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        533,
+        424
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "61660608f685696aa9c72989382a95feeb63ecab5b6e2401c4fc896d27c5a609",
+      "file_sha256": "7cbb988de592bc8d42c70716c832b7eb14376d19b63860482be8d26bc447f167",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-252/5/level2_2025W23_2B_0496_3D5_spx_l2b-v20-2025-252.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_3_D5_x0_y0_423x528.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-252",
+      "shape": [
+        528,
+        423
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "aacd6099cef96457aaee43eae91827c68237edea131aad2628894f966af137e9",
+      "file_sha256": "2028ea69c7e9d50d60a354690ca0c480b8a000d857d7340117c1392cd966cb11",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0509_1D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0509_1_D6_x1244_y723_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1244,
+      "y0": 723
+    },
+    {
+      "content_sha256": "e54ad706fa54560e25079002cf18c90068b75e4db28f5b899c11342644c8690c",
+      "file_sha256": "10ee4258fc1cb9f2afda9020950c0c9a2c53db37752721867c8a7ce03a806e15",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0509_1D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0509_1_D3_x1245_y735_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1245,
+      "y0": 735
+    },
+    {
+      "content_sha256": "09e4348852b97ced6b36453f4ca81b89653696615df79b3926ef52c64bf344b7",
+      "file_sha256": "ac29d3153ff637ecbf8072d7a47ea4e1763afd6bee6306cac52ab5acc5cec96a",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/3/level2_2025W47_1A_0556_1D3_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0556_1_D3_x1246_y1686_585x354.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        354,
+        585
+      ],
+      "x0": 1246,
+      "y0": 1686
+    },
+    {
+      "content_sha256": "b81323b189151ad385a843a52274d8eb13e26ddd4a0dcee2acfe2de9269526ff",
+      "file_sha256": "52b5768d75389e709d8a210cd4411ab181c252435ca2898a2b3742c2d77fc053",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/1/level2_2025W49_1A_0119_1D1_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_1_D1_x0_y359_489x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        489
+      ],
+      "x0": 0,
+      "y0": 359
+    },
+    {
+      "content_sha256": "b2035db881efed2052c05dcf1333c8998e83ac837aca2dbdba21535076fba508",
+      "file_sha256": "d96fe44f1a9fdd9471426396c0f4a368cfe2f6d6822552f38eaf9add74cafb50",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/4/level2_2025W49_1A_0119_1D4_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_1_D4_x0_y349_493x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        493
+      ],
+      "x0": 0,
+      "y0": 349
+    },
+    {
+      "content_sha256": "7a22586ec6b9700faa91d5ff377804a016b3ac78a1adaf68c2ee604fd586513b",
+      "file_sha256": "7bb2dd80c5a359f43fc8e1a5119648bb164e8e9fc32e76b744d2a9c767768356",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0438_1D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_1_D6_x1490_y284_550x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        550
+      ],
+      "x0": 1490,
+      "y0": 284
+    },
+    {
+      "content_sha256": "9fb4a65dfa8cc09f68766575c2a282bf6db11b4805296555386f51394fa45cf8",
+      "file_sha256": "8cd25eb7de23929fe95c86f67592b0e684cc6838c66ea79f04f44e3d4620f608",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0438_1D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_1_D3_x1492_y297_548x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        548
+      ],
+      "x0": 1492,
+      "y0": 297
+    },
+    {
+      "content_sha256": "1df57983c74de89805bbfbae984d2c0b9221e0830d0b35fe016b261628fffa47",
+      "file_sha256": "ad0012b570920e3cdcb5fa8a4e3c25aa865067062b3561dcf54e6891935cc64d",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-251/2/level2_2025W23_2B_0496_4D2_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_4_D2_x0_y0_423x417.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        417,
+        423
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "edd1a494f047e131c1a154eaaceaed032edf1508b7f40ea83aa3cf729b49dcd8",
+      "file_sha256": "4e176133810f20643d4994dfa74272328ee254d52a067c1307981e58ae9fa0b1",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/4/level2_2025W47_2A_0553_3D4_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_3_D4_x0_y1037_515x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        515
+      ],
+      "x0": 0,
+      "y0": 1037
+    },
+    {
+      "content_sha256": "1d875a876543687daf6d852be3c116f3f4c41243faa8381742a4530117303352",
+      "file_sha256": "b4df976153ce8619f7a284087efacd588fbc8bb0ea0b533954123f892f29cf41",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-252/5/level2_2025W23_2B_0496_4D5_spx_l2b-v20-2025-252.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_4_D5_x0_y0_421x412.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-252",
+      "shape": [
+        412,
+        421
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "a5481e80f0916fae4f478b85c30cdbd43d88e00c93b8687fc5b78f1615441ee8",
+      "file_sha256": "8686c88330538d9091f91f06a4c32153185f40be8c01585e82430549d70e695b",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/1/level2_2025W47_2A_0553_3D1_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_3_D1_x0_y1047_510x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        510
+      ],
+      "x0": 0,
+      "y0": 1047
+    },
+    {
+      "content_sha256": "9463653fe4e38d230f930155a8e472413f450ffe9d0ce4cafcdd12b7b542c28d",
+      "file_sha256": "09d61f916837b89e1e6d1c42d0cb9eebda2d4d96134a576eb43968ced30f1379",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/4/level2_2025W47_2A_0553_2D4_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_2_D4_x0_y1151_519x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        519
+      ],
+      "x0": 0,
+      "y0": 1151
+    },
+    {
+      "content_sha256": "19438e7e334e3297cbe79b0b0f7dae7167ef559aecd49f281fceae6e1f0e1f55",
+      "file_sha256": "b47840e1a19821dd1f52c929ab753813afd90e0aafabc8c935f12c729a9af9af",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/1/level2_2025W47_2A_0553_2D1_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_2_D1_x0_y1162_513x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        513
+      ],
+      "x0": 0,
+      "y0": 1162
+    },
+    {
+      "content_sha256": "8b8cc5208c0625156ae4b4c6d08ff5542b9ec796afb2497f179fc8003c30b49b",
+      "file_sha256": "52451e11a27dfcfe93a3c7d8762b967c4c85604128e3d8e0183d7e5060c8394c",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0229_2D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_2_D6_x1495_y1313_545x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 1495,
+      "y0": 1313
+    },
+    {
+      "content_sha256": "962ee300cdc1655b1369d60ed715979caf254c5ada6c875e51c69a127b011c1e",
+      "file_sha256": "dc704cc9b96bbf21ea295e6d311a2f1f657bb654fec53de88365d2a41b7982a4",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0229_2D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0229_2_D3_x1495_y1327_545x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 1495,
+      "y0": 1327
+    },
+    {
+      "content_sha256": "d711cf24937d791c708c7b8fafa725623d4e6f423ef7f50c9cfad66aa5c4ba53",
+      "file_sha256": "4985a68c0fd22b8ba473497735c59acf3fb4ca3f035decef76f9dc44c15981ef",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/4/level2_2025W47_1A_0583_3D4_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_3_D4_x0_y1493_529x547.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        547,
+        529
+      ],
+      "x0": 0,
+      "y0": 1493
+    },
+    {
+      "content_sha256": "600b2a5ef4cf293deab8ac0edfd77818413bce14d136d69c246b24491b2f3de2",
+      "file_sha256": "bc4f6900426be4fb274a267c9796767e689d6b61afff8eea45e76910509ed6b6",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0331_2D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_2_D2_x0_y985_442x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        442
+      ],
+      "x0": 0,
+      "y0": 985
+    },
+    {
+      "content_sha256": "72625ee960051cdc00c1f1220b7a635c1876f0f90b7cba230929877bb6c57bd6",
+      "file_sha256": "9bbc2d3ea8c1f2d037e695fa42c475f9f00e7699dd1ffa128dfc6e8d3f2a60e9",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/1/level2_2025W47_1A_0583_3D1_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_3_D1_x0_y1504_523x536.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        536,
+        523
+      ],
+      "x0": 0,
+      "y0": 1504
+    },
+    {
+      "content_sha256": "649e5ef7e93b6e7555bd81b806327131ce52bd94a3626a61d495f36f3bd21243",
+      "file_sha256": "661491ff74cd7a267fa5e03fbddc6a4a9e978cc9d587cb28e6dcdad7846e76a8",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/4/level2_2025W49_1A_0688_1D4_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0688_1_D4_x0_y0_479x475.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        475,
+        479
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "88029d4eff2e24d49715476604f40191066a030d635c07569e0814e7abffd921",
+      "file_sha256": "87eacb588a70c892f73f7b69242ab867a12d65cf1de20bb98049f9f1abd5c81e",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/1/level2_2025W49_1A_0688_1D1_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0688_1_D1_x0_y0_476x485.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        485,
+        476
+      ],
+      "x0": 0,
+      "y0": 0
+    },
+    {
+      "content_sha256": "dd136e1be2895ac82777296880379cbe154dad2cc75cd1f13558f2c852aabdc6",
+      "file_sha256": "18771e2b317174dfc05c4bbeeb255bc09580dc595b3b8143566690f607a03a6f",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0331_2D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0331_2_D5_x0_y979_446x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        446
+      ],
+      "x0": 0,
+      "y0": 979
+    },
+    {
+      "content_sha256": "8633a308d3707cbf46f57e810c20fbd03df127dd270ff4058955e5a4109c132f",
+      "file_sha256": "dbf9bd025c3f7592f81921bdc6224cffaae1dd30d5752f417aa1ba75a9396317",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0438_4D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_4_D6_x1491_y0_549x525.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        525,
+        549
+      ],
+      "x0": 1491,
+      "y0": 0
+    },
+    {
+      "content_sha256": "9d3e4e7a811e15a7465e8e1b9dbd88b48afd8c87938e5f77de265f53626d37bc",
+      "file_sha256": "a688058b2749638e49931c30edaa13ba00cd3a988c23a78648f55c21e8e36ee5",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0228_2D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_2_D2_x0_y1445_450x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        450
+      ],
+      "x0": 0,
+      "y0": 1445
+    },
+    {
+      "content_sha256": "8ce054584a55ae43a7f371958225f9f1a09c0bdc9242786896b07eb9ebde6dcd",
+      "file_sha256": "5b264665b3c2ce8de0c28186bb6db08741c2cb9e8ea6499e898dbe4e21443738",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0438_4D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_4_D3_x1494_y0_546x537.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        537,
+        546
+      ],
+      "x0": 1494,
+      "y0": 0
+    },
+    {
+      "content_sha256": "9868bb5564018b5bef38efa21a23d130a720396289278e95551b6ecf51147aba",
+      "file_sha256": "1b8b843cce665dfb4a4de212938bf36f8b6394bf8bfca82655330ec04a003311",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0228_2D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_2_D5_x0_y1438_456x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        456
+      ],
+      "x0": 0,
+      "y0": 1438
+    },
+    {
+      "content_sha256": "d59a0cb9efeb253cec823e801a821c0bd3d63843f69178029f6ec7d60a4eace3",
+      "file_sha256": "1b076ecc90714cdf05db00da21ff1a57d06bbef39b8ab17f348a784cc8114c29",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/3/level2_2025W46_1A_0160_2D3_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_2_D3_x1247_y1536_585x504.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        504,
+        585
+      ],
+      "x0": 1247,
+      "y0": 1536
+    },
+    {
+      "content_sha256": "f261ebf3b986e8f77144377b1d4f1e64d9bd31a51c732a8474a0db4cd61a9a1b",
+      "file_sha256": "ac847888f211948279772c80d011521cc9f1cabbcfc6c049aaff7f297009fd3e",
+      "key": "qr2/level2/2025W46_1A/l2b-v20-2025-318/6/level2_2025W46_1A_0160_2D6_spx_l2b-v20-2025-318.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_1A/2025W46_1A_0160_2_D6_x1248_y1523_585x517.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-318",
+      "shape": [
+        517,
+        585
+      ],
+      "x0": 1248,
+      "y0": 1523
+    },
+    {
+      "content_sha256": "5be671805930c80b3b8c8ddbf3af51304a01db224e22c1044811122c68aa946b",
+      "file_sha256": "200bf1be380451a23586f32556af943372faa2c9963fac1c1508ffe55440aa75",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0286_2D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_2_D5_x1559_y684_481x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        481
+      ],
+      "x0": 1559,
+      "y0": 684
+    },
+    {
+      "content_sha256": "f16af3ee3a91a1bac2e18f3261d864e42500c25e1691a8b8dc17d307d98f3034",
+      "file_sha256": "413088291e0f30518a538c29f81f2b0ee8a7424a6a208244c1546ca84b7096fe",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0286_2D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0286_2_D2_x1558_y698_482x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        482
+      ],
+      "x0": 1558,
+      "y0": 698
+    },
+    {
+      "content_sha256": "2c98ac1aab21cd2dc35e9c940cabdf2e2d50bd3590a33147d692e2374017c833",
+      "file_sha256": "802a820eb9d258eb2813015cbf8953641902acba4e79b3b1e077a7b03e9db615",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0438_3D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_3_D3_x1494_y67_546x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        546
+      ],
+      "x0": 1494,
+      "y0": 67
+    },
+    {
+      "content_sha256": "e297c0451c81aac939a57cedc1409a4838731b7492484a601eb8ea0771a02efe",
+      "file_sha256": "e4da3dbfddd501b353fdeb801fb06c751de4868766e46d81c47c51e72cc8f0a1",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0228_1D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_1_D2_x0_y1560_450x480.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        480,
+        450
+      ],
+      "x0": 0,
+      "y0": 1560
+    },
+    {
+      "content_sha256": "639e62f4ccf8c258724b69025de988a7bee73c46beada162b5b5bf8ba894a619",
+      "file_sha256": "6c94bd24c7d83ea3712669631756d9d3f9cfe109a33233031d73a4546e24cc6e",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0438_3D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_3_D6_x1491_y55_549x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        549
+      ],
+      "x0": 1491,
+      "y0": 55
+    },
+    {
+      "content_sha256": "9600dfce40dc1ac7c5e23ad3a3c5e8d3bdcb93d063fabb66501ca23261a0721c",
+      "file_sha256": "0d58b843251b99207167649b42aac61e9cd4b0ea1ab65136d7c1b557aefc2c8a",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0228_1D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_1_D5_x0_y1553_457x487.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        487,
+        457
+      ],
+      "x0": 0,
+      "y0": 1553
+    },
+    {
+      "content_sha256": "bef33c36f750bce41169500adfd81ef313313d41964c768c0d6642290b2c9ed4",
+      "file_sha256": "bd6efcfb683b1d054db59a94c20c21cc7efa6be322fd11f0e76813990fe589e3",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/1/level2_2025W48_1A_0278_1D1_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_1_D1_x0_y818_503x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        503
+      ],
+      "x0": 0,
+      "y0": 818
+    },
+    {
+      "content_sha256": "96897971a02557b51c21ed79fdb96a0926c5cfc464a8832e5f2e931ca5a07176",
+      "file_sha256": "46715d6fd62fce2c7c3bd5ba46b9eba050588e5104c3a822c85bd469f0386ccd",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/4/level2_2025W48_1A_0278_1D4_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_1_D4_x0_y808_508x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        508
+      ],
+      "x0": 0,
+      "y0": 808
+    },
+    {
+      "content_sha256": "8932e6871a8ad162b70caec73ca6ff88196c6807174a50f0c7e3f2b2b6afb802",
+      "file_sha256": "7e9e92b5b9642356d229bd6432a89003e59df92b15c60588b69e7a2fdf7646ac",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0307_3D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0307_3_D2_x0_y870_441x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        441
+      ],
+      "x0": 0,
+      "y0": 870
+    },
+    {
+      "content_sha256": "2c3ede44a959800487e1c7116880a36cacaec1089db57d242bf098111060eb3c",
+      "file_sha256": "4c67c045d22871444ddff6b84da4888eb26aa73252fff351c57fcdf20834bae6",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/2/level2_2025W46_2A_0433_1D2_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_1_D2_x1564_y1273_476x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        476
+      ],
+      "x0": 1564,
+      "y0": 1273
+    },
+    {
+      "content_sha256": "eae633814aabe49f628210e520a36cfdb10d01c441008de48c7226ae1eb43dae",
+      "file_sha256": "0a1c390f55e7431fff146e6d5596b713bf48d917954dc874c4c2ea038b488571",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0307_3D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0307_3_D5_x0_y864_445x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        445
+      ],
+      "x0": 0,
+      "y0": 864
+    },
+    {
+      "content_sha256": "ceabfed1a96038db54291a89fe9bd21836f5a04f0e1e1313e7a6bff55fab1798",
+      "file_sha256": "552d963967b4861df309735f8d655241c9656e25f997711086a2f29bf0f9fd58",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/5/level2_2025W46_2A_0433_1D5_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0433_1_D5_x1568_y1259_472x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        472
+      ],
+      "x0": 1568,
+      "y0": 1259
+    },
+    {
+      "content_sha256": "d8c83a9f100fcacf69d847eb9455f102a2e27ba09313c93b9b349e769a9daa3a",
+      "file_sha256": "8f4c1a18eb5f863ef4d65743afcb8da4ec4323b0f9ba4c698c85c0ab89d8a573",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0052_1D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0052_1_D6_x1246_y1180_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1246,
+      "y0": 1180
+    },
+    {
+      "content_sha256": "d47554b9e12207c345a8f8563613ba3708e16d580451575421cb2133e20a4eaf",
+      "file_sha256": "20043baaeaadc362e60f26270007b4a60bd6eedd72197b7811529ec00a0a0ffd",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/1/level2_2025W49_1A_0119_2D1_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_2_D1_x0_y244_486x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        486
+      ],
+      "x0": 0,
+      "y0": 244
+    },
+    {
+      "content_sha256": "691882761ef5b4887afa5370a30ff3a46e5ea2f4c901dd0898b51a2f759aa5c8",
+      "file_sha256": "499b0bcd4531590195ccbfa6c481d80a50cfa4c9fa17fad2fd3302cffd19b549",
+      "key": "qr2/level2/2025W49_1A/l2b-v20-2025-339/4/level2_2025W49_1A_0119_2D4_spx_l2b-v20-2025-339.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W49_1A/2025W49_1A_0119_2_D4_x0_y235_490x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-339",
+      "shape": [
+        585,
+        490
+      ],
+      "x0": 0,
+      "y0": 235
+    },
+    {
+      "content_sha256": "1c5a06b2a8d2994163f3f3545da6758e1eb98f905900af31f54175035e7247b1",
+      "file_sha256": "ce4eeedcf203aa4d3d84112a7e5e4d1126e1e3640957876e83a637a674ff4b14",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0052_1D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0052_1_D3_x1247_y1193_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1247,
+      "y0": 1193
+    },
+    {
+      "content_sha256": "369c57646d5da610c359b144fee2cd77a3ef7bc95bec10ed910c218d791bc759",
+      "file_sha256": "0cc45810ad2d804e07f38c7739fd3664fe5a3924165af38b37cf224d91ac235c",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/1/level2_2025W22_1B_0008_1D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_1_D1_x173_y1086_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 173,
+      "y0": 1086
+    },
+    {
+      "content_sha256": "1e9df9e67c99bc1f7ba64a2b5c60bd268a2c562c826f9b86f3dbb998565651e3",
+      "file_sha256": "ce1b68d16b75a84e212a4f865a05da1b309a5be0c2f8061a2f8c6c068edb7609",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0487_1D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_1_D2_x0_y640_435x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        435
+      ],
+      "x0": 0,
+      "y0": 640
+    },
+    {
+      "content_sha256": "e171cfefc0cf887659d7cdcf42efed607d477bc2e220dd3bcbef270435da03b8",
+      "file_sha256": "b059a3558c9d3d86d446d2e73f424742cd22c1f2dde41670c638e024e626518a",
+      "key": "qr2/level2/2025W22_1B/l2b-v20-2025-250/4/level2_2025W22_1B_0008_1D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_1B/2025W22_1B_0008_1_D4_x178_y1075_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 178,
+      "y0": 1075
+    },
+    {
+      "content_sha256": "56086ec31cc29bba0e44b18d4b067cb0d92b8bfaef5f53c94b9a9535e2903fa7",
+      "file_sha256": "d5cfd23a10c54b12533fbdf35688731ec9831e1e59ec4399f9aac88514288291",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0487_1D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_1_D5_x0_y634_437x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        437
+      ],
+      "x0": 0,
+      "y0": 634
+    },
+    {
+      "content_sha256": "ee1678e4b3f2197bc2c9de8f52abff93af7896bb1db290ce9f86a7b65784c5ce",
+      "file_sha256": "6e96931a1f7b2704c5c7c955cfcde1e606ef6acafac3f16a96b2a09becee33e6",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0228_4D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_4_D2_x0_y1215_448x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        448
+      ],
+      "x0": 0,
+      "y0": 1215
+    },
+    {
+      "content_sha256": "3c56c0b96fbbf861b962929a2ad62fd3130dffa589847ea9197df8e572e0b0e9",
+      "file_sha256": "960f925bb6c7454e81396fa4d12c662a1f38f45a003ed99dd94b82994c5516ec",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0228_4D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0228_4_D5_x0_y1208_453x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        453
+      ],
+      "x0": 0,
+      "y0": 1208
+    },
+    {
+      "content_sha256": "be823df1ceba8edff2aec6f0623c39adae67fac0dce1aa4aa75d6bde5e056713",
+      "file_sha256": "705cb2223e8cdbdebc9070fcfa2cc0f96a3c75b40b3508cbadb6e1078e822dfb",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0539_3D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_3_D6_x1242_y379_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1242,
+      "y0": 379
+    },
+    {
+      "content_sha256": "a75ee66b1bc75af7f8dc24a08b735f64d8041da3b75586b268e1e57fdabcb3bd",
+      "file_sha256": "00f3b30ad0630ecd8191b1a9c39e24572d5fdbdebce8432aac7588e25ae6d5b5",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0438_2D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_2_D3_x1493_y182_547x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        547
+      ],
+      "x0": 1493,
+      "y0": 182
+    },
+    {
+      "content_sha256": "86d1cb4922fd734faaad09a123b8fb83834457a0ff57e6143dc5b056284e31e9",
+      "file_sha256": "433b626c0906a9c89a0a681b58d10b39389e0563e7b371fe2aa6d618446e50eb",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/1/level2_2025W21_2C_0262_1D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_1_D1_x186_y1544_585x496.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        496,
+        585
+      ],
+      "x0": 186,
+      "y0": 1544
+    },
+    {
+      "content_sha256": "5c2420dfc0bcdf28e1a9346d5ec6391b4c92d41ec74d1c0465d0a6fc539b9303",
+      "file_sha256": "32e21c29b8d154092d7c3e2135f20cbc3de5025e02ab2588353201f44151922c",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0539_3D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0539_3_D3_x1244_y391_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1244,
+      "y0": 391
+    },
+    {
+      "content_sha256": "c859893f79b58196da3bb0b9be357c5cb2d6f38fdef8cd95b9769b3ee7577af5",
+      "file_sha256": "92c912957caa25cc1a39045d85493b918da4e060e8e61403aba1a60df69ae546",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0438_2D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0438_2_D6_x1491_y169_549x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        549
+      ],
+      "x0": 1491,
+      "y0": 169
+    },
+    {
+      "content_sha256": "7e97aa989ac759cc4169d848ed1ad0da90fb83350596a382097e55f2708e4bad",
+      "file_sha256": "99fb9db36b6ff02a612cd0d4b471f33f340f4373bea1d79351a5e322b928aa3a",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/4/level2_2025W21_2C_0262_1D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_1_D4_x192_y1533_585x507.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        507,
+        585
+      ],
+      "x0": 192,
+      "y0": 1533
+    },
+    {
+      "content_sha256": "f58d3596602794050368253608f32deebf1d8e2591611eaf15b11e84ac18ff1b",
+      "file_sha256": "10c0ecf98b5172e78e123d39390cdd1b10e18a2123498fe1e430082c65510ae1",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0307_2D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0307_2_D2_x0_y985_442x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        442
+      ],
+      "x0": 0,
+      "y0": 985
+    },
+    {
+      "content_sha256": "3f493668999453a260d9d7ae23d3d67c22d335133766403b4762943587160f13",
+      "file_sha256": "5317ee5aa42cbed26c772ce7516a824df8f7416f13815b668893a252a8aa504d",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0307_2D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0307_2_D5_x0_y979_446x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        446
+      ],
+      "x0": 0,
+      "y0": 979
+    },
+    {
+      "content_sha256": "06b8e3b12d44e91ae697966cf7918ff1f2b7ed9e049e70f93d45bd0a48074be8",
+      "file_sha256": "a42298ad3c2fbb91810134b75e2c6df2cd26bff7ad370b62aa3e251ad1673a61",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/3/level2_2025W47_1A_0137_3D3_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_3_D3_x1242_y0_585x517.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        517,
+        585
+      ],
+      "x0": 1242,
+      "y0": 0
+    },
+    {
+      "content_sha256": "71078988535e57e2746b9a82f64a1e60440f068d5f4bd6bb2b2d3d769ba67790",
+      "file_sha256": "3dd396c21a11bd44df0a05d2e9c02d61ea9c2ee211bc3023c609f81589acca36",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/1/level2_2025W21_2C_0262_4D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_4_D1_x179_y1200_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 179,
+      "y0": 1200
+    },
+    {
+      "content_sha256": "185d0e83efe50bb43f0eba9c749796b4d16a04220efaa47ea02542e31cf2aca0",
+      "file_sha256": "48cdf0f717e54fbaf5e99d9fc4e169db68212e90c5a9aa8c19f13104335683d3",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/6/level2_2025W47_1A_0137_3D6_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_3_D6_x1240_y0_585x505.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        505,
+        585
+      ],
+      "x0": 1240,
+      "y0": 0
+    },
+    {
+      "content_sha256": "2a1bd6166729d4f00f9bce57c25d79c709936f45e670a589741bf3d5210ec753",
+      "file_sha256": "7cc6a4007851895bbff5d6aebbd7582949eb798a1e9112d97da167c99ee8ea01",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/4/level2_2025W47_1A_0583_2D4_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_2_D4_x0_y1608_533x432.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        432,
+        533
+      ],
+      "x0": 0,
+      "y0": 1608
+    },
+    {
+      "content_sha256": "551e88c1cc8123c62efd82e0750bcec4b7a0ca261e9f7875faeaf27bb0c58bed",
+      "file_sha256": "b3ebc074f89cc00b6276c010b414c662ecd4c0170109b1e2146bb93e9933c6a6",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/4/level2_2025W21_2C_0262_4D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_4_D4_x185_y1189_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 185,
+      "y0": 1189
+    },
+    {
+      "content_sha256": "178333a80e448dc4c3894d946a74e95264aa8f4167d85f574395fa800dabd73e",
+      "file_sha256": "871e64745e90e416af094408105d477a8c6f1e9b24f95fc7507a71d10c844509",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/1/level2_2025W47_1A_0583_2D1_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_2_D1_x0_y1619_526x421.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        421,
+        526
+      ],
+      "x0": 0,
+      "y0": 1619
+    },
+    {
+      "content_sha256": "8827c97977eb194633a710df22edfa09553fbc0635677d5226b628b95c0988d1",
+      "file_sha256": "74e6f78ca53c97c37d2b8e1164df3eb0b3f91a4c6238d6ac2e06622556abc409",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/1/level2_2025W47_1A_0583_4D1_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_4_D1_x0_y1390_520x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        520
+      ],
+      "x0": 0,
+      "y0": 1390
+    },
+    {
+      "content_sha256": "f7e45bccccc6a16a706cafbf00b91f274028100e76a316d1586bb02734634b68",
+      "file_sha256": "371085fde3dda56c3369bb22bac9cef86015f309fc0313701d6fffa562a22ff7",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/4/level2_2025W47_1A_0583_4D4_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0583_4_D4_x0_y1379_526x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        526
+      ],
+      "x0": 0,
+      "y0": 1379
+    },
+    {
+      "content_sha256": "95b11b2cbe030603a343532c7e667e890a9943b3d3fe7eb102479ae46993ebbf",
+      "file_sha256": "5ec4ea1c2180a4fa05a451ffc2d8d8f778e22153c32aa1fcb1701c0baff161b7",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0307_4D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0307_4_D2_x0_y755_439x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        439
+      ],
+      "x0": 0,
+      "y0": 755
+    },
+    {
+      "content_sha256": "77dbef53a1de639dd23ec69e4f5df8d0655b09024ae78c7a88f070629c0fa997",
+      "file_sha256": "1622442b7f9be69e4fd49e2f7b54bdc70be9d4d892973ec414797d492727cbfc",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0307_4D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0307_4_D5_x0_y749_443x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        443
+      ],
+      "x0": 0,
+      "y0": 749
+    },
+    {
+      "content_sha256": "4883ed4b90e1ed0aedaa4e73fa620a75693138a0ff93014160a05c2682a7a156",
+      "file_sha256": "c91c00a0e8959417859c6b0f48a95251d7c59c2f6a62efde837c8d220b60c7be",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/1/level2_2025W48_1A_0278_3D1_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_3_D1_x0_y589_497x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        497
+      ],
+      "x0": 0,
+      "y0": 589
+    },
+    {
+      "content_sha256": "cb365142d1b8b0a68c415233f512ee6033860745a8e09867c5243e53c3daa1c2",
+      "file_sha256": "616a01c48ed604d38c3f9f5086ccd00d01a5e17deb3bd66e0d6a61f00ab47e8b",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/1/level2_2025W21_2C_0262_2D1_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_2_D1_x184_y1429_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 184,
+      "y0": 1429
+    },
+    {
+      "content_sha256": "06f2589387121cce8046e95f23ef8f55a2379e9c9bf6d0fc23f8a67302d06d64",
+      "file_sha256": "617ea1839123b9675389eed27d4f3edf5a54e86fe14729a8fca970b40032d233",
+      "key": "qr2/level2/2025W48_1A/l2b-v20-2025-335/4/level2_2025W48_1A_0278_3D4_spx_l2b-v20-2025-335.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W48_1A/2025W48_1A_0278_3_D4_x0_y579_501x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-335",
+      "shape": [
+        585,
+        501
+      ],
+      "x0": 0,
+      "y0": 579
+    },
+    {
+      "content_sha256": "1af5cb3f2a95b7f59434be5c3b429f20c57cdb3403b5903cd356f6a4a8d15194",
+      "file_sha256": "9544ab7b7265facddd47a165fab5932d872ea50ab3c9da12fff84a4d5cdf8164",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/4/level2_2025W21_2C_0262_2D4_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0262_2_D4_x190_y1418_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 190,
+      "y0": 1418
+    },
+    {
+      "content_sha256": "6ead01739ab1867f2aaff4cafed8d6005a1657488830a93c0a82b8d443fb207c",
+      "file_sha256": "055c27e38f97886e94af55b39b9d52d51da27df4b7927936ae35a9358c56a7a8",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/5/level2_2025W47_1A_0728_4D5_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_4_D5_x1549_y0_491x578.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        578,
+        491
+      ],
+      "x0": 1549,
+      "y0": 0
+    },
+    {
+      "content_sha256": "c7ac2e4eb17f8829da04d31f548a25847a43b1564214fd349a4b097fec822297",
+      "file_sha256": "fe9b14964bf1e904a0f1537fb50962c7865d6e0167f7da3fbb73d88936f916be",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/2/level2_2025W47_1A_0728_4D2_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0728_4_D2_x1551_y6_489x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        489
+      ],
+      "x0": 1551,
+      "y0": 6
+    },
+    {
+      "content_sha256": "e5f1f5d07d60a7a863cc477d48907b4f6508f37e695be04638c223bf0d05058a",
+      "file_sha256": "ee23bd50d50c349367dde4d8b2a467d574272d7e5aa416e81e41ffb7cac9cae6",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0309_4D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_4_D3_x1495_y640_545x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 1495,
+      "y0": 640
+    },
+    {
+      "content_sha256": "cff26bcb2a822ec6629c407bfbd0886b79d9321cd0d03b598fe0fa848f226c9d",
+      "file_sha256": "f6311533489e2844c1fca163169f013be394174c130364d8f16f8ed7274880b9",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0309_4D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_4_D6_x1494_y627_546x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        546
+      ],
+      "x0": 1494,
+      "y0": 627
+    },
+    {
+      "content_sha256": "bec42d9ecb16251167979527f46377ea42d3b72e93d176093739a8f87545b694",
+      "file_sha256": "2cba358c65ae7b1a986be32c630fd9a6c19a817dd464184521c6264b5a2b9bcf",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/5/level2_2025W47_2A_0602_1D5_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0602_1_D5_x1546_y0_494x463.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        463,
+        494
+      ],
+      "x0": 1546,
+      "y0": 0
+    },
+    {
+      "content_sha256": "4153420399944f895dee65dc217a730360a45d5afba1405089075ddc8ad68333",
+      "file_sha256": "d5bad1e0f42b8b4f579edaea93b30968afe8ce44288ac777be972c3f83109b75",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/2/level2_2025W47_2A_0602_1D2_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0602_1_D2_x1549_y0_491x476.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        476,
+        491
+      ],
+      "x0": 1549,
+      "y0": 0
+    },
+    {
+      "content_sha256": "36d02885f8d938f5352fa04c2d32c4131e65f579fe04726056484213e43c070b",
+      "file_sha256": "29fa6b4545f5e17ae54e26cf72a204d18c1dbb899b77c0f04d620f8814052d0b",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0487_4D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_4_D5_x0_y288_433x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 0,
+      "y0": 288
+    },
+    {
+      "content_sha256": "6d9e347bedf3d678e6f75e62802830ea814fe3e0516076b6971d9a782787cdb7",
+      "file_sha256": "d651f703b0a65ff7c3b116382037a9505b441b2208c3b6191f338f0b03a59dea",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0487_4D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_4_D2_x0_y294_432x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        432
+      ],
+      "x0": 0,
+      "y0": 294
+    },
+    {
+      "content_sha256": "389415b29749ebe651d9f849c54462790319261dab4f70a797b29e6785bf9d81",
+      "file_sha256": "9ba95d3e3cf4706f0199e02ed59dc397ef91ef2b8ee99925f6031cafa61f6a25",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/2/level2_2025W21_2C_0487_3D2_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_3_D2_x0_y409_433x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        433
+      ],
+      "x0": 0,
+      "y0": 409
+    },
+    {
+      "content_sha256": "bff9d03b43b740aeeb3861d9a30daf199616596c4e2d1e644b190c4f0d92c866",
+      "file_sha256": "b0ae8b44908e877d71b891867dfb8f5674c0ad0a37aa51047c494f4f1cdc3c73",
+      "key": "qr2/level2/2025W21_2C/l2b-v20-2025-250/5/level2_2025W21_2C_0487_3D5_spx_l2b-v20-2025-250.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W21_2C/2025W21_2C_0487_3_D5_x0_y404_435x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-250",
+      "shape": [
+        585,
+        435
+      ],
+      "x0": 0,
+      "y0": 404
+    },
+    {
+      "content_sha256": "f0538323a11fd040d670a60cce01ae8090299b8177b0cc5744d115002f84783f",
+      "file_sha256": "bcfe810354b793769859ebdf5b68fdf179bc5b33aeae6baad18fe4a0778cc060",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0553_4D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0553_4_D6_x1496_y1541_544x499.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        499,
+        544
+      ],
+      "x0": 1496,
+      "y0": 1541
+    },
+    {
+      "content_sha256": "075f034702a79f2b9bfc384dcaa7cedd1c3af823964abb962d73a97694ee98dd",
+      "file_sha256": "687abd4adfc42c1ba8807dbbe5e1bf3aeef41e847c43dc6de74b1dbc0fa2271b",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0309_3D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_3_D3_x1495_y755_545x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        545
+      ],
+      "x0": 1495,
+      "y0": 755
+    },
+    {
+      "content_sha256": "a13f91deff894f9fe4d5aafeadc38d2cc372811212bc9d00d420f7f5f08c01c3",
+      "file_sha256": "41ba029d10d25b987538b127c642a18849961e3617b2f02c056a9cd58cf09342",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0309_3D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0309_3_D6_x1493_y742_547x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        547
+      ],
+      "x0": 1493,
+      "y0": 742
+    },
+    {
+      "content_sha256": "3a1eeed845987c8f3a476a1474238704345c4d94f40e134f5b57fa6773c7e353",
+      "file_sha256": "3d0dffb0e6115ec8af0b9e1225024c5e56d14b9cde622e979024a041b96eaff0",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0553_4D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0553_4_D3_x1496_y1555_544x485.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        485,
+        544
+      ],
+      "x0": 1496,
+      "y0": 1555
+    },
+    {
+      "content_sha256": "dfca53155c3abe8b1847e4ed7916625b9adf79a7e961e7d1acc79ffd5f4fafbf",
+      "file_sha256": "918310269d8168c28661ed0ab687e3af9e1fc700370d69daffe054f0df5414f0",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/1/level2_2025W47_2A_0553_4D1_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_4_D1_x0_y932_507x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        507
+      ],
+      "x0": 0,
+      "y0": 932
+    },
+    {
+      "content_sha256": "964eac46731054ea72c41298f86683b7a94b5f6ad8b9b3d01348b4fc816df57a",
+      "file_sha256": "9f1b4c98883e247363a86d14dc674b3f7e978053029c897ee3f116c6767ebe4c",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/6/level2_2025W47_1A_0137_2D6_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_2_D6_x1240_y35_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1240,
+      "y0": 35
+    },
+    {
+      "content_sha256": "61804875ce423a69abea3faa1f672d365c0bf9010ecb5ec1590e8c86405701c9",
+      "file_sha256": "0a2af1b41c745b841a4ead6b315180ad66dab54b1c947152adeb5b387c090294",
+      "key": "qr2/level2/2025W47_2A/l2b-v20-2025-328/4/level2_2025W47_2A_0553_4D4_spx_l2b-v20-2025-328.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_2A/2025W47_2A_0553_4_D4_x0_y922_512x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-328",
+      "shape": [
+        585,
+        512
+      ],
+      "x0": 0,
+      "y0": 922
+    },
+    {
+      "content_sha256": "9065f0fc2c855a846827bb10efd53f4e8a152157197349a8a9a1b1fb1e9b2ac7",
+      "file_sha256": "f976b4ae4f3116cc8ab1f8511e8cb6606aca68dfea57371b4be40786aa1e88e2",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/3/level2_2025W47_1A_0137_2D3_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_2_D3_x1243_y47_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1243,
+      "y0": 47
+    },
+    {
+      "content_sha256": "2650790d30d67bda1a527fab181fa92def1681aee4282e40af19e08c4594cef5",
+      "file_sha256": "5d998980dc0267506ac1c8d49e95f3de25c01b6804d62234e5a95b63335b24c6",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/6/level2_2025W47_1A_0137_4D6_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_4_D6_x1239_y0_585x390.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        390,
+        585
+      ],
+      "x0": 1239,
+      "y0": 0
+    },
+    {
+      "content_sha256": "618fc9dc93b3347f731034af3a630ebda8afc5aca1f0f286415a568b29b3262c",
+      "file_sha256": "7925e166899885f14da7d350668ee4505951ee8861edd30e16d40b6a21d622af",
+      "key": "qr2/level2/2025W47_1A/l2b-v20-2025-324/3/level2_2025W47_1A_0137_4D3_spx_l2b-v20-2025-324.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W47_1A/2025W47_1A_0137_4_D3_x1242_y0_585x401.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-324",
+      "shape": [
+        401,
+        585
+      ],
+      "x0": 1242,
+      "y0": 0
+    },
+    {
+      "content_sha256": "b4e66002bc7b444e9681a526ff2985f05f79122d0127d17585642219f6004d45",
+      "file_sha256": "8f1dffd6104fcc502ba44d8571368dd40e53e61d0cf29bdaf1c8cc8fbe67666c",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-252/5/level2_2025W23_2B_0496_1D5_spx_l2b-v20-2025-252.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_1_D5_x0_y174_426x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-252",
+      "shape": [
+        585,
+        426
+      ],
+      "x0": 0,
+      "y0": 174
+    },
+    {
+      "content_sha256": "f48dda37c273bd2297892112ebe5c77a9fd1a62b3c9e2162a0d81ab0da923b21",
+      "file_sha256": "8c8fec29cf8fff9b7c4345c0b1030e5d9d31ef68c638fb97eb35d095345f9146",
+      "key": "qr2/level2/2025W23_2B/l2b-v20-2025-251/2/level2_2025W23_2B_0496_1D2_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W23_2B/2025W23_2B_0496_1_D2_x0_y179_426x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        585,
+        426
+      ],
+      "x0": 0,
+      "y0": 179
+    },
+    {
+      "content_sha256": "d904a987c467555965021103a2a612c8e33448593c939cdcef05625d28dc8c86",
+      "file_sha256": "0bef1338027188f33f64a4e154a04d069fb6ff50c208df01ad7e769e5036e3b9",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/3/level2_2025W46_2A_0052_3D3_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0052_3_D3_x1246_y964_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1246,
+      "y0": 964
+    },
+    {
+      "content_sha256": "78d8c9e3eba951d7e22650afd9184b97c3cb8570b00ea3d06b6a302bf591b64d",
+      "file_sha256": "eab046dd259f033a05da6090112e81e0efbc44a957df685a17a066fe05aae585",
+      "key": "qr2/level2/2025W46_2A/l2b-v20-2025-321/6/level2_2025W46_2A_0052_3D6_spx_l2b-v20-2025-321.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W46_2A/2025W46_2A_0052_3_D6_x1246_y952_585x585.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-321",
+      "shape": [
+        585,
+        585
+      ],
+      "x0": 1246,
+      "y0": 952
+    },
+    {
+      "content_sha256": "397548bc2d16fdd65c5bbc1bf0c43239b403e476d6ddbe152509b455c49b13a8",
+      "file_sha256": "033c4c2a894d5a0d1e390c8431cef18d608e37c983c648b69aff8ed49b595966",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/6/level2_2025W22_2B_0553_3D6_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0553_3_D6_x1496_y1655_544x385.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        385,
+        544
+      ],
+      "x0": 1496,
+      "y0": 1655
+    },
+    {
+      "content_sha256": "2b8ebd0b2d7c6f623fd6aee6cbf270368f3d8c15745b716c67464d17ffd9de4f",
+      "file_sha256": "2f0460cf04ce1798e7f9719e58c360d41b2eeffbe5f040ec396631572777b3f4",
+      "key": "qr2/level2/2025W22_2B/l2b-v20-2025-251/3/level2_2025W22_2B_0553_3D3_spx_l2b-v20-2025-251.fits",
+      "path": "/Users/sumit/Github/SphereXVision/cache/cutouts/2025W22_2B/2025W22_2B_0553_3_D3_x1496_y1669_544x371.npz",
+      "pipeline_version": "6.4+psffix1",
+      "processing_tag": "l2b-v20-2025-251",
+      "shape": [
+        371,
+        544
+      ],
+      "x0": 1496,
+      "y0": 1669
+    }
+  ],
+  "kept_shared_with_other_manifests": 0,
+  "manifest": "runs/fetch_V-1.json",
+  "map_bytes_freed": 0,
+  "maps_deleted_from": "/Users/sumit/Github/SphereXVision/cache/v0maps/V-1",
+  "patch": "V-1",
+  "when": "2026-10-28T17:12:14.239252+00:00"
+}

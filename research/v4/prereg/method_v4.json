@@ -1,0 +1,59 @@
+{
+ "env": {
+  "blas": "accelerate",
+  "git_commit": "ca04fd216c8f23b5b711b845b492c7883c7d3743",
+  "git_dirty": true,
+  "machine": "arm64",
+  "packages": {
+   "astropy": "8.0.2",
+   "httpx": "0.28.1",
+   "kete": "3.3.0",
+   "numpy": "2.5.4",
+   "photutils": "3.1.1",
+   "pyarrow": "26.0.0",
+   "pyvo": "1.9.1",
+   "scipy": "1.18.1"
+  },
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "python": "3.15.1",
+  "threads": {
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null,
+   "VECLIB_MAXIMUM_THREADS": null
+  },
+  "time_utc": "2026-10-25T16:58:56.642431+00:00",
+  "uv_lock_sha256": "de9a69b597574c21ad709ce0fba900e34767d080c40afe54e9f382b38223a03b"
+ },
+ "files": {
+  "cache/v1/psf_floor.json": "64276afa1596012d33663f41672936571804f5ffdc8863d7c5fd892268ab214c",
+  "rust/stackkern/Cargo.toml": "080cc24c0e1d75e5e92ecb2a38b4c156d1a3dd18e24d814758a651fcff384d2c",
+  "rust/stackkern/src/main.rs": "2c68529375d79ae4f9c1edb2e779aadf0e87fe7fa99ac95cb353e57895d6f993",
+  "scripts/v1_static.py": "8b85b20e318b94357b4d0d936f41af2ab5a0d7f8fa388e3f6c25821d65c8d0e7",
+  "src/smo/catalogs/catwise.py": "da5d370413bedfb8de9ea8fa2834190d35f3110a35bb1ec98603465240968ec8",
+  "src/smo/catalogs/gaia.py": "9fb6be33266872aec391666309f5e0ec448115ce66ac9c2aaa5589a38418d0ac",
+  "src/smo/catalogs/sources.py": "5564414409c6d3fad753442c6447b5353ca4d7feb079fc0d0be3613270e404bd",
+  "src/smo/catalogs/stack.py": "83f0e08139cecb7d3fdae8d805a092b90e96d49ef064678c66afe482479b2a36",
+  "src/smo/data/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "src/smo/data/calib.py": "425572c34d4a8d92194c68f0ab286f04214c92794af16a76f6d19928ebd3116c",
+  "src/smo/data/exposure.py": "72fe15e22395560cdbace68068e51acd4b652e98c0c1eee67c083c1e742942cb",
+  "src/smo/data/fitsrange.py": "75d6cf254a3c7e36c0f7bf5df9a63c2626dcd4b6595ad46ee1684997ad3b9770",
+  "src/smo/data/flags.py": "7be046d39bb908258e5690b517d60141889766ecac83d6e59bffb9eeb8c0f78a",
+  "src/smo/data/index.py": "6b48b3f206411d56ac853d1010c626bb02bff73d0f15d07ed09f10e141b3128b",
+  "src/smo/data/irsa.py": "eb3de824fb45c14e7595c31ab3cd42883a32403379afe51667eaf711e0a9d091",
+  "src/smo/data/patch.py": "7e39cc564242469278f34066f2b38f8dac7b4f34e6800fb33473fe77a17ee9a7",
+  "src/smo/data/s3.py": "779fbe0360ece8bd225aa480af4e1d99505a201e91cf372de9e4f7cd7aa18296",
+  "src/smo/detect/kernel.py": "670bc657d798a9c5c2edafb5f057fdb1535079c1e2aff5571a3264a208e9fd60",
+  "src/smo/detect/maps.py": "390fa93deba3c9e7b3863809fce81e9a67647deee744b7048ca56e2019c928a2",
+  "src/smo/detect/v0.py": "16760ec333c894a9f9a418585477c5212458b2148c69c6837fcd1d1c7be9ec26",
+  "src/smo/detect/v2.py": "a3bdb4f39324c632aea4dcbe0028986b2abce6789c11f78c35a82be7b62a6a77",
+  "src/smo/methods/v1.py": "63b8453b676320d33d2dc0da6c06ea7231f35755f97d5e9804345b5cb4cd9def",
+  "src/smo/scene/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "src/smo/scene/fit.py": "2b33314351958743d8e3ff2a8d8d3c4119517cd834d55050ed620ef76580746d",
+  "src/smo/scene/pipeline.py": "2cae7bd1430fe323e1b3b7f3e0b00d907527a20de6fb48dd36abfadd3e85d546",
+  "src/smo/scene/psf.py": "4a386ea30cab54e6ee01f8e17b5a5093a8d28658bad60c2d1fff9b176d389b8d"
+ },
+ "method": "v4",
+ "settings": {
+  "track_suppress_px": 1.5
+ }
+}

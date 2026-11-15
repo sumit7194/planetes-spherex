@@ -1273,7 +1273,7 @@ export const copy = {
       'These detectors come from our own research. One of the four, the moving-object detector (v4), was built in October–November 2026, before this event (declared as prior work); the re-ranker built on it, spectral twins and the season-pair search were built during the event. Each section says what was tested, how, with what result, and what is not proven. Nothing flagged by these detectors is a discovery: flagged sources are mostly artefacts, variable stars or known objects, and we have not done the independent checks that would tell. Built with AI assistants (declared).',
     /** One scannable line: the four statuses, in the cards' own words (Viewer). */
     summary:
-      'Moving objects (v4): tested, passed · Re-ranker: built, not yet tested · Spectral twins: passed a small test, harder test found a problem · Season pairs: false alarms calibrated, reach being measured',
+      'Moving objects within one visit (v4): tested, passed · Re-ranker: built, not yet tested · Spectral twins: passed a small test, harder test found a problem · Season pairs: false alarms calibrated, reach being measured',
     reproduce: 'Reproduce it',
     fields: {
       looks: 'What it looks for',
@@ -1300,7 +1300,8 @@ export const copy = {
           'No number for faster movers (near-Earth asteroids). Overall completeness is lower within 2 px (12″) of stars brighter than Gaia G 16: 0.16 (95% 0.12–0.22), against 0.23–0.26 further out. Unexplained detections exist and have not been vetted; we don’t show them.',
         built:
           'October–November 2026, before this event, in our research project: declared as prior work.',
-        plan: 'Registered test V_LOOK_1, scored 6 Nov 2026; realism check 14 Nov 2026 (our research repository, not public).',
+        plan: 'Code, registered plan and how to reproduce: research/v4/README.md (test V_LOOK_1, scored 6 Nov 2026; realism check 14 Nov 2026)',
+        planHref: 'https://github.com/sumit7194/planetes-spherex/blob/main/research/v4/README.md',
       },
       {
         id: 'ranker',
@@ -1315,7 +1316,8 @@ export const copy = {
         notShown: 'How well it works on sky it hasn’t seen: that is the locked test, not yet run.',
         built:
           '14 Nov 2026, during this event, on top of the research project’s moving-object detector (v4) and its records, which are prior work.',
-        plan: 'Registered claims, in our research repository (not public).',
+        plan: 'Registered plan and code (the locked test has not run)',
+        planHref: 'https://github.com/sumit7194/planetes-spherex/tree/main/research/r1',
       },
       {
         id: 'twins',
@@ -1583,7 +1585,7 @@ export const copy = {
       'Barnard’s Star’s east component: a later check found a method effect of about 0.1 pixel in east, not included in its quoted error; no number was changed, and it is said next to that number.',
     ],
     afterDesigned:
-      'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the fast-mover search’s thresholds, its fake-mover yardstick, and the check that fakes are found like real asteroids, all fixed on other sky first.',
+      'Designed for these targets, not chosen from results: the still and comparison stars (Gaia G ≤ 15.5, in the frame, masked to the target’s saturated radius). Never set on these fields: the moving-object search’s thresholds (v4), its fake-mover yardstick, and the check that fakes are found like real asteroids, all fixed on other sky first.',
     afterPending: 'List reviewed and completed by Physics, 14 November 2026.',
     /** Viewer (14 Nov): a resource we looked at and didn't use belongs here, not in the credits. */
     notUsed:

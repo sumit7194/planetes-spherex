@@ -1,0 +1,148 @@
+{
+ "v_pool": {
+  "PRIMARY (exclude static >= 2, weighted)": {
+   "static_cut": 2.0,
+   "axis": "forced",
+   "weighted": true,
+   "n_fake": 2347,
+   "n_known": 1982,
+   "fake_curve": [
+    0.9609783435345481,
+    -3.1684840081415815,
+    0.06658948433534799
+   ],
+   "dm": -0.004999999999999893,
+   "ci90": [
+    -0.07499999999999996,
+    0.05012499999999993
+   ],
+   "pass": true,
+   "at_grid_edge": false
+  },
+  "sensitivity: cut 1.5": {
+   "static_cut": 1.5,
+   "axis": "forced",
+   "weighted": true,
+   "n_fake": 2272,
+   "n_known": 1869,
+   "fake_curve": [
+    0.9790429648322239,
+    -3.1748115781501927,
+    0.07157682961483688
+   ],
+   "dm": 0.0024999999999999467,
+   "ci90": [
+    -0.05762499999999989,
+    0.05249999999999999
+   ],
+   "pass": true,
+   "at_grid_edge": false
+  },
+  "sensitivity: cut 1.0": {
+   "static_cut": 1.0,
+   "axis": "forced",
+   "weighted": true,
+   "n_fake": 2166,
+   "n_known": 1776,
+   "fake_curve": [
+    0.9841552731254036,
+    -3.1774280839152755,
+    0.07263593631918515
+   ],
+   "dm": -0.004999999999999893,
+   "ci90": [
+    -0.060125000000000046,
+    0.05262500000000002
+   ],
+   "pass": true,
+   "at_grid_edge": false
+  },
+  "sensitivity: static-subtracted axis": {
+   "static_cut": 2.0,
+   "axis": "subtracted",
+   "weighted": true,
+   "n_fake": 2500,
+   "n_known": 2229,
+   "fake_curve": [
+    0.9342070815481495,
+    -3.1891850002151796,
+    0.06848130083198482
+   ],
+   "dm": -0.03249999999999997,
+   "ci90": [
+    -0.10262500000000004,
+    0.03012500000000005
+   ],
+   "pass": true,
+   "at_grid_edge": false
+  },
+  "sensitivity: unweighted": {
+   "static_cut": 2.0,
+   "axis": "forced",
+   "weighted": false,
+   "n_fake": 2347,
+   "n_known": 1982,
+   "fake_curve": [
+    0.9805463494086918,
+    -3.2044824419787274,
+    0.10421764169125389
+   ],
+   "dm": -0.007500000000000062,
+   "ci90": [
+    -0.09262500000000003,
+    0.05750000000000011
+   ],
+   "pass": true,
+   "at_grid_edge": false
+  }
+ },
+ "d_pool_quoted_from_t6": {
+  "static_cut": 2.0,
+  "axis": "forced",
+  "weighted": true,
+  "n_fake": 644,
+  "n_known": 745,
+  "fake_curve": [
+   0.988528244197721,
+   -3.133681104376863,
+   0.07142752506056108
+  ],
+  "dm": -0.050000000000000044,
+  "ci90": [
+   -0.135,
+   0.030000000000000027
+  ],
+  "pass": true,
+  "at_grid_edge": false
+ },
+ "dv_pooled_v4_recovery_reported": {
+  "static_cut": 2.0,
+  "axis": "forced",
+  "weighted": true,
+  "n_fake": 2991,
+  "n_known": 2732,
+  "fake_curve": [
+   0.9691784249309324,
+   -3.16931734831102,
+   0.0718020371384897
+  ],
+  "dm": -0.010000000000000009,
+  "ci90": [
+   -0.06499999999999995,
+   0.03500000000000014
+  ],
+  "pass": true,
+  "at_grid_edge": false
+ },
+ "note": "the plain-v0 method-free check is not run (no v0 runs on V)",
+ "frame_fit_failures": {
+  "V-1": [],
+  "V-2": [],
+  "V-3": []
+ },
+ "pass0_failed_targets_not_measured": {
+  "V-1": [],
+  "V-2": [],
+  "V-3": []
+ }
+}
