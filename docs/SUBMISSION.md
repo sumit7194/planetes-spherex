@@ -64,7 +64,7 @@ TypeScript, Vite, HTML canvas, three.js, Aladin Lite v3; Python 3 with astropy, 
 
 ## Use of Super Intelligence (AI)
 
-Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. It wrote most of the code and draft text under my direction, and I reviewed it. It also checked my work against IRSA's documentation, astropy and catalogue predictions. The idea, the design choices and the final review are mine. The demo video's narration is an AI-generated voice (Google Gemini text-to-speech, voice "Koda", chosen by me) and its background music is AI-generated (Google Flow Music); both are acknowledged on the video's end card, in its description and in the file's metadata. No AI-generated images or video are used: the video is screen recordings of the site. This is stated in the README, PRIOR_WORK.md and on the credits page.
+Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. It wrote most of the code and draft text under my direction, and I reviewed it. It also checked my work against IRSA's documentation, astropy and catalogue predictions. The idea, the design choices and the final review are mine. The demo video's narration is an AI-generated voice (Google Gemini text-to-speech, voice "Koda", chosen by me), acknowledged on the video's end card, in its description and in the file's metadata. No AI-generated images, video or music are used: the video is screen recordings of the site. This is stated in the README, PRIOR_WORK.md and on the credits page.
 
 ## NASA data
 
@@ -88,23 +88,25 @@ Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. I
 
 ---
 
-## Demo: 30-second video (screen recording + English subtitles)
+## Demo: 30-second video (screen recording, AI narration, English captions)
 
-Made: `design-lab/demo/planetes_demo.mp4` (29.4 s, 1280×720, captions burned in, no audio; git-ignored, upload it). Re-make with `record.mjs` then `edit.py` in that folder.
+Made: `design-lab/demo/planetes_demo_final.mp4` (29.7 s, 1280×720, captions burned in; git-ignored, upload it). The narration is an AI voice (Google Gemini text-to-speech, "Koda"), said on the end card and in the file's metadata. Re-make with `record.mjs`, `edit.py`, then `mix.py` in that folder.
 
-| t | On screen | Caption |
+| t | On screen | Narration (= caption) |
 |---|---|---|
-| 0:00 | Title card: Planetes, the wanderers in SPHEREx's sky; NASA Space Apps Challenge 2026 · Planet X and SPHEREx · team Planetes | — |
-| 0:02 | The sky map | "SPHEREx photographs the whole sky every six months, in 102 colours." |
-| 0:04 | Barnard's Star: the lens blinks between passes | "Pick a spot: Planetes blinks its photos, pass after pass." |
-| 0:08 | The 10″ hero | "Barnard's Star moved 10″ north in a year, matching Gaia's prediction." |
-| 0:10 | The difference view, zoomed on the lens | "Subtract two passes, and what moved shows as a bright-and-dark pair." |
-| 0:13 | Epsilon Indi B's spectrum | "Each photo sees a different colour, so it builds spectra on the fly." |
-| 0:16 | Typing 150.1 2.2, then the live look | "Any spot in the sky, read straight from NASA's archive." |
-| 0:20 | "Why a far planet loops": Makemake, measured | "SPHEREx caught the dwarf planet Makemake at its predicted place, all three visits." |
-| 0:22 | The model at Planet X's ~500 AU | "A far Planet X would loop too, shifting hundreds of arcseconds between passes." |
-| 0:24 | The "How we tested" page, first row | "And it says plainly what was measured, and what couldn't be." |
-| 0:27 | End card: "Go find a wanderer.", the URL, the data sources (incl. NASA JPL Horizons) | — |
+| 0:00 | Title card: Planetes, the wanderers in SPHEREx's sky; NASA Space Apps Challenge 2026 · Planet X and SPHEREx · team Planetes | "I'm Sumit, team Planetes, for Planet X and SPHEREx." |
+| 0:04 | The sky map | "SPHEREx maps the whole sky every six months." |
+| 0:07 | Barnard's Star: the lens blinks between passes | "Planetes blinks its photos of any spot." |
+| 0:10 | The 10″ hero | "Barnard's Star moved ten arcseconds, matching Gaia." |
+| 0:13 | The difference view, zoomed | "Subtract two passes, and the move stands out." |
+| 0:15 | Epsilon Indi B's spectrum | "Each photo sees a new colour, so spectra build on the fly." |
+| 0:19 | Typing 150.1 2.2, then the live look | "Any spot, straight from NASA's archive." |
+| 0:22 | "Why a far planet loops": Makemake, measured | "It caught Makemake where predicted." |
+| 0:23 | The model at Planet X's ~500 AU | "A far Planet X would loop too." |
+| 0:25 | The "How we tested" page | "And it says what it couldn't measure." |
+| 0:27 | End card: "Go find a wanderer.", the URL, data sources, "Narration voice: AI-generated" | "Go find a wanderer." |
+
+**Video description (for YouTube/Drive):** Planetes: the wanderers in SPHEREx's sky. A 30-second demo for NASA Space Apps Challenge 2026 ("Planet X and SPHEREx") by Sumit, team Planetes. Live site: https://sumit7194.github.io/planetes-spherex/ · Code: https://github.com/sumit7194/planetes-spherex. Screen recordings of the site. The narration voice is AI-generated (Google Gemini text-to-speech); no AI-generated images, video or music. Data: NASA SPHEREx DR1 + QR3 (IRSA), NASA JPL Horizons, ESA Gaia DR3, IMCCE SkyBoT.
 
 ## Demo: 7-slide fallback deck
 

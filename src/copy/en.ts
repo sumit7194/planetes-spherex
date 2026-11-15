@@ -1814,12 +1814,11 @@ export const copy = {
       },
       {
         role: 'The demo video',
-        who: 'Me: screen recordings of this site, with AI-generated audio',
+        who: 'Me: screen recordings of this site, with an AI-generated narration voice',
         when: '15 Nov 2026',
         facts: [
           'Narration: AI-generated voice (Google Gemini text-to-speech, voice “Koda”)',
-          'Music: AI-generated (Google Flow Music)',
-          'No AI-generated images or video',
+          'No AI-generated images, video or music',
         ],
         record: [],
       },
