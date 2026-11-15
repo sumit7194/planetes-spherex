@@ -1303,7 +1303,7 @@ export const copy = {
           'Measured only from the unsaturated edges of its image, in the colour ranges that pass a steady-star test; RW Aurigae A and B share one pixel, so it’s their combined light. An earlier pre-registered test on the previous release saw the same dimming but couldn’t confirm it (see below).',
         live: 'Opens 335 photos in 3 passes, compared at 1.62 µm. A live look shows the photos; it doesn’t measure brightness.',
         tried:
-          'We also tried to measure its brightness change from photos where it is not saturated. It is unsaturated only in the bluest detector, and there the six comparison stars of similar brightness changed by about 3% between passes, more than their errors allow, so that route can’t claim a change.',
+          'We also tried to measure its brightness change from photos where its whole image is unsaturated. That’s only the bluest detector. There, the six comparison stars of similar brightness changed by about 3% between passes, more than their own errors allow. This route required them to agree within their errors, so it stops before giving any number. (The 0.52 result above uses a different method, which instead adds the comparison stars’ scatter to its error.)',
         earlier:
           'An earlier pre-registered test, on the previous data release (QR2), saw the same dimming (about 42% and 50% in two colour ranges) but could not confirm it: one range’s change was under 5 times its error, and one comparison star changed more than RW Aurigae. The new measurement uses a different check (a steady bright star measured the same way) and passes it.',
       },
