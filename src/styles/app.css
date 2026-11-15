@@ -1922,6 +1922,23 @@ canvas.sky.backdrop {
   align-items: center;
   margin-bottom: 8px;
 }
+/* A narrow dock (about 980-1080 px screens): the count goes on one line above the plot, as on
+   phones, so the plot and its date ends keep the box's width (Viewer, 15 Nov: the ends spilled). */
+.dock-row {
+  container-type: inline-size;
+}
+@container (max-width: 560px) {
+  .dock-row .ribbon-figure {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .dock-row .ribbon-count {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    max-width: none;
+  }
+}
 .ribbon-figure {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
