@@ -1057,8 +1057,8 @@ export const copy = {
         : `${masked === 1 ? 'The one photo read is' : masked === 2 ? 'Both photos read are' : `All ${masked} photos read are`} masked here (saturated or flagged), so none gives a number.`,
     photosShort: 'photos',
     detectorShort: 'detector',
-    checkAsteroids: (names: string[]) =>
-      `Known asteroids (SkyBoT, at the photos' dates): ${names.length ? names.join(', ') : 'none within 9″'}. SkyBoT's places are for Earth's centre; seen from SPHEREx, a main-belt asteroid can sit up to about 1 pixel from them (more for near-Earth asteroids).`,
+    checkAsteroids: (names: string[], fromSpherex: boolean) =>
+      `Known asteroids (SkyBoT, at the photos' dates${fromSpherex ? ', as seen from SPHEREx' : ''}): ${names.length ? names.join(', ') : 'none within 9″'}.${fromSpherex ? '' : " SkyBoT's places are for Earth's centre; seen from SPHEREx, a main-belt asteroid can sit up to about 1 pixel from them (more for near-Earth asteroids)."}`,
     checkStars: (cat: string, names: string[]) =>
       `${cat}, moved to each look's date: ${names.length ? names.join(', ') : 'none within 9″'}`,
     checkFlags: (artefacts: string[]) =>

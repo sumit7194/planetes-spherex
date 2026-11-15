@@ -100,7 +100,7 @@ import {
   type Tile,
 } from './data/pack/load';
 import { coadd } from './data/pack/coadd';
-import { knownMoversAt } from './data/live/skybot';
+import { knownMoversAt, observerFromHeader, type Observer } from './data/live/skybot';
 import { fieldRadiusDeg, marksAt, type MoverMark } from './app/movers';
 import type { Detector } from './data/colour/cwave';
 import { FlagMask, type Frame, type TargetId } from './data/pack/types';
@@ -3476,6 +3476,8 @@ interface SpotCheckResult {
   samePixel: { bright: number; n: number }[] | null;
   /** Known asteroids within R at a bright look's dates, at their closest (arcsec). */
   asteroidMatches: SpotMatch[];
+  /** Whether SkyBoT's places were moved to SPHEREx's own position (every date had a header). */
+  asteroidsFromSpherex: boolean;
   /** Known stars within R, nearest first, each at its closest over the two looks (Viewer 1b). */
   matches: SpotMatch[];
   /** Each flag name's count among the photos that show the spot (information). */
@@ -3633,6 +3635,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     places: null,
     samePixel: null,
     asteroidMatches: [],
+    asteroidsFromSpherex: false,
     matches: [],
     flagCounts: [],
     close: [],
@@ -3746,6 +3749,8 @@ async function runSpotCheck(shift: Shift): Promise<void> {
     det: number;
     x: number;
     y: number;
+    /** SPHEREx's own position at this photo (header X_SC/Y_SC/Z_SC), for SkyBoT's places. */
+    observer: Observer | null;
   };
   const reads: PhotoRead[] = [];
   const photoReads = helperActive()
@@ -3766,6 +3771,7 @@ async function runSpotCheck(shift: Shift): Promise<void> {
               mjd: box.mjd,
               sn: apertureSN(g, x, y),
               flags: flagNamesNear(box.flags, box.w, box.h, x, y, box.bits),
+              observer: observerFromHeader(box.header),
             });
           });
           return true;
@@ -3843,8 +3849,13 @@ async function runSpotCheck(shift: Shift): Promise<void> {
       by(0).length ? by(0) : [ctx.mjd[0]],
       by(1).length ? by(1) : [ctx.mjd[1]],
     ];
+    // Physics, 15 Nov: SkyBoT answers for Earth's centre; each photo's own header gives where
+    // SPHEREx was, which moves a main-belt asteroid by up to ~1 px (checked against kete).
+    const observerAt = new Map(shows.map((p) => [p.mjd, p.observer] as const));
+    const allDates = [...dates[0], ...dates[1]];
+    result.asteroidsFromSpherex = allDates.every((m) => !!observerAt.get(m));
     const moving = await within(
-      knownMoversAt(at, [...dates[0], ...dates[1]], MATCH_ARCSEC / 3600),
+      knownMoversAt(at, allDates, MATCH_ARCSEC / 3600, undefined, (m) => observerAt.get(m) ?? null),
       CHECK_MS,
     );
     if (stale()) return;
@@ -4006,7 +4017,7 @@ function spotCard(): HTMLElement | null {
   const items = [
     checkLine(
       r.checked.asteroids,
-      () => t.checkAsteroids(withSep(r.asteroidMatches)),
+      () => t.checkAsteroids(withSep(r.asteroidMatches), r.asteroidsFromSpherex),
       t.asteroidsName,
     ),
     checkLine(
@@ -4223,7 +4234,7 @@ function spotReport(r: SpotCheckResult): string {
       ? `Seen at S/N >= 5 in ${r.seen.n} of ${r.seen.m} photos with a number (${r.seen.masked} more masked at the spot: saturated or flagged)`
       : 'Photos: not read one by one',
     `Verdict: ${v?.kind ?? 'n/a'}${v?.kind === 'target' ? ` (${v.name}, predicted position ${r.targetSep?.toFixed(1) ?? '?'}" from the light's centre)` : v?.kind === 'blend' ? ` (${v.sources.map((x) => `${x.name}${x.kind === 'target' ? ' (predicted place)' : ''} at ${x.sep.toFixed(1)}"`).join('; ')}; can't be separated at 6" pixels)` : v?.kind === 'artefact' && v.stuck ? ' (stays put on the detector)' : ''}`,
-    `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}" at a bright look's dates): ${r.checked.asteroids === 'done' ? r.asteroidMatches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}`,
+    `Known asteroids (SkyBoT, within ${MATCH_ARCSEC.toFixed(1)}" at a bright look's dates; places ${r.asteroidsFromSpherex ? "moved to SPHEREx's own position from each photo's header" : "for Earth's centre"}): ${r.checked.asteroids === 'done' ? r.asteroidMatches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}`,
     `Known stars (Gaia DR3, CatWISE2020, moved to each look's date): ${r.checked.gaia === 'done' || r.checked.catwise === 'done' ? r.matches.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none' : 'not checked'}${r.checked.catwise === 'done' ? '' : ' (CatWISE2020 not checked)'}`,
     `Known sources within 2 px (12.3"): ${r.close.map((m) => `${m.name} at ${m.sep.toFixed(1)}"`).join('; ') || 'none'}`,
     `Detector test (information): shows at ${r.places ?? 'n/a'} detector places; same detector pixel bright (S/N >= 5) in ${r.samePixel?.length ? r.samePixel.map((c) => `${c.bright} of ${c.n}`).join(' and ') : 'n/a'} other photos looking elsewhere; stays put: ${r.facts.stuck ? 'yes' : 'no'} (rule: <= 2 places and bright in more than half of >= 3)`,

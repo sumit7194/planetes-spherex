@@ -28,6 +28,62 @@ export interface KnownMover {
   decRateArcsecH: number;
   /** SkyBoT's position uncertainty, arcsec. */
   errArcsec: number;
+  /** Distance from Earth's centre, AU (SkyBoT's "dg"); null if not given. */
+  dgAu?: number | null;
+}
+
+/** SPHEREx's position from a photo's IMAGE header (X_SC/Y_SC/Z_SC, km, geocentric). */
+export type Observer = [number, number, number];
+
+/**
+ * The FITS cards X_SC, Y_SC, Z_SC (km) from an IMAGE header's text, if XYZ_SC_SYSTEM says
+ * GEOCENTER; null otherwise. Short keywords are 8-column cards; long ones are written as
+ * "HIERARCH XYZ_SC_SYSTEM = 'GEOCENTER'". (X_SC_START etc. are other cards.)
+ */
+export function observerFromHeader(text: string): Observer | null {
+  const value = (key: string): string | null => {
+    for (let i = 0; i + 80 <= text.length; i += 80) {
+      const c = text.slice(i, i + 80);
+      const body = c.startsWith('HIERARCH ') ? c.slice(9) : c;
+      const eq = body.indexOf('=');
+      if (eq > 0 && body.slice(0, eq).trim() === key)
+        return (
+          body
+            .slice(eq + 1)
+            .split('/')[0]
+            ?.trim()
+            .replace(/^'|'$/g, '')
+            .trim() ?? null
+        );
+    }
+    return null;
+  };
+  if (value('XYZ_SC_SYSTEM') !== 'GEOCENTER') return null;
+  const v = ['X_SC', 'Y_SC', 'Z_SC'].map((k) => Number(value(k) ?? NaN));
+  return v.every(Number.isFinite) ? (v as Observer) : null;
+}
+
+const AU_KM = 1.495978707e8;
+/**
+ * A geocentric place as SPHEREx saw it (Physics, 15 Nov): the object's vector (dg × unit
+ * direction) minus SPHEREx's position, back to RA/Dec. Up to ~1 px for a main-belt asteroid,
+ * more for near-Earth objects; checked against kete to 0.14″ (prereg/asteroid/PLAN.md).
+ */
+export function fromObserver(
+  ra: number,
+  dec: number,
+  dgAu: number,
+  obs: Observer,
+): { ra: number; dec: number } {
+  const r = Math.PI / 180;
+  const d = dgAu * AU_KM;
+  const v = [
+    Math.cos(dec * r) * Math.cos(ra * r) * d - obs[0],
+    Math.cos(dec * r) * Math.sin(ra * r) * d - obs[1],
+    Math.sin(dec * r) * d - obs[2],
+  ] as const;
+  const n = Math.hypot(v[0], v[1], v[2]);
+  return { ra: (((Math.atan2(v[1], v[0]) / r) % 360) + 360) % 360, dec: Math.asin(v[2] / n) / r };
 }
 
 const API = 'https://ssp.imcce.fr/webservices/skybot/api/conesearch.php';
@@ -59,6 +115,7 @@ export function parseSkybot(rows: Row[]): KnownMover[] {
     raRateArcsecH: Number(r['dRA (arcsec/h)'] ?? 0),
     decRateArcsecH: Number(r['dDEC (arcsec/h)'] ?? 0),
     errArcsec: Number(r['Err (arcsec)'] ?? 0),
+    dgAu: r['dg (ua)'] == null ? null : Number(r['dg (ua)']),
   }));
 }
 
@@ -117,6 +174,8 @@ export async function knownMoversAt(
   mjds: number[],
   radiusDeg: number,
   signal?: AbortSignal,
+  /** SPHEREx's position at a photo's time, when known: places are then as SPHEREx saw them. */
+  observerAt?: (mjd: number) => Observer | null,
 ): Promise<{ byMjd: Map<number, KnownMover[]>; failed: number }> {
   const buckets = new Map<number, number[]>();
   for (const m of mjds) {
@@ -145,11 +204,17 @@ export async function knownMoversAt(
         byMjd.set(
           m,
           movers
-            .map((o) => ({
-              ...o,
-              ra: o.ra + (o.raRateArcsecH * dtH) / 3600 / Math.max(1e-6, Math.cos(o.dec * D2R)),
-              dec: o.dec + (o.decRateArcsecH * dtH) / 3600,
-            }))
+            .map((o) => {
+              const moved = {
+                ...o,
+                ra: o.ra + (o.raRateArcsecH * dtH) / 3600 / Math.max(1e-6, Math.cos(o.dec * D2R)),
+                dec: o.dec + (o.decRateArcsecH * dtH) / 3600,
+              };
+              const obs = observerAt?.(m);
+              return obs && o.dgAu && o.dgAu > 0
+                ? { ...moved, ...fromObserver(moved.ra, moved.dec, o.dgAu, obs) }
+                : moved;
+            })
             .filter((o) => {
               const dra = (o.ra - at.ra) * Math.cos(at.dec * D2R);
               return Math.hypot(dra, o.dec - at.dec) <= radiusDeg;
