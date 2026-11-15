@@ -79,6 +79,7 @@ Yes. Claude (Anthropic) was used as a coding and writing assistant throughout. I
 
 - ESA Gaia DR3 (ESA Gaia archive): overlays, still stars, and the proper motions of Barnard's Star and Epsilon Indi.
 - IMCCE SkyBoT: known solar-system objects.
+- CDS VizieR: its copy of Gaia DR3, used for the yardstick's false-alarm run while ESA's archive was down.
 - CDS Strasbourg: Aladin Lite v3 (GPL-3.0) and Sesame name resolution.
 - Literature: Luhman & Esplin 2016 (WISE 0855 proper motion); Kirkpatrick et al. 2021 (WISE 0855 parallax).
 - Inspiration: WiseView (byw.tools) and Backyard Worlds: Planet 9.

@@ -1578,7 +1578,7 @@ export const copy = {
       title: 'How faint and slow a mover can that search find?',
       what: 'Fake slow movers planted in 40 other fields, with false alarms counted on 200 more; the plan, the fields and the scores were fixed before any photo is read.',
       status:
-        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): to count as a candidate, a source must appear to move more than 11.19 times the field’s steady-star shift scale (the steady stars’ median apparent shift plus one robust standard deviation). In a typical field that is about 3 pixels (about 20″) between passes. At that threshold about 5 false candidates are expected among 550 pairs of passes over those 200 fields. The fake movers, which say how faint, and how slow, a mover it can find, haven’t been run yet, so there is no limit yet.',
+        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): to count as a candidate, a source must appear to move more than 11.19 times the field’s steady-star shift scale (the steady stars’ median apparent shift plus one robust standard deviation). In a typical field that is about 3 pixels (about 20″) between passes. At that threshold about 5 false candidates are expected among 550 pairs of passes over those 200 fields. The fake movers say how faint, and how slow, a mover it can find. That run started on 15 Nov and was paused at 4 of 40 fields when IRSA’s image service went down, so no limit is claimed yet.',
     },
     twins: {
       title: 'Finding stars with the same colours',
