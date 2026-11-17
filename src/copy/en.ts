@@ -801,10 +801,10 @@ export const copy = {
     move: 'Move',
     brightness: 'Brightness',
     spectrum: 'Spectrum',
-    /** N4: how faint a mover a look could have caught; not measured until the fake movers run. */
+    /** N4: what our search could have caught, from the fake-mover run (signed by Physics, 17 Nov 2026). */
     /** The limit belongs to our search, not to this look (Viewer). */
     sensitivityLead: 'our search’s reach:',
-    sensitivityNotYet: 'not measured yet',
+    sensitivityLimit: '≤10% found; shifts ~5–25″, W2 < 16',
     spectrumMeasured: 'measured · see Spectrum',
     spectrumTooBright: 'too bright: saturated',
     spectrumBlended: 'too faint beside a brighter star',
@@ -1578,7 +1578,7 @@ export const copy = {
       title: 'How faint and slow a mover can that search find?',
       what: 'Fake slow movers planted in 40 other fields, with false alarms counted on 200 more; the plan, the fields and the scores were fixed before any photo is read.',
       status:
-        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): to count as a candidate, a source must appear to move more than 11.19 times the field’s steady-star shift scale (the steady stars’ median apparent shift plus one robust standard deviation). In a typical field that is about 3 pixels (about 20″) between passes. At that threshold about 5 false candidates are expected among 550 pairs of passes over those 200 fields. The fake movers say how faint, and how slow, a mover it can find. That run started on 15 Nov and was paused at 4 of 40 fields when IRSA’s image service went down, so no limit is claimed yet.',
+        'Registered before any photo was read: commit 4db4606 (the plan, the fields, the two model spectra and their hashes). False alarms counted on the 200 fields (15 Nov 2026): to count as a candidate, a source must appear to move more than 11.19 times the field’s steady-star shift scale (the steady stars’ median apparent shift plus one robust standard deviation). In a typical field that is about 1.5 pixels (about 10″) between real passes, 0.7–4 px across the 40 test fields; the split-pass halves used to count false alarms are noisier, so there it is about 3 px. At that threshold about 5 false candidates are expected among 550 pairs of passes over those 200 fields. The fake movers (run 15–17 Nov 2026 with that threshold frozen: 1,200 fake movers shifting up to 10″ between passes (3,480 tests over pairs of passes), plus an extension added after registration with 1,200 more shifting 5–160″ (3,219 tests)) say what it can find. At this false-alarm rate (≤1 per 100 pairs of passes), the search needs a mover to shift by more than about 1–1.5 px (≈5–10″, set by each field’s steady-star scatter) between passes, and its completeness never passes about 10% at any shift. In uncrowded sky it finds at most ~40% of the movers its reference image detects, best at 12–15″ shifts, falling past ~20″ and none beyond ~25″, where the shift outgrows the search’s ±2 px position-fit window. Crowded sky does worse. Most of the registered 0.3–10″/yr range falls below the shift cut. Brown dwarfs as cold as ~500 K (bright only in the longest-wavelength detectors) are mostly not detected at all, because the reference image is a median over all detectors, and no fake fainter than W2 16 was found in either run (the faintest found was W2 15.8, of 130 found). W2 is on WISE’s system; the fakes’ brightness in SPHEREx’s colours comes from Sonora brown-dwarf models, which differ between model versions by up to ~0.1 mag at 3–5 µm.',
     },
     twins: {
       title: 'Finding stars with the same colours',

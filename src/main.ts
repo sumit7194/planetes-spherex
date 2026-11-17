@@ -6176,13 +6176,13 @@ function lookWords(): HTMLElement[] {
           h(
             'dl',
             { class: 'facts' },
-            // N4 (Physics): no sensitivity limit is said until the registered fake-mover run
-            // gives one; folded into this row so the panel keeps its height (fit at 1280×720).
+            // N4 (Physics): the search's limit from the fake-mover run (17 Nov 2026), in short;
+            // folded into this row so the panel keeps its height (fit at 1280×720).
             ...factRow(
               'look',
               copy.facts.move,
               `${copy.facts.dash.look} (${copy.facts.sensitivityLead} `,
-              h('a', { href: 'tests.html#yardstick' }, copy.facts.sensitivityNotYet),
+              h('a', { href: 'tests.html#yardstick' }, copy.facts.sensitivityLimit),
               ')',
             ),
             ...factRow('unmeasured', copy.facts.predicted, copy.facts.dash.none),
