@@ -1,0 +1,8 @@
+# planetes-live, run on a Mac for batch jobs (`wrangler dev --local --config wrangler.batch.toml`):
+# the same code (src/index.ts) as the hosted helper, without the R2 store and placement, so a batch
+# run doesn't spend the free plan's daily requests the live site needs (Sumit, 15 Nov night).
+# The pipeline points at it with HELPER_URL; pipeline/run_overnight.sh starts one per worker with a
+# fresh, deleted-after-each-field state folder, so the Cache API's local copies don't fill the disk.
+name = "planetes-live-batch"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"

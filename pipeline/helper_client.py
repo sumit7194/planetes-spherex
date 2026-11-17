@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import json
 import pickle
+import os
 import struct
 import time
 from pathlib import Path
@@ -25,6 +26,10 @@ HELPER = "https://planetes-edge.planetes.workers.dev"
 # Batch jobs that never re-read a box go straight to the helper (no edge cache to fill), which
 # also keeps them to one Worker request per box.
 DIRECT = "https://planetes-live.planetes.workers.dev"
+# The same Worker code run on this Mac (wrangler dev --local), for batch runs while the hosted
+# helpers are rate-limited (15 Nov night): HELPER_URL=http://127.0.0.1:8787 points both at it.
+if os.environ.get("HELPER_URL"):
+    HELPER = DIRECT = os.environ["HELPER_URL"].rstrip("/")
 BUCKET = "https://nasa-irsa-spherex.s3.amazonaws.com/"
 UA = {"User-Agent": "planetes-pipeline/1 (Space Apps 2026)"}
 

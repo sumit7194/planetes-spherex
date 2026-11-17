@@ -42,12 +42,15 @@ EDGE_PX = 8  # PLAN.md §8 edge rule
 # Where the photo list comes from: IRSA's image search (as registered), or our own sky index
 # (sky_index.py; IRSA's search was down from 14 Nov ~22:15 IST). One source per run, never mixed.
 ROWS_FROM = "irsa"
+# Margin for index photo lists (sky_index.search). 0 everywhere but the fake-mover run, which uses
+# -0.05 deg (16 Nov, measured; was -0.01), a superset trimmed by the edge rule (PLAN §8, 15 Nov night, Physics).
+INDEX_MARGIN = 0.0
 
 
 def search_rows(ra, dec):
     if ROWS_FROM == "index":
         import sky_index
-        rows = sky_index.search(ra, dec, margin_deg=0.0)
+        rows = sky_index.search(ra, dec, margin_deg=INDEX_MARGIN)
         sx.group_passes(rows)
         return rows
     for attempt in range(7):

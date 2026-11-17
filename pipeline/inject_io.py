@@ -36,15 +36,41 @@ def psf_from_bytes(buf: bytes) -> tuple[fits.Header, dict[int, np.ndarray]]:
     return epsf_grid(table, QR3_PSF_FLIP)
 
 
+def psf_complete(buf: bytes) -> bool:
+    """True when buf holds the whole binary-table extension its own header declares."""
+    end = buf.find(b"END" + b" " * 77)
+    if end < 0 or end % 80:
+        return False
+    head = fits.Header.fromstring(buf[:end + 80].decode("ascii", "replace"))
+    hlen = (end + 80 + 2879) // 2880 * 2880
+    need = int(head["NAXIS1"]) * int(head["NAXIS2"]) + int(head.get("PCOUNT", 0))
+    return len(buf) >= hlen + need
+
+
 async def psf_for(s: aiohttp.ClientSession, e: dict) -> tuple[fits.Header, dict[int, np.ndarray]]:
     """The ePSF for this photo, fetched once per header hash (one per detector and pipeline
     version); the photo's own psf_sha256 must match, or this stops."""
     want = e["psf_sha256"]
     if want not in _PSF:
-        p = await hc.psf(s, e["url"])
-        if p["header_sha256"] != want:
-            raise RuntimeError(f"{e.get('obs_id')}: ePSF header hash differs from the photo's")
-        hdr, planes = psf_from_bytes(p["hdu_bytes"])
+        # A download cut short on a slow line once gave a PSF with no planes (Y-36, 17 Nov 00:48,
+        # StopIteration in smo.scene.psf). So the bytes must be the whole extension the header
+        # declares and give planes; otherwise try again, and after 3 tries stop the field as a
+        # read error (RuntimeError: the runner retries it). Transport check only.
+        for attempt in range(3):
+            try:
+                p = await hc.psf(s, e["url"])
+            except (aiohttp.ClientError, asyncio.TimeoutError):
+                await asyncio.sleep(2 * (attempt + 1))
+                continue
+            if p["header_sha256"] != want:
+                raise RuntimeError(f"{e.get('obs_id')}: ePSF header hash differs from the photo's")
+            if psf_complete(p["hdu_bytes"]):
+                hdr, planes = psf_from_bytes(p["hdu_bytes"])
+                if planes:
+                    break
+            await asyncio.sleep(2 * (attempt + 1))
+        else:
+            raise RuntimeError(f"{e.get('obs_id')}: ePSF download incomplete after 3 tries")
         _PSF[want] = (hdr, planes, p["version"])
     hdr, planes, _ = _PSF[want]
     return hdr, planes

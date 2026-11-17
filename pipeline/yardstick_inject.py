@@ -71,6 +71,14 @@ if EXT not in ("", "E1"):
     raise SystemExit("YARD_EXT must be unset or E1")
 if EXT:
     OUT = HERE / f"yardstick_inject_{EXT.lower()}"
+# The photo list's source (PLAN §8, 15 Nov night, Physics): IRSA's image search ("irsa"), or our sky
+# index at margin 0 ("index") while SIA is down; the 8 px edge rule applies either way (stack_exps).
+# Each field's run.json records which; fields already done from SIA stay as they are.
+fs.ROWS_FROM = os.environ.get("ROWS_FROM", "irsa")
+if fs.ROWS_FROM not in ("irsa", "index"):
+    raise SystemExit("ROWS_FROM must be irsa or index")
+if fs.ROWS_FROM == "index":
+    fs.INDEX_MARGIN = -0.05  # max(0.05, 1.5 x worst 0.0223 deg over 1,663 photos), PLAN §8 16 Nov
 
 
 # variance_slope (smo.inject.render) bins the upper half of the usable pixels into 12 bins and takes
@@ -208,16 +216,37 @@ def frame_fakes(e: dict, cut, fakes: list[dict], spectra: dict) -> tuple[list[Fr
     return out, rec
 
 
-async def read_field(rows, ra, dec, conc=16):
+def read_conc():
+    """READ_CONC from read_conc.txt next to this script when present (so a running batch can be eased
+    for its next field on a slow line, 17 Nov 01:00), else the env, else 16. Transport only: which
+    photos are read and how is unchanged."""
+    f = os.path.join(os.path.dirname(os.path.abspath(__file__)), "read_conc.txt")
+    if os.path.exists(f):
+        return int(open(f).read().strip())
+    return int(os.environ.get("READ_CONC", "16"))
+
+
+async def read_field(rows, ra, dec, conc=None):
+    # READ_CONC: requests in flight at once. From this Mac one helper is latency-bound (about 80
+    # trips to NASA's bucket per photo); two helpers at once share one bottleneck and time out
+    # (16 Nov 04:30 probe), so the overnight runner uses one helper and READ_CONC=24.
+    conc = conc or read_conc()
     sem = asyncio.Semaphore(conc)
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+        errors = []
+
         async def one(r):
             async with sem:
                 try:
-                    return await hc.native(s, r, ra, dec, fs.HALF, extra=True)
-                except Exception:  # noqa: BLE001
+                    return await hc.native(s, r, ra, dec, fs.HALF, extra=True)  # None = off the photo (204)
+                except Exception as ex:  # noqa: BLE001
+                    errors.append(repr(ex)[:160])
                     return None
         exps = await asyncio.gather(*(one(r) for r in rows))
+        # A helper error (429/5xx/unreachable) stops the field rather than quietly dropping a photo
+        # (PLAN §8, 15 Nov night, Physics); the runner retries the field in its next round.
+        if errors:
+            raise RuntimeError(f"{len(errors)} helper error(s) reading {len(rows)} photos, e.g. {errors[0]}")
         psfs = {}
         for e in exps:
             if e is not None and e["psf_sha256"] not in psfs:
@@ -250,7 +279,7 @@ def run_field(field: dict) -> None:
             blobs.append((xx.mean(), yy.mean(), float(np.clip(3 * np.sqrt(len(yy)), 6, 16))))
     t_ref = float(np.mean([e["mjd"] for e in exps_ok]))
     quiet = yn.quiet_pixels(field)
-    log = dict(field=name, photos=len(rows), read=len(exps_ok), sources=len(srcs), blobs=len(blobs),
+    log = dict(field=name, rows_from=fs.ROWS_FROM, read_conc=read_conc(), photos=len(rows), read=len(exps_ok), sources=len(srcs), blobs=len(blobs),
                psf_versions=len(psfs), t_ref=t_ref, w2_system=W2_SYSTEM, passes=[])
     for p in range(PASSES):
         fakes = draw_fakes(field, p, t_ref, srcs, blobs, sat_any)
@@ -309,6 +338,9 @@ def main() -> None:
             run_field(f)
         except Exception as ex:  # noqa: BLE001
             print(f"{f['field']} skipped for now: {ex!r}"[:300], flush=True)
+            if not isinstance(ex, RuntimeError):  # an unexpected error: show where (17 Nov, Y-36 StopIteration)
+                import traceback
+                print("".join(traceback.format_exc().splitlines(True)[-8:]), flush=True)
             continue
         print(f"{f['field']} done in {time.time() - t0:.0f} s", flush=True)
 
